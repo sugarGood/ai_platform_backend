@@ -8,7 +8,12 @@ CREATE TABLE IF NOT EXISTS platform_credentials (
     key_hash VARCHAR(64) NOT NULL,
     key_prefix VARCHAR(32) NOT NULL,
     name VARCHAR(128),
-    bound_project_id BIGINT,
+    -- personal monthly token quota (dual-pool #1)
+    monthly_token_quota BIGINT NOT NULL DEFAULT 0,
+    used_tokens_this_month BIGINT NOT NULL DEFAULT 0,
+    alert_threshold_pct TINYINT NOT NULL DEFAULT 80,
+    over_quota_strategy VARCHAR(32) NOT NULL DEFAULT 'BLOCK',
+    last_quota_reset_at TIMESTAMP,
     status VARCHAR(16) NOT NULL DEFAULT 'ACTIVE',
     expires_at TIMESTAMP,
     last_used_at TIMESTAMP,
@@ -17,7 +22,8 @@ CREATE TABLE IF NOT EXISTS platform_credentials (
     revoke_reason VARCHAR(256),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT uk_credential_key_hash UNIQUE (key_hash)
+    CONSTRAINT uk_credential_key_hash UNIQUE (key_hash),
+    CONSTRAINT uk_credential_user UNIQUE (user_id)
 );
 
 CREATE TABLE IF NOT EXISTS ai_providers (

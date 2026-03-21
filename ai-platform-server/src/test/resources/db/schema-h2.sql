@@ -1,4 +1,4 @@
--- ============================================================================
+﻿-- ============================================================================
 -- AI 中台 H2 Test Schema (aligned with 2026-03-20 redesign)
 -- H2 compatible: no ENUM, no UNSIGNED, no ENGINE, no CHARSET
 -- ============================================================================
@@ -42,6 +42,12 @@ CREATE TABLE IF NOT EXISTS projects (
     project_type VARCHAR(32) NOT NULL DEFAULT 'PRODUCT',
     created_by BIGINT,
     owner_user_id BIGINT,
+    -- 项目 Token 池（双池配额之二�?
+    monthly_token_quota BIGINT NOT NULL DEFAULT 0,
+    used_tokens_this_month BIGINT NOT NULL DEFAULT 0,
+    alert_threshold_pct TINYINT NOT NULL DEFAULT 80,
+    over_quota_strategy VARCHAR(32) NOT NULL DEFAULT 'BLOCK',
+    last_quota_reset_at TIMESTAMP,
     status VARCHAR(32) NOT NULL DEFAULT 'ACTIVE',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -81,7 +87,12 @@ CREATE TABLE IF NOT EXISTS platform_credentials (
     key_hash VARCHAR(64) NOT NULL,
     key_prefix VARCHAR(32) NOT NULL,
     name VARCHAR(128),
-    bound_project_id BIGINT,
+    -- �����¶� Token ��˫��֮һ��
+    monthly_token_quota BIGINT NOT NULL DEFAULT 0,
+    used_tokens_this_month BIGINT NOT NULL DEFAULT 0,
+    alert_threshold_pct TINYINT NOT NULL DEFAULT 80,
+    over_quota_strategy VARCHAR(32) NOT NULL DEFAULT 'BLOCK',
+    last_quota_reset_at TIMESTAMP,
     status VARCHAR(16) NOT NULL DEFAULT 'ACTIVE',
     expires_at TIMESTAMP,
     last_used_at TIMESTAMP,
@@ -90,7 +101,8 @@ CREATE TABLE IF NOT EXISTS platform_credentials (
     revoke_reason VARCHAR(256),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT uk_credential_key_hash UNIQUE (key_hash)
+    CONSTRAINT uk_credential_key_hash UNIQUE (key_hash),
+    CONSTRAINT uk_credential_user UNIQUE (user_id)
 );
 
 CREATE TABLE IF NOT EXISTS key_rotation_logs (
@@ -461,24 +473,25 @@ CREATE TABLE IF NOT EXISTS project_ai_policies (
 
 -- Seed default roles
 MERGE INTO roles (id, name, code, role_scope, description, is_system, status) KEY (id) VALUES
-    (1, '超级管理员', 'SUPER_ADMIN', 'PLATFORM', '平台超级管理员，拥有所有权限', TRUE, 'ACTIVE'),
-    (2, '平台管理员', 'PLATFORM_ADMIN', 'PLATFORM', '平台管理员，管理全局配置', TRUE, 'ACTIVE'),
-    (3, '普通成员', 'MEMBER', 'PLATFORM', '平台普通成员', TRUE, 'ACTIVE'),
-    (4, '项目管理员', 'PROJECT_ADMIN', 'PROJECT', '项目管理员，管理项目配置和成员', TRUE, 'ACTIVE'),
-    (5, '开发者', 'DEVELOPER', 'PROJECT', '项目开发者，可使用 AI 能力', TRUE, 'ACTIVE'),
+    (1, '超级管理�?, 'SUPER_ADMIN', 'PLATFORM', '平台超级管理员，拥有所有权�?, TRUE, 'ACTIVE'),
+    (2, '平台管理�?, 'PLATFORM_ADMIN', 'PLATFORM', '平台管理员，管理全局配置', TRUE, 'ACTIVE'),
+    (3, '普通成�?, 'MEMBER', 'PLATFORM', '平台普通成�?, TRUE, 'ACTIVE'),
+    (4, '项目管理�?, 'PROJECT_ADMIN', 'PROJECT', '项目管理员，管理项目配置和成�?, TRUE, 'ACTIVE'),
+    (5, '开发�?, 'DEVELOPER', 'PROJECT', '项目开发者，可使�?AI 能力', TRUE, 'ACTIVE'),
     (6, '只读成员', 'VIEWER', 'PROJECT', '只读查看权限', TRUE, 'ACTIVE');
 
 -- Seed default permission definitions
 MERGE INTO permission_definitions (id, module, permission_key, name, permission_scope) KEY (id) VALUES
-    (1, '知识库', 'knowledge.view', '查看知识库', 'BOTH'),
-    (2, '知识库', 'knowledge.upload', '上传文档', 'BOTH'),
-    (3, '知识库', 'knowledge.manage', '管理知识库', 'BOTH'),
-    (4, '技能库', 'skill.view', '查看技能', 'BOTH'),
-    (5, '技能库', 'skill.publish', '发布技能', 'BOTH'),
-    (6, '工具集', 'tool.view', '查看工具', 'BOTH'),
-    (7, '工具集', 'tool.invoke', '调用工具', 'BOTH'),
+    (1, '知识�?, 'knowledge.view', '查看知识�?, 'BOTH'),
+    (2, '知识�?, 'knowledge.upload', '上传文档', 'BOTH'),
+    (3, '知识�?, 'knowledge.manage', '管理知识�?, 'BOTH'),
+    (4, '技能库', 'skill.view', '查看技�?, 'BOTH'),
+    (5, '技能库', 'skill.publish', '发布技�?, 'BOTH'),
+    (6, '工具�?, 'tool.view', '查看工具', 'BOTH'),
+    (7, '工具�?, 'tool.invoke', '调用工具', 'BOTH'),
     (8, '成员管理', 'member.view', '查看成员', 'PROJECT'),
     (9, '成员管理', 'member.manage', '管理成员', 'PROJECT'),
     (10, '配额管理', 'quota.view', '查看配额', 'BOTH'),
     (11, '配额管理', 'quota.manage', '管理配额', 'BOTH'),
     (12, '项目设置', 'project.settings', '管理项目设置', 'PROJECT');
+

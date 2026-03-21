@@ -338,54 +338,71 @@
   </div>
 </div>
 
-<!-- Modal: 邀请员工 -->
-<div class="modal" id="modal-inviteStaff">
+<!-- Modal: 新增员工 -->
+<div class="modal" id="modal-addStaff">
   <div class="modal-box" style="width:520px">
-    <div class="modal-title">邀请员工加入平台</div>
-    <div class="form-group">
-      <label>邀请方式</label>
-      <div style="display:flex;gap:8px;margin-bottom:12px">
-        <button class="btn btn-primary" style="flex:1;font-size:12px">📧 邮箱邀请</button>
-        <button class="btn" style="flex:1;font-size:12px">📋 批量导入（CSV）</button>
+    <div class="modal-title">新增员工到平台</div>
+
+    <div class="modal-section-label">基础信息</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="form-group">
+        <label class="form-label">员工姓名</label>
+        <input placeholder="张三">
+      </div>
+      <div class="form-group">
+        <label class="form-label">员工邮箱</label>
+        <input placeholder="zhangsan@company.com">
       </div>
     </div>
-    <div class="form-group">
-      <label>员工邮箱</label>
-      <input placeholder="输入邮箱，多人用逗号分隔">
-    </div>
-    <div class="form-group">
-      <label>部门</label>
-      <select>
-        <option>工程部</option>
-        <option>产品部</option>
-        <option>测试部</option>
-        <option>数据部</option>
-        <option>其他</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label>平台角色</label>
-      <select>
-        <option selected>👤 普通成员 — 通过项目角色获取权限</option>
-        <option>🔧 平台管理员 — 管理 AI 资产和运营</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label>初始项目分配（选填）</label>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
-        <label style="font-size:12px;display:flex;align-items:center;gap:4px"><input type="checkbox"> 🛒 商城系统</label>
-        <label style="font-size:12px;display:flex;align-items:center;gap:4px"><input type="checkbox"> 👤 用户中心</label>
-        <label style="font-size:12px;display:flex;align-items:center;gap:4px"><input type="checkbox"> 💳 支付网关</label>
-        <label style="font-size:12px;display:flex;align-items:center;gap:4px"><input type="checkbox"> 📊 数据看板</label>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="form-group">
+        <label class="form-label">所属部门</label>
+        <select>
+          <option>工程部</option>
+          <option>产品部</option>
+          <option>测试部</option>
+          <option>数据部</option>
+          <option>其他</option>
+        </select>
       </div>
-      <div style="font-size:11px;color:var(--sub)">选择后员工将以默认角色（Developer）加入项目，可后续调整</div>
+      <div class="form-group">
+        <label class="form-label">初始密码</label>
+        <div style="display:flex;gap:6px">
+          <input placeholder="自动生成强密码" readonly style="flex:1;background:var(--bg)">
+          <button class="btn" style="font-size:12px;padding:3px 8px">🔄 重新生成</button>
+        </div>
+      </div>
     </div>
-    <div style="background:var(--primary-light);border:1px solid var(--primary);border-radius:8px;padding:10px;margin-bottom:16px;font-size:12px">
-      <strong>📨 邀请流程：</strong>系统将发送激活邮件 → 员工点击链接激活账号 → 自动签发平台凭证 → 按分配的项目生成接入指南
+
+    <div class="modal-section-label">权限配置</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="form-group">
+        <label class="form-label">平台角色</label>
+        <select>
+          <option selected>👤 普通成员</option>
+          <option>🔧 平台管理员</option>
+          <option>👑 超级管理员</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Token配额</label>
+        <div style="display:flex;gap:6px;align-items:center">
+          <input value="100" style="width:70px">
+          <select style="width:auto">
+            <option>K Token/月</option>
+            <option>M Token/月</option>
+          </select>
+        </div>
+      </div>
     </div>
+
+    <div style="background:var(--success-light);border:1px solid var(--success);border-radius:8px;padding:10px;margin-bottom:16px;font-size:12px">
+      <strong>✅ 创建流程：</strong>创建账号 → 自动签发平台凭证 → 发送欢迎邮件（含初始密码和接入指南）→ 员工首次登录后修改密码
+    </div>
+
     <div style="display:flex;justify-content:flex-end;gap:8px">
-      <button class="btn" onclick="closeModal('inviteStaff')">取消</button>
-      <button class="btn btn-primary" onclick="closeModal('inviteStaff');showToast('已发送邀请邮件，等待员工激活','success')">发送邀请</button>
+      <button class="btn" onclick="closeModal('addStaff')">取消</button>
+      <button class="btn btn-primary" onclick="closeModal('addStaff');showToast('员工已创建，欢迎邮件已发送','success')">创建员工</button>
     </div>
   </div>
 </div>
@@ -400,31 +417,67 @@
         <div style="font-weight:600">张三</div>
         <div style="font-size:12px;color:var(--sub)">zhang3@company.com · 工程部</div>
       </div>
-    </div>
-    <div class="form-group">
-      <label>部门</label>
-      <select>
-        <option selected>工程部</option>
-        <option>产品部</option>
-        <option>测试部</option>
-        <option>数据部</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label>平台角色</label>
-      <select>
-        <option>👑 超级管理员</option>
-        <option>🔧 平台管理员</option>
-        <option selected>👤 普通成员</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label>账号操作</label>
-      <div style="display:flex;gap:8px">
-        <button class="btn" style="flex:1;font-size:12px" onclick="closeModal('editStaff');showToast('已重新签发凭证','success')">🔑 重签凭证</button>
-        <button class="btn" style="flex:1;font-size:12px;color:var(--warning)" onclick="closeModal('editStaff');openModal('suspendStaff')">⏸ 停用账号</button>
+      <div style="margin-left:auto">
+        <span class="badge badge-green" style="font-size:10px">正常</span>
       </div>
     </div>
+
+    <div class="modal-section-label">基础信息</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="form-group">
+        <label>部门</label>
+        <select>
+          <option selected>工程部</option>
+          <option>产品部</option>
+          <option>测试部</option>
+          <option>数据部</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>平台角色</label>
+        <select>
+          <option>👑 超级管理员</option>
+          <option>🔧 平台管理员</option>
+          <option selected>👤 普通成员</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="modal-section-label">配额管理</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="form-group">
+        <label>Token配额</label>
+        <div style="display:flex;gap:6px;align-items:center">
+          <input value="200" style="width:70px">
+          <select style="width:auto">
+            <option selected>K Token/月</option>
+            <option>M Token/月</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>配额状态</label>
+        <div style="font-size:12px;color:var(--sub);padding:6px 0">
+          已用 153K / 200K (76.5%)<br>
+          <div style="background:var(--border);height:4px;border-radius:2px;margin-top:4px">
+            <div style="background:var(--primary);height:4px;width:76.5%;border-radius:2px"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-section-label">账号操作</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">
+      <button class="btn" style="font-size:12px" onclick="showToast('已重新签发凭证','success')">🔑 重签凭证</button>
+      <button class="btn" style="font-size:12px" onclick="showToast('已发送重置密码邮件','success')">🔒 重置密码</button>
+      <button class="btn" style="font-size:12px" onclick="showToast('已强制下线所有会话','success')">⚡ 强制下线</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px">
+      <button class="btn" style="font-size:12px" onclick="openModal('staffActivityLog')">📋 活动日志</button>
+      <button class="btn" style="font-size:12px" onclick="openModal('staffPermHistory')">📜 权限历史</button>
+      <button class="btn" style="font-size:12px;color:var(--warning)" onclick="openModal('suspendStaff')">⏸ 停用账号</button>
+    </div>
+
     <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px">
       <button class="btn" onclick="closeModal('editStaff')">取消</button>
       <button class="btn btn-primary" onclick="closeModal('editStaff');showToast('员工信息已更新','success')">保存</button>
@@ -479,16 +532,79 @@
         </tbody>
       </table>
     </div>
-    <div style="font-size:12px;font-weight:600;margin-bottom:8px">🔑 凭证信息</div>
+    <div style="font-size:12px;font-weight:600;margin-bottom:8px">🔑 凭证与配额信息</div>
     <div style="background:var(--bg);border-radius:8px;padding:12px;margin-bottom:16px;font-size:12px">
       <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="color:var(--sub)">凭证状态</span><span class="badge badge-green" style="font-size:10px">有效</span></div>
       <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="color:var(--sub)">到期时间</span><span>2026-06-01</span></div>
-      <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="color:var(--sub)">个人配额</span><span>200K Token/月（已用 153K）</span></div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="color:var(--sub)">Token配额</span><span>200K Token/月</span></div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="color:var(--sub)">已用配额</span><span>153K (76.5%)</span></div>
       <div style="display:flex;justify-content:space-between"><span style="color:var(--sub)">最后活跃</span><span>10 分钟前</span></div>
     </div>
     <div style="display:flex;justify-content:flex-end;gap:8px">
       <button class="btn" onclick="closeModal('staffDetail')">关闭</button>
       <button class="btn" onclick="closeModal('staffDetail');openModal('editStaff')">编辑</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: 员工活动日志 -->
+<div class="modal" id="modal-staffActivityLog">
+  <div class="modal-box" style="width:680px">
+    <div class="modal-title">员工活动日志 - 张三</div>
+    <div style="display:flex;gap:8px;margin-bottom:16px">
+      <select style="width:auto;font-size:12px;padding:3px 8px">
+        <option>全部活动</option>
+        <option>登录/登出</option>
+        <option>AI调用</option>
+        <option>权限变更</option>
+        <option>配额调整</option>
+      </select>
+      <select style="width:auto;font-size:12px;padding:3px 8px">
+        <option selected>最近7天</option>
+        <option>最近30天</option>
+        <option>最近90天</option>
+      </select>
+    </div>
+    <div style="max-height:400px;overflow-y:auto;border:1px solid var(--border);border-radius:8px">
+      <table style="font-size:12px">
+        <thead style="background:var(--bg);position:sticky;top:0">
+          <tr><th>时间</th><th>活动类型</th><th>详情</th><th>IP地址</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>03-21 17:05</td><td><span class="badge badge-blue" style="font-size:10px">AI调用</span></td><td>调用技能: code-review (商城系统)</td><td>192.168.1.100</td></tr>
+          <tr><td>03-21 16:58</td><td><span class="badge badge-green" style="font-size:10px">登录</span></td><td>Claude Code 客户端登录</td><td>192.168.1.100</td></tr>
+          <tr><td>03-21 09:15</td><td><span class="badge badge-blue" style="font-size:10px">AI调用</span></td><td>搜索知识库: 架构设计模式</td><td>192.168.1.100</td></tr>
+          <tr><td>03-20 18:30</td><td><span class="badge badge-gray" style="font-size:10px">登出</span></td><td>会话正常结束</td><td>192.168.1.100</td></tr>
+          <tr><td>03-20 15:22</td><td><span class="badge badge-yellow" style="font-size:10px">权限变更</span></td><td>平台角色: 普通成员 → 超级管理员</td><td>管理后台</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px">
+      <button class="btn" onclick="showToast('正在导出活动日志...','success')">📊 导出</button>
+      <button class="btn" onclick="closeModal('staffActivityLog')">关闭</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: 员工权限历史 -->
+<div class="modal" id="modal-staffPermHistory">
+  <div class="modal-box" style="width:580px">
+    <div class="modal-title">权限变更历史 - 张三</div>
+    <div style="max-height:350px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;margin-bottom:16px">
+      <table style="font-size:12px">
+        <thead style="background:var(--bg);position:sticky;top:0">
+          <tr><th>变更时间</th><th>操作者</th><th>变更内容</th><th>范围</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>03-20 15:22</td><td>张三 (自己)</td><td>平台角色: 普通成员 → 超级管理员</td><td>平台级</td></tr>
+          <tr><td>03-18 10:30</td><td>李四</td><td>添加到商城系统项目，角色: Developer</td><td>项目级</td></tr>
+          <tr><td>03-15 14:00</td><td>系统</td><td>账号激活，初始角色: 普通成员</td><td>平台级</td></tr>
+          <tr><td>03-15 09:00</td><td>李四</td><td>创建账号，邀请加入平台</td><td>平台级</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:8px">
+      <button class="btn" onclick="closeModal('staffPermHistory')">关闭</button>
     </div>
   </div>
 </div>

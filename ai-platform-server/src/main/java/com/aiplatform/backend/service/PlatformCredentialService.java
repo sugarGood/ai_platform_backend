@@ -21,19 +21,25 @@ import java.util.UUID;
  *
  * <p>提供凭证的创建（含密钥生成和 SHA-256 哈希）、按用户查询、吊销等操作。
  * 密钥格式为 {@code plt_{uid}_{random}_{checksum}}，创建时仅返回一次明文。</p>
+ *
+ * <h3>凭证模型：一人一证，跨项目共用</h3>
+ * <p>每名成员在平台拥有唯一一张凭证（uk_platform_credentials_user 唯一索引约束），
+ * 邀请时自动生成。凭证跨项目复用，无需为不同项目单独申请。</p>
  */
 @Service
 public class PlatformCredentialService {
 
     private final PlatformCredentialMapper platformCredentialMapper;
 
-    /** 构造函数。 */
     public PlatformCredentialService(PlatformCredentialMapper platformCredentialMapper) {
         this.platformCredentialMapper = platformCredentialMapper;
     }
 
     /**
      * 创建平台凭证，生成密钥并以 SHA-256 哈希存储。
+     *
+     * <p>自动初始化个人月度 Token 配额字段（双池之一）。
+     * 若请求未指定配额参数，使用平台默认值：上限 200K、阈值 80%、策略 BLOCK。</p>
      *
      * @param request 创建请求
      * @return 包含明文密钥的创建响应（明文仅此一次展示）
@@ -44,27 +50,45 @@ public class PlatformCredentialService {
                 + "_" + checksumChar(request.userId());
 
         String keyHash = sha256Hex(rawKey);
-        String keyPrefix = rawKey.substring(0, 12);
+        String keyPrefix = rawKey.substring(0, Math.min(12, rawKey.length()));
 
         PlatformCredential credential = new PlatformCredential();
         credential.setUserId(request.userId());
         credential.setCredentialType(request.credentialType() != null ? request.credentialType() : "PERSONAL");
         credential.setKeyHash(keyHash);
         credential.setKeyPrefix(keyPrefix);
-        credential.setName(request.name());
-        credential.setBoundProjectId(request.boundProjectId());
+        credential.setName(request.name() != null ? request.name() : "Personal Credential");
+
+        // 个人月度 Token 配额初始化（双池之一）
+        credential.setMonthlyTokenQuota(
+                request.monthlyTokenQuota() != null ? request.monthlyTokenQuota() : 200000L);
+        credential.setUsedTokensThisMonth(0L);
+        credential.setAlertThresholdPct(
+                request.alertThresholdPct() != null ? request.alertThresholdPct() : 80);
+        credential.setOverQuotaStrategy(
+                request.overQuotaStrategy() != null ? request.overQuotaStrategy() : "BLOCK");
+        credential.setLastQuotaResetAt(LocalDateTime.now());
+
         credential.setStatus("ACTIVE");
         platformCredentialMapper.insert(credential);
 
         return new CreatePlatformCredentialResponse(rawKey, PlatformCredentialResponse.from(credential));
     }
 
-    /** 按用户 ID 查询凭证列表。 */
+    /** 按用户 ID 查询凭证（每用户唯一一条）。 */
     public List<PlatformCredential> listByUserId(Long userId) {
         return platformCredentialMapper.selectList(
                 Wrappers.<PlatformCredential>lambdaQuery()
                         .eq(PlatformCredential::getUserId, userId)
                         .orderByAsc(PlatformCredential::getId)
+        );
+    }
+
+    /** 按用户 ID 查询唯一凭证，不存在时返回 null。 */
+    public PlatformCredential getByUserId(Long userId) {
+        return platformCredentialMapper.selectOne(
+                Wrappers.<PlatformCredential>lambdaQuery()
+                        .eq(PlatformCredential::getUserId, userId)
         );
     }
 
@@ -90,6 +114,10 @@ public class PlatformCredentialService {
         }
         return credential;
     }
+
+    // ------------------------------------------------------------------
+    // private helpers
+    // ------------------------------------------------------------------
 
     private String sha256Hex(String input) {
         try {

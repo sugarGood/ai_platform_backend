@@ -29,19 +29,22 @@ public class PlatformCredentialController {
 
     private final PlatformCredentialService platformCredentialService;
 
-    /** 构造函数。 */
     public PlatformCredentialController(PlatformCredentialService platformCredentialService) {
         this.platformCredentialService = platformCredentialService;
     }
 
-    /** 创建凭证，返回包含明文密钥的响应。 */
+    /**
+     * 创建凭证，返回包含明文密钥的响应（明文仅此一次）。
+     */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public CreatePlatformCredentialResponse create(@Valid @RequestBody CreatePlatformCredentialRequest request) {
         return platformCredentialService.create(request);
     }
 
-    /** 按用户 ID 查询凭证列表。 */
+    /**
+     * 按用户 ID 查询凭证列表（一人一证，通常只有一条）。
+     */
     @GetMapping
     public List<PlatformCredentialResponse> listByUserId(@RequestParam Long userId) {
         return platformCredentialService.listByUserId(userId).stream()
@@ -49,7 +52,24 @@ public class PlatformCredentialController {
                 .toList();
     }
 
-    /** 吊销凭证。 */
+    /**
+     * 根据凭证 ID 查询单条凭证详情。
+     *
+     * @param id 凭证 ID
+     * @return 凭证详情响应
+     */
+    @GetMapping("/{id}")
+    public PlatformCredentialResponse getById(@PathVariable Long id) {
+        return PlatformCredentialResponse.from(platformCredentialService.getByIdOrThrow(id));
+    }
+
+    /**
+     * 吊销凭证。
+     *
+     * @param id   凭证 ID
+     * @param body 请求体，包含 {@code reason} 字段
+     * @return 吊销后的凭证详情
+     */
     @PostMapping("/{id}/revoke")
     public PlatformCredentialResponse revoke(@PathVariable Long id, @RequestBody Map<String, String> body) {
         String reason = body.get("reason");

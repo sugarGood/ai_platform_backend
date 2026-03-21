@@ -12,22 +12,14 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 /**
- * 项目成员业务服务，提供成员的添加、列表查询和单个查询等操作。
+ * 项目成员业务服务，提供成员的添加、移除、列表查询和单个查询等操作。
  */
 @Service
 public class ProjectMemberService {
 
-    /** 项目数据访问 Mapper */
     private final ProjectMapper projectMapper;
-    /** 项目成员数据访问 Mapper */
     private final ProjectMemberMapper projectMemberMapper;
 
-    /**
-     * 构造函数，注入所需的 Mapper。
-     *
-     * @param projectMapper       项目数据访问接口
-     * @param projectMemberMapper 项目成员数据访问接口
-     */
     public ProjectMemberService(ProjectMapper projectMapper, ProjectMemberMapper projectMemberMapper) {
         this.projectMapper = projectMapper;
         this.projectMemberMapper = projectMemberMapper;
@@ -63,6 +55,27 @@ public class ProjectMemberService {
     }
 
     /**
+     * 从项目中移除成员。
+     *
+     * @param projectId 项目 ID
+     * @param memberId  成员记录 ID
+     * @throws ProjectMemberNotFoundException 成员不存在时
+     */
+    public void remove(Long projectId, Long memberId) {
+        ensureProjectExists(projectId);
+        ProjectMember member = projectMemberMapper.selectOne(
+                Wrappers.<ProjectMember>lambdaQuery()
+                        .eq(ProjectMember::getProjectId, projectId)
+                        .eq(ProjectMember::getId, memberId)
+                        .last("LIMIT 1")
+        );
+        if (member == null) {
+            throw new ProjectMemberNotFoundException(projectId, memberId);
+        }
+        projectMemberMapper.deleteById(memberId);
+    }
+
+    /**
      * 查询指定项目下的所有成员列表，按 ID 升序排列。
      *
      * @param projectId 项目 ID
@@ -78,7 +91,7 @@ public class ProjectMemberService {
     }
 
     /**
-     * 根据项目 ID 和成员 ID 查询单个成员，不存在时抛出异常。
+     * 根据项目 ID 和成员记录 ID 查询单个成员，不存在时抛出异常。
      *
      * @param projectId 项目 ID
      * @param memberId  成员记录 ID
@@ -87,21 +100,18 @@ public class ProjectMemberService {
      */
     public ProjectMember getByProjectAndId(Long projectId, Long memberId) {
         ensureProjectExists(projectId);
-        ProjectMember member = projectMemberMapper.selectOne(Wrappers.<ProjectMember>lambdaQuery()
-                .eq(ProjectMember::getProjectId, projectId)
-                .eq(ProjectMember::getId, memberId)
-                .last("LIMIT 1"));
+        ProjectMember member = projectMemberMapper.selectOne(
+                Wrappers.<ProjectMember>lambdaQuery()
+                        .eq(ProjectMember::getProjectId, projectId)
+                        .eq(ProjectMember::getId, memberId)
+                        .last("LIMIT 1")
+        );
         if (member == null) {
             throw new ProjectMemberNotFoundException(projectId, memberId);
         }
         return member;
     }
 
-    /**
-     * 校验项目是否存在，不存在时抛出 {@link com.aiplatform.backend.common.exception.ProjectNotFoundException}。
-     *
-     * @param projectId 项目 ID
-     */
     private void ensureProjectExists(Long projectId) {
         if (projectMapper.selectById(projectId) == null) {
             throw new com.aiplatform.backend.common.exception.ProjectNotFoundException(projectId);

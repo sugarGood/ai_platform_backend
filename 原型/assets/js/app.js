@@ -598,8 +598,8 @@
       return true;
     }
 
-    if (label.includes('邀请员工')) {
-      openModal('inviteStaff');
+    if (label.includes('新增员工')) {
+      openModal('addStaff');
       return true;
     }
 

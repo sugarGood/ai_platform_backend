@@ -19,13 +19,19 @@ import org.springframework.stereotype.Service;
 @Service
 public class GatewayRoutingService {
 
-    /** AI 模型数据访问 Mapper */
+    /**
+     * AI 模型数据访问 Mapper
+     */
     private final AiModelRefMapper modelMapper;
 
-    /** AI 供应商数据访问 Mapper */
+    /**
+     * AI 供应商数据访问 Mapper
+     */
     private final AiProviderRefMapper providerMapper;
 
-    /** 上游 API 密钥数据访问 Mapper */
+    /**
+     * 上游 API 密钥数据访问 Mapper
+     */
     private final ProviderApiKeyRefMapper apiKeyMapper;
 
     /**
@@ -36,8 +42,8 @@ public class GatewayRoutingService {
      * @param apiKeyMapper   上游 API 密钥数据访问 Mapper
      */
     public GatewayRoutingService(AiModelRefMapper modelMapper,
-                                  AiProviderRefMapper providerMapper,
-                                  ProviderApiKeyRefMapper apiKeyMapper) {
+                                 AiProviderRefMapper providerMapper,
+                                 ProviderApiKeyRefMapper apiKeyMapper) {
         this.modelMapper = modelMapper;
         this.providerMapper = providerMapper;
         this.apiKeyMapper = apiKeyMapper;
@@ -50,7 +56,7 @@ public class GatewayRoutingService {
      *
      * @param modelCode 模型标识编码
      * @return 包含模型、供应商和 API 密钥的路由结果
-     * @throws ModelNotFoundException       模型不存在或已停用时抛出
+     * @throws ModelNotFoundException        模型不存在或已停用时抛出
      * @throws ProviderNotAvailableException 供应商不可用或无可用 API 密钥时抛出
      */
     public RoutingResult resolve(String modelCode) {
@@ -94,7 +100,8 @@ public class GatewayRoutingService {
      * @param provider 模型所属的上游供应商
      * @param apiKey   供应商对应的可用 API 密钥
      */
-    public record RoutingResult(AiModelRef model, AiProviderRef provider, ProviderApiKeyRef apiKey) {}
+    public record RoutingResult(AiModelRef model, AiProviderRef provider, ProviderApiKeyRef apiKey) {
+    }
 
     /**
      * 模型未找到异常。
@@ -105,7 +112,9 @@ public class GatewayRoutingService {
         /**
          * @param message 错误描述信息
          */
-        public ModelNotFoundException(String message) { super(message); }
+        public ModelNotFoundException(String message) {
+            super(message);
+        }
     }
 
     /**
@@ -117,6 +126,8 @@ public class GatewayRoutingService {
         /**
          * @param message 错误描述信息
          */
-        public ProviderNotAvailableException(String message) { super(message); }
+        public ProviderNotAvailableException(String message) {
+            super(message);
+        }
     }
 }

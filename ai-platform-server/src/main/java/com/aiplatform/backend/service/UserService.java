@@ -1,41 +1,50 @@
 package com.aiplatform.backend.service;
 
 import com.aiplatform.backend.common.exception.UserNotFoundException;
-import com.aiplatform.backend.dto.InviteUserRequest;
+import com.aiplatform.backend.dto.CreatePlatformCredentialRequest;
+import com.aiplatform.backend.dto.CreatePlatformCredentialResponse;
+import com.aiplatform.backend.dto.CreateUserRequest;
+import com.aiplatform.backend.dto.CreateUserResponse;
 import com.aiplatform.backend.dto.UpdateUserRequest;
 import com.aiplatform.backend.entity.User;
 import com.aiplatform.backend.mapper.UserMapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 /**
  * 用户业务服务。
- * <p>处理用户的邀请、信息更新、查询等操作。</p>
+ * <p>处理用户的新增、信息更新、查询等操作。</p>
  */
 @Service
 public class UserService {
 
     private final UserMapper userMapper;
+    private final PlatformCredentialService platformCredentialService;
 
-    /**
-     * 构造方法，注入用户数据访问层。
-     *
-     * @param userMapper 用户 Mapper
-     */
-    public UserService(UserMapper userMapper) {
+    public UserService(UserMapper userMapper, PlatformCredentialService platformCredentialService) {
         this.userMapper = userMapper;
+        this.platformCredentialService = platformCredentialService;
     }
 
     /**
-     * 邀请新用户加入平台。
-     * <p>根据请求参数创建用户记录，默认角色为 MEMBER，状态为 ACTIVE。</p>
+     * 新增用户，并自动分配平台凭证（一人一证）。
      *
-     * @param request 邀请用户请求参数
-     * @return 新创建的用户实体
+     * <p>在同一事务中完成：
+     * <ol>
+     *   <li>插入用户记录</li>
+     *   <li>生成并插入平台凭证（个人月度 Token 配额默认 200K）</li>
+     * </ol>
+     * 返回的 {@code credentialPlainKey} 为凭证明文密钥，<b>仅此一次</b>，请妥善告知用户保存。</p>
+     *
+     * @param request 新增用户请求参数
+     * @return 包含用户信息和凭证明文密钥的响应
      */
-    public User invite(InviteUserRequest request) {
+    @Transactional
+    public CreateUserResponse create(CreateUserRequest request) {
+        // 1. 创建用户
         User user = new User();
         user.setEmail(request.email());
         user.setUsername(request.username());
@@ -46,7 +55,20 @@ public class UserService {
         user.setPlatformRole(request.platformRole() != null ? request.platformRole() : "MEMBER");
         user.setStatus("ACTIVE");
         userMapper.insert(user);
-        return user;
+
+        // 2. 自动分配平台凭证（一人一证，跨项目共用）
+        String credentialName = (user.getFullName() != null ? user.getFullName() : user.getUsername()) + " 的凭证";
+        CreatePlatformCredentialRequest credReq = new CreatePlatformCredentialRequest(
+                user.getId(),
+                "PERSONAL",
+                credentialName,
+                null,   // monthlyTokenQuota: 使用默认值 200K
+                null,   // alertThresholdPct: 使用默认值 80
+                null    // overQuotaStrategy: 使用默认值 BLOCK
+        );
+        CreatePlatformCredentialResponse credResp = platformCredentialService.create(credReq);
+
+        return CreateUserResponse.of(user, credResp.plainKey(), credResp.credential());
     }
 
     /**

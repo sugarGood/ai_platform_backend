@@ -7,10 +7,24 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import java.time.LocalDateTime;
 
 /**
- * 成员 AI 配额实体，对应 member_ai_quotas 表。
+ * 成员 AI 配额实体，对应 {@code member_ai_quotas} 表。
  *
- * <p>管理平台成员在项目或个人维度的 AI 使用配额，支持 Token、费用和请求次数等多种配额类型，
- * 并可按日、周、月周期自动重置。</p>
+ * <h3>与双池模型的关系</h3>
+ * <p>本表是双池配额的<b>补充统计层</b>，不是主配额控制层。双池配额的实时控制字段存储在：
+ * <ul>
+ *   <li>个人池（月度 Token 上限 + 已用量）：{@code platform_credentials} 表的
+ *       {@code monthly_token_quota} / {@code used_tokens_this_month}</li>
+ *   <li>项目池（月度 Token 池 + 已用量）：{@code projects} 表的
+ *       {@code monthly_token_quota} / {@code used_tokens_this_month}</li>
+ * </ul>
+ * 本表用于记录更细粒度的配额信息，例如：
+ * <ul>
+ *   <li>某成员在某项目内的费用配额（COST_QUOTA）</li>
+ *   <li>某成员在某项目内的请求次数配额（REQUEST_QUOTA）</li>
+ *   <li>按日/周周期重置的短周期配额（非月度场景）</li>
+ * </ul>
+ * 网关层双池 Token 扣减以 {@code platform_credentials} 和 {@code projects} 为准；
+ * 本表数据由后台统计任务异步汇总，用于报表展示和精细化告警。</p>
  */
 @TableName("member_ai_quotas")
 public class MemberAiQuota {

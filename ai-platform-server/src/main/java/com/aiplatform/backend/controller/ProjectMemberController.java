@@ -5,6 +5,7 @@ import com.aiplatform.backend.dto.ProjectMemberResponse;
 import com.aiplatform.backend.service.ProjectMemberService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 /**
- * 项目成员管理控制器，提供项目成员的添加和列表查询接口。
+ * 项目成员管理控制器，提供项目成员的添加、移除和列表查询接口。
  *
  * <p>API 基路径：{@code /api/projects/{projectId}/members}</p>
  */
@@ -24,14 +25,8 @@ import java.util.List;
 @RequestMapping("/api/projects/{projectId}/members")
 public class ProjectMemberController {
 
-    /** 项目成员业务服务 */
     private final ProjectMemberService projectMemberService;
 
-    /**
-     * 构造函数，注入项目成员业务服务。
-     *
-     * @param projectMemberService 项目成员业务服务
-     */
     public ProjectMemberController(ProjectMemberService projectMemberService) {
         this.projectMemberService = projectMemberService;
     }
@@ -61,5 +56,17 @@ public class ProjectMemberController {
         return projectMemberService.listByProjectId(projectId).stream()
                 .map(ProjectMemberResponse::from)
                 .toList();
+    }
+
+    /**
+     * 从项目中移除成员。
+     *
+     * @param projectId 项目 ID（路径参数）
+     * @param memberId  成员记录 ID（路径参数）
+     */
+    @DeleteMapping("/{memberId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void remove(@PathVariable Long projectId, @PathVariable Long memberId) {
+        projectMemberService.remove(projectId, memberId);
     }
 }

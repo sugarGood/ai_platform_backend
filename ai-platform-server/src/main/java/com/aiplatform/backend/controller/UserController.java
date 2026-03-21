@@ -1,6 +1,7 @@
 package com.aiplatform.backend.controller;
 
-import com.aiplatform.backend.dto.InviteUserRequest;
+import com.aiplatform.backend.dto.CreateUserRequest;
+import com.aiplatform.backend.dto.CreateUserResponse;
 import com.aiplatform.backend.dto.UpdateUserRequest;
 import com.aiplatform.backend.dto.UserResponse;
 import com.aiplatform.backend.service.UserService;
@@ -19,7 +20,7 @@ import java.util.List;
 
 /**
  * 用户管理控制器。
- * <p>提供 {@code /api/users} 下的 REST 端点，支持用户邀请、查询和更新操作。</p>
+ * <p>提供 {@code /api/users} 下的 REST 端点，支持用户新增、查询和更新操作。</p>
  */
 @RestController
 @RequestMapping("/api/users")
@@ -27,25 +28,22 @@ public class UserController {
 
     private final UserService userService;
 
-    /**
-     * 构造方法，注入用户业务服务。
-     *
-     * @param userService 用户服务
-     */
     public UserController(UserService userService) {
         this.userService = userService;
     }
 
     /**
-     * 邀请用户加入平台。
+     * 新增用户，同时自动分配平台凭证（一人一证）。
      *
-     * @param request 邀请用户请求参数
-     * @return 新创建的用户响应
+     * <p>响应中的 {@code credentialPlainKey} 为凭证明文密钥，<b>仅此一次</b>，请妥善告知用户保存。</p>
+     *
+     * @param request 新增用户请求参数
+     * @return 包含用户信息和凭证明文密钥的响应
      */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public UserResponse invite(@Valid @RequestBody InviteUserRequest request) {
-        return UserResponse.from(userService.invite(request));
+    public CreateUserResponse create(@Valid @RequestBody CreateUserRequest request) {
+        return userService.create(request);
     }
 
     /**
