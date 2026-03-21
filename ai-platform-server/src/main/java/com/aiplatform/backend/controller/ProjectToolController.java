@@ -1,0 +1,59 @@
+package com.aiplatform.backend.controller;
+
+import com.aiplatform.backend.entity.ProjectTool;
+import com.aiplatform.backend.service.ToolDefinitionService;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+
+/**
+ * 项目工具管理控制器。
+ *
+ * <p>管理项目级工具的启用和查询，路径前缀为 {@code /api/projects/{projectId}/tools}。</p>
+ */
+@RestController
+@RequestMapping("/api/projects/{projectId}/tools")
+public class ProjectToolController {
+
+    private final ToolDefinitionService toolDefinitionService;
+
+    /**
+     * 构造函数，注入工具定义业务服务。
+     *
+     * @param toolDefinitionService 工具定义业务服务
+     */
+    public ProjectToolController(ToolDefinitionService toolDefinitionService) {
+        this.toolDefinitionService = toolDefinitionService;
+    }
+
+    /**
+     * 为项目启用工具。
+     *
+     * @param projectId 项目ID
+     * @param toolId    工具定义ID
+     * @return 项目工具关联实体
+     */
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public ProjectTool enable(@PathVariable Long projectId, @RequestParam Long toolId) {
+        return toolDefinitionService.enableForProject(projectId, toolId);
+    }
+
+    /**
+     * 查询项目已启用的工具列表。
+     *
+     * @param projectId 项目ID
+     * @return 项目工具关联列表
+     */
+    @GetMapping
+    public List<ProjectTool> list(@PathVariable Long projectId) {
+        return toolDefinitionService.listProjectTools(projectId);
+    }
+}

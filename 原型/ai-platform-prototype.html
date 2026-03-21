@@ -1,0 +1,2139 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI 中台 - 企业 AI 管理平台</title>
+  <link rel="stylesheet" href="assets/css/prototype.css">
+</head>
+<body>
+<!-- Global Sidebar -->
+<div class="sidebar" id="sidebar-global">
+  <div class="sidebar-logo">
+    <div class="logo-icon">AI</div>
+    <div>
+      <div class="logo-text">AI 中台</div>
+      <div class="logo-sub">Enterprise AI Platform</div>
+    </div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">我的工作台</div>
+    <div class="nav-item active" onclick="showPage('dashboard')">
+      <span class="icon">📊</span><span class="label">工作台</span>
+    </div>
+    <div class="nav-item" onclick="showPage('my-credential')">
+      <span class="icon">🪪</span><span class="label">我的凭证</span>
+    </div>
+    <div class="nav-item" onclick="showPage('my-ability')">
+      <span class="icon">🧩</span><span class="label">我的能力</span>
+    </div>
+    <div class="nav-item" onclick="showPage('my-usage')">
+      <span class="icon">📈</span><span class="label">我的用量</span>
+    </div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">项目</div>
+    <div class="nav-item" onclick="showPage('projects')">
+      <span class="icon">📁</span><span class="label">项目空间</span>
+    </div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">平台 AI 能力</div>
+    <div class="nav-item" onclick="showPage('knowledge')">
+      <span class="icon">📚</span><span class="label">全局知识库</span>
+    </div>
+    <div class="nav-item" onclick="showPage('skills')">
+      <span class="icon">⚡</span><span class="label">全局技能库</span>
+    </div>
+    <div class="nav-item" onclick="showPage('global-tools')">
+      <span class="icon">🔩</span><span class="label">全局工具集</span>
+    </div>
+    <div class="nav-item" onclick="showPage('integrations')">
+      <span class="icon">🔌</span><span class="label">集成市场</span>
+    </div>
+    <div class="nav-item" onclick="showPage('atomic')">
+      <span class="icon">⚛️</span><span class="label">原子能力中心</span>
+    </div>
+    <div class="nav-item" onclick="showPage('templates')">
+      <span class="icon">🗂️</span><span class="label">代码模板库</span>
+    </div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">平台管理</div>
+    <div class="nav-item" onclick="showPage('staff')">
+      <span class="icon">👥</span><span class="label">员工管理</span>
+    </div>
+    <div class="nav-item" onclick="showPage('keys')">
+      <span class="icon">🔑</span><span class="label">凭证管理</span>
+    </div>
+    <div class="nav-item" onclick="showPage('efficiency')">
+      <span class="icon">📊</span><span class="label">用量看板</span>
+    </div>
+    <div class="nav-item" onclick="showPage('permissions')">
+      <span class="icon">🔐</span><span class="label">权限管理</span>
+    </div>
+    <div class="nav-item" onclick="showPage('audit')">
+      <span class="icon">🛡️</span><span class="label">审计安全</span>
+    </div>
+    <div class="nav-item" onclick="showPage('settings')">
+      <span class="icon">⚙️</span><span class="label">设置</span>
+    </div>
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="avatar">张</div>
+    <div class="user-info">
+      <div class="name">张三</div>
+      <div class="role">超级管理员</div>
+    </div>
+  </div>
+</div>
+
+<!-- Project Sidebar (切换：进入项目后显示) -->
+<div class="sidebar" id="sidebar-project" style="display:none">
+  <div class="sidebar-back" onclick="exitProject()">
+    <span style="font-size:16px">←</span>
+    <span>返回项目列表</span>
+  </div>
+
+  <div class="proj-info-block">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+      <span style="font-size:20px" id="proj-icon">🛒</span>
+      <span class="proj-info-name" id="proj-name">商城系统</span>
+    </div>
+    <div class="proj-info-sprint">
+      <span class="proj-status-dot"></span>
+      <span id="proj-status">5 个能力已上线 · 运行正常</span>
+    </div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">项目概览</div>
+    <div class="nav-item" id="pnav-overview" onclick="showProjectPage('overview')">
+      <span class="icon">📊</span><span class="label">概览</span>
+    </div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">AI 工作区</div>
+    <div class="nav-item" id="pnav-workspace" onclick="showProjectPage('workspace')">
+      <span class="icon">🚀</span><span class="label">接入与凭证</span>
+    </div>
+    <div class="nav-item" id="pnav-ai-cap" onclick="showProjectPage('ai-cap')">
+      <span class="icon">🤖</span><span class="label">AI 能力配置</span>
+    </div>
+    <div class="nav-item" id="pnav-quota" onclick="showProjectPage('keymanagement')">
+      <span class="icon">📊</span><span class="label">配额管理</span>
+    </div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">工程</div>
+    <div class="nav-item" id="pnav-services" onclick="showProjectPage('services')">
+      <span class="icon">⚙️</span><span class="label">代码服务</span>
+      <span style="margin-left:auto;color:var(--sidebar-text);font-size:11px">3</span>
+    </div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">运维</div>
+    <div class="nav-item" id="pnav-incidents" onclick="showProjectPage('incidents')">
+      <span class="icon">🚨</span><span class="label">事故与告警</span>
+      <span style="margin-left:auto;color:var(--danger);font-size:11px;font-weight:600">1</span>
+    </div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">配置</div>
+    <div class="nav-item" id="pnav-members" onclick="showProjectPage('members')">
+      <span class="icon">👥</span><span class="label">成员权限</span>
+    </div>
+    <div class="nav-item" id="pnav-psettings" onclick="showProjectPage('psettings')">
+      <span class="icon">⚙️</span><span class="label">项目设置</span>
+    </div>
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="avatar">张</div>
+    <div class="user-info">
+      <div class="name">张三</div>
+      <div class="role">项目负责人</div>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title" id="topbar-title">工作台</div>
+    <div class="topbar-actions">
+      <button class="btn" onclick="openModal('notifications')">🔔 通知 <span style="background:var(--danger);color:white;border-radius:10px;padding:0 6px;font-size:11px;margin-left:2px">6</span></button>
+      <button class="btn" onclick="showPage('my-credential')">🪪 我的凭证</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <div id="page-root"></div>
+  </div>
+</div>
+
+<div class="modal" id="modal-createSkill">
+  <div class="modal-box" style="width:600px">
+    <div class="modal-title">创建全局技能</div>
+
+    <div class="modal-section-label">基础信息</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="form-group">
+        <label class="form-label">技能名称</label>
+        <input placeholder="例：代码审查">
+      </div>
+      <div class="form-group">
+        <label class="form-label">触发命令</label>
+        <input placeholder="例：/code-review">
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="form-group">
+        <label class="form-label">分类</label>
+        <select><option>工程</option><option>文档</option><option>测试</option><option>安全</option><option>产品</option><option>数据</option></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">范围</label>
+        <select><option>企业全局</option><option>项目级</option></select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">技能描述（AI 理解用途）</label>
+      <input placeholder="对提交的代码进行全面审查，包含规范、安全、性能三个维度">
+    </div>
+
+    <div class="modal-section-label">Prompt 模板</div>
+    <div class="form-group">
+      <label class="form-label">System Prompt（支持变量语法 {{variable}}）</label>
+      <textarea rows="5" placeholder="你是一位资深工程师，负责对代码进行专业审查。&#10;请从以下三个维度给出具体意见：&#10;1. 编码规范：是否符合{{company_coding_standard}}&#10;2. 安全风险：是否存在 OWASP Top 10 相关漏洞&#10;3. 性能问题：是否有明显的性能瓶颈"></textarea>
+    </div>
+
+    <div class="modal-section-label">关联配置</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="form-group">
+        <label class="form-label">关联知识库</label>
+        <div style="display:flex;flex-direction:column;gap:6px;margin-top:4px">
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px"><input type="checkbox" checked style="width:auto"> 公司代码规范</label>
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px"><input type="checkbox" checked style="width:auto"> 安全开发手册</label>
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px"><input type="checkbox" style="width:auto"> 微服务架构指南</label>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">绑定工具</label>
+        <div style="display:flex;flex-direction:column;gap:6px;margin-top:4px">
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px"><input type="checkbox" checked style="width:auto"> search_knowledge</label>
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px"><input type="checkbox" style="width:auto"> post_code_comment</label>
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px"><input type="checkbox" style="width:auto"> create_jira</label>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">
+      <button class="btn" onclick="closeModal('createSkill')">取消</button>
+      <button class="btn" onclick="closeModal('createSkill')">💾 保存草稿</button>
+      <button class="btn btn-primary" onclick="closeModal('createSkill')">▶ 测试运行</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: New Project -->
+<div class="modal" id="modal-newProject">
+  <div class="modal-box" style="width:680px">
+    <div class="modal-title">新建项目</div>
+    <div class="modal-desc" style="margin-bottom:14px">先把项目建起来并拉上成员，代码仓库、研发底座和详细 AI 配置在进入项目后继续补充。</div>
+
+    <div class="modal-section-label">基础信息</div>
+    <div class="form-group">
+      <label class="form-label">项目名称</label>
+      <input placeholder="例如：支付网关 2.0 / 智能客服工作台">
+    </div>
+    <div class="form-group">
+      <label class="form-label">项目描述</label>
+      <textarea rows="3" placeholder="一句话描述项目目标、业务范围或交付内容（选填）"></textarea>
+    </div>
+    <div class="create-grid-2">
+      <div class="form-group">
+        <label class="form-label">所属团队</label>
+        <select><option>业务研发部</option><option>平台研发部</option><option>产品创新部</option><option>数据智能部</option></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">项目负责人</label>
+        <select><option selected>张三</option><option>李四</option><option>王五</option><option>陈六</option></select>
+      </div>
+    </div>
+
+    <div class="modal-section-label">初始成员</div>
+    <div class="form-group">
+      <label class="form-label">成员搜索</label>
+      <div class="picker-wrap" data-picker="members">
+        <input id="create-members-input" placeholder="搜索成员姓名 / 邮箱 / 工号">
+        <div class="picker-panel" id="create-members-options"></div>
+        <div class="picker-chips" id="create-members-chips"></div>
+      </div>
+    </div>
+
+    <div class="modal-section-label">AI 能力初始化</div>
+    <div class="create-grid-2">
+      <div class="form-group">
+        <label class="form-label">知识库</label>
+        <div class="picker-wrap" data-picker="knowledge">
+          <input id="create-knowledge-input" placeholder="搜索知识库名称">
+          <div class="picker-panel" id="create-knowledge-options"></div>
+          <div class="picker-chips" id="create-knowledge-chips"></div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Skills</label>
+        <div class="picker-wrap" data-picker="skills">
+          <input id="create-skills-input" placeholder="搜索 Skill 名称">
+          <div class="picker-panel" id="create-skills-options"></div>
+          <div class="picker-chips" id="create-skills-chips"></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-section-label">Token 配额</div>
+    <div class="create-grid-2">
+      <div class="form-group">
+        <label class="form-label">项目类型</label>
+        <select id="create-proj-type" onchange="
+          var v=this.value;
+          var el=document.getElementById('create-token-pool');
+          if(v==='product')el.value='500K';
+          else if(v==='internal')el.value='300K';
+          else if(v==='platform')el.value='800K';
+          else if(v==='data')el.value='400K';
+        ">
+          <option value="product">对外产品</option>
+          <option value="internal">内部系统</option>
+          <option value="platform">技术中台</option>
+          <option value="data">数据产品</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">项目 Token 池（月）</label>
+        <div style="display:flex;align-items:center;gap:8px">
+          <input id="create-token-pool" value="500K" style="flex:1">
+          <span style="font-size:12px;color:var(--sub);white-space:nowrap">Token/月</span>
+        </div>
+      </div>
+    </div>
+    <div style="background:var(--bg);border-radius:6px;padding:8px 12px;font-size:12px;color:var(--sub);margin-bottom:4px">
+      💡 项目 Token 池由全体成员共享。成员同时受个人上限约束（按角色默认：开发者 200K / 测试 100K / PM 100K），<a href="javascript:void(0)" onclick="closeModal('newProject');showPage('keys');setTimeout(function(){switchTab('credTabs','cred-quota')},200)" style="color:var(--primary)">在配额策略中修改默认值</a>。
+    </div>
+
+    <div class="helper-text">代码仓库、服务拆分、详细 AI 配置在进入项目后继续补充。</div>
+
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
+      <button class="btn" onclick="closeModal('newProject')">取消</button>
+      <button class="btn btn-primary" onclick="closeModal('newProject'); showToast('项目已创建 · Token 池 500K/月 · 凭证已为初始成员扩展访问权限', 'success'); enterProject('🧩', '新项目', '0 个能力已配置 · 待接入')">创建项目</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: 邀请员工 -->
+<div class="modal" id="modal-inviteStaff">
+  <div class="modal-box" style="width:520px">
+    <div class="modal-title">邀请员工加入平台</div>
+    <div class="form-group">
+      <label>邀请方式</label>
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <button class="btn btn-primary" style="flex:1;font-size:12px">📧 邮箱邀请</button>
+        <button class="btn" style="flex:1;font-size:12px">📋 批量导入（CSV）</button>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>员工邮箱</label>
+      <input placeholder="输入邮箱，多人用逗号分隔">
+    </div>
+    <div class="form-group">
+      <label>部门</label>
+      <select>
+        <option>工程部</option>
+        <option>产品部</option>
+        <option>测试部</option>
+        <option>数据部</option>
+        <option>其他</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>平台角色</label>
+      <select>
+        <option selected>👤 普通成员 — 通过项目角色获取权限</option>
+        <option>🔧 平台管理员 — 管理 AI 资产和运营</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>初始项目分配（选填）</label>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
+        <label style="font-size:12px;display:flex;align-items:center;gap:4px"><input type="checkbox"> 🛒 商城系统</label>
+        <label style="font-size:12px;display:flex;align-items:center;gap:4px"><input type="checkbox"> 👤 用户中心</label>
+        <label style="font-size:12px;display:flex;align-items:center;gap:4px"><input type="checkbox"> 💳 支付网关</label>
+        <label style="font-size:12px;display:flex;align-items:center;gap:4px"><input type="checkbox"> 📊 数据看板</label>
+      </div>
+      <div style="font-size:11px;color:var(--sub)">选择后员工将以默认角色（Developer）加入项目，可后续调整</div>
+    </div>
+    <div style="background:var(--primary-light);border:1px solid var(--primary);border-radius:8px;padding:10px;margin-bottom:16px;font-size:12px">
+      <strong>📨 邀请流程：</strong>系统将发送激活邮件 → 员工点击链接激活账号 → 自动签发平台凭证 → 按分配的项目生成接入指南
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:8px">
+      <button class="btn" onclick="closeModal('inviteStaff')">取消</button>
+      <button class="btn btn-primary" onclick="closeModal('inviteStaff');showToast('已发送邀请邮件，等待员工激活','success')">发送邀请</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: 编辑员工 -->
+<div class="modal" id="modal-editStaff">
+  <div class="modal-box" style="width:520px">
+    <div class="modal-title">编辑员工信息</div>
+    <div style="display:flex;gap:12px;align-items:center;padding:12px;background:var(--bg);border-radius:8px;margin-bottom:16px">
+      <div class="avatar" style="width:40px;height:40px;font-size:16px;background:var(--primary)">张</div>
+      <div>
+        <div style="font-weight:600">张三</div>
+        <div style="font-size:12px;color:var(--sub)">zhang3@company.com · 工程部</div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>部门</label>
+      <select>
+        <option selected>工程部</option>
+        <option>产品部</option>
+        <option>测试部</option>
+        <option>数据部</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>平台角色</label>
+      <select>
+        <option>👑 超级管理员</option>
+        <option>🔧 平台管理员</option>
+        <option selected>👤 普通成员</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>账号操作</label>
+      <div style="display:flex;gap:8px">
+        <button class="btn" style="flex:1;font-size:12px" onclick="closeModal('editStaff');showToast('已重新签发凭证','success')">🔑 重签凭证</button>
+        <button class="btn" style="flex:1;font-size:12px;color:var(--warning)" onclick="closeModal('editStaff');openModal('suspendStaff')">⏸ 停用账号</button>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px">
+      <button class="btn" onclick="closeModal('editStaff')">取消</button>
+      <button class="btn btn-primary" onclick="closeModal('editStaff');showToast('员工信息已更新','success')">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: 停用账号确认 -->
+<div class="modal" id="modal-suspendStaff">
+  <div class="modal-box" style="width:440px">
+    <div class="modal-title">⚠️ 确认停用账号</div>
+    <div style="text-align:center;padding:16px 0">
+      <div style="font-size:40px;margin-bottom:12px">⏸</div>
+      <div style="font-weight:600;margin-bottom:8px">停用「张三」的平台账号？</div>
+      <div style="font-size:12px;color:var(--sub);line-height:1.6;margin-bottom:16px;text-align:left">
+        停用后将产生以下影响：<br>
+        · 平台凭证立即吊销，无法通过 AI 代理访问<br>
+        · 所有项目权限冻结，不可使用 AI 能力<br>
+        · 账号无法登录平台控制台<br>
+        · 历史数据和操作记录保留<br>
+        · 可随时恢复账号
+      </div>
+    </div>
+    <div style="display:flex;justify-content:center;gap:8px">
+      <button class="btn" onclick="closeModal('suspendStaff')">取消</button>
+      <button class="btn" style="background:var(--warning);color:white" onclick="closeModal('suspendStaff');showToast('账号已停用，凭证已吊销','success')">确认停用</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: 员工详情 -->
+<div class="modal" id="modal-staffDetail">
+  <div class="modal-box" style="width:580px">
+    <div class="modal-title">员工详情</div>
+    <div style="display:flex;gap:16px;margin-bottom:16px">
+      <div class="avatar" style="width:56px;height:56px;font-size:24px;background:#4F6EF7">张</div>
+      <div style="flex:1">
+        <div style="font-weight:700;font-size:16px;margin-bottom:4px">张三</div>
+        <div style="font-size:12px;color:var(--sub);margin-bottom:2px">zhang3@company.com · 工程部</div>
+        <div style="display:flex;gap:6px"><span class="badge badge-red" style="font-size:10px">👑 超级管理员</span><span class="badge badge-green" style="font-size:10px">在职活跃</span></div>
+      </div>
+    </div>
+    <div style="font-size:12px;font-weight:600;margin-bottom:8px">📁 参与的项目</div>
+    <div style="background:var(--bg);border-radius:8px;padding:12px;margin-bottom:16px">
+      <table style="font-size:12px">
+        <thead><tr><th>项目</th><th>项目角色</th><th>加入时间</th><th>本月用量</th></tr></thead>
+        <tbody>
+          <tr><td>🛒 商城系统</td><td><span class="badge badge-blue" style="font-size:10px">Admin</span></td><td>2025-11-01</td><td>68K</td></tr>
+          <tr><td>👤 用户中心</td><td><span class="badge badge-blue" style="font-size:10px">Admin</span></td><td>2025-12-15</td><td>42K</td></tr>
+          <tr><td>💳 支付网关</td><td><span class="badge badge-gray" style="font-size:10px">Developer</span></td><td>2026-01-10</td><td>28K</td></tr>
+          <tr><td>📊 数据看板</td><td><span class="badge badge-gray" style="font-size:10px">PM</span></td><td>2026-02-20</td><td>15K</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="font-size:12px;font-weight:600;margin-bottom:8px">🔑 凭证信息</div>
+    <div style="background:var(--bg);border-radius:8px;padding:12px;margin-bottom:16px;font-size:12px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="color:var(--sub)">凭证状态</span><span class="badge badge-green" style="font-size:10px">有效</span></div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="color:var(--sub)">到期时间</span><span>2026-06-01</span></div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="color:var(--sub)">个人配额</span><span>200K Token/月（已用 153K）</span></div>
+      <div style="display:flex;justify-content:space-between"><span style="color:var(--sub)">最后活跃</span><span>10 分钟前</span></div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:8px">
+      <button class="btn" onclick="closeModal('staffDetail')">关闭</button>
+      <button class="btn" onclick="closeModal('staffDetail');openModal('editStaff')">编辑</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: 编辑权限点 -->
+<div class="modal" id="modal-editPermPoint">
+  <div class="modal-box" style="width:480px">
+    <div class="modal-title">编辑权限点</div>
+    <div class="form-group">
+      <label>权限模块</label>
+      <input value="上游资源" disabled style="background:var(--bg)">
+    </div>
+    <div class="form-group">
+      <label>权限点名称</label>
+      <input value="查看上游 API Key">
+    </div>
+    <div class="form-group">
+      <label>各角色开关</label>
+      <div style="background:var(--bg);border-radius:8px;padding:12px">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
+          <span style="font-size:13px">👑 超级管理员</span>
+          <span class="badge badge-gray" style="font-size:10px">始终开启（不可修改）</span>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
+          <span style="font-size:13px">🔧 平台管理员</span>
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox"> 启用</label>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0">
+          <span style="font-size:13px">👤 普通成员</span>
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox"> 启用</label>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:8px">
+      <button class="btn" onclick="closeModal('editPermPoint')">取消</button>
+      <button class="btn btn-primary" onclick="closeModal('editPermPoint');showToast('权限点已更新','success')">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: 新增权限点 -->
+<div class="modal" id="modal-addPermPoint">
+  <div class="modal-box" style="width:480px">
+    <div class="modal-title">新增权限点</div>
+    <div class="form-group">
+      <label>所属模块</label>
+      <select>
+        <option>上游资源</option>
+        <option>AI 能力资产</option>
+        <option>凭证与配额</option>
+        <option>安全与合规</option>
+        <option>平台配置</option>
+        <option>+ 新建模块</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>权限点名称</label>
+      <input placeholder="例如：管理 Agent 市场">
+    </div>
+    <div class="form-group">
+      <label>权限说明（选填）</label>
+      <input placeholder="描述该权限点控制的操作范围">
+    </div>
+    <div class="form-group">
+      <label>角色开关</label>
+      <div style="background:var(--bg);border-radius:8px;padding:12px">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
+          <span style="font-size:13px">👑 超级管理员</span>
+          <span class="badge badge-gray" style="font-size:10px">默认开启</span>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
+          <span style="font-size:13px">🔧 平台管理员</span>
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox"> 启用</label>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0">
+          <span style="font-size:13px">👤 普通成员</span>
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox"> 启用</label>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:8px">
+      <button class="btn" onclick="closeModal('addPermPoint')">取消</button>
+      <button class="btn btn-primary" onclick="closeModal('addPermPoint');showToast('权限点已添加，矩阵已同步更新','success')">创建</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: 编辑平台角色 -->
+<div class="modal" id="modal-editPlatformRole">
+  <div class="modal-box" style="width:520px">
+    <div class="modal-title">编辑平台角色权限</div>
+    <div class="form-group">
+      <label>角色名称</label>
+      <input value="🔧 平台管理员">
+    </div>
+    <div class="form-group">
+      <label>角色描述</label>
+      <input value="管理 AI 能力资产和运营监控，不可管理上游 Key">
+    </div>
+    <div class="form-group">
+      <label>权限配置</label>
+      <div style="background:var(--bg);border-radius:8px;padding:12px;max-height:280px;overflow-y:auto">
+        <div style="font-size:11px;color:var(--sub);font-weight:600;margin-bottom:6px">上游资源</div>
+        <label style="display:flex;align-items:center;gap:6px;padding:4px 0;font-size:12px;cursor:pointer"><input type="checkbox"> 查看上游 API Key</label>
+        <label style="display:flex;align-items:center;gap:6px;padding:4px 0;font-size:12px;cursor:pointer"><input type="checkbox"> 添加/轮换上游 Key</label>
+        <label style="display:flex;align-items:center;gap:6px;padding:4px 0;font-size:12px;cursor:pointer"><input type="checkbox"> 配置模型路由策略</label>
+        <div style="font-size:11px;color:var(--sub);font-weight:600;margin:8px 0 6px">AI 能力资产</div>
+        <label style="display:flex;align-items:center;gap:6px;padding:4px 0;font-size:12px;cursor:pointer"><input type="checkbox" checked> 管理全局知识库</label>
+        <label style="display:flex;align-items:center;gap:6px;padding:4px 0;font-size:12px;cursor:pointer"><input type="checkbox" checked> 管理全局技能库</label>
+        <label style="display:flex;align-items:center;gap:6px;padding:4px 0;font-size:12px;cursor:pointer"><input type="checkbox" checked> 管理全局工具集/集成市场</label>
+        <div style="font-size:11px;color:var(--sub);font-weight:600;margin:8px 0 6px">凭证与配额</div>
+        <label style="display:flex;align-items:center;gap:6px;padding:4px 0;font-size:12px;cursor:pointer"><input type="checkbox" checked> 查看全员凭证状态</label>
+        <label style="display:flex;align-items:center;gap:6px;padding:4px 0;font-size:12px;cursor:pointer"><input type="checkbox" checked> 吊销/续签他人凭证</label>
+        <label style="display:flex;align-items:center;gap:6px;padding:4px 0;font-size:12px;cursor:pointer"><input type="checkbox"> 修改全局配额策略</label>
+        <div style="font-size:11px;color:var(--sub);font-weight:600;margin:8px 0 6px">安全与合规</div>
+        <label style="display:flex;align-items:center;gap:6px;padding:4px 0;font-size:12px;cursor:pointer"><input type="checkbox" checked> 查看审计日志</label>
+        <label style="display:flex;align-items:center;gap:6px;padding:4px 0;font-size:12px;cursor:pointer"><input type="checkbox"> 配置告警规则</label>
+        <label style="display:flex;align-items:center;gap:6px;padding:4px 0;font-size:12px;cursor:pointer"><input type="checkbox"> 配置安全策略</label>
+        <div style="font-size:11px;color:var(--sub);font-weight:600;margin:8px 0 6px">平台配置</div>
+        <label style="display:flex;align-items:center;gap:6px;padding:4px 0;font-size:12px;cursor:pointer"><input type="checkbox"> 管理平台角色与权限</label>
+        <label style="display:flex;align-items:center;gap:6px;padding:4px 0;font-size:12px;cursor:pointer"><input type="checkbox" checked> 管理项目角色模板</label>
+        <label style="display:flex;align-items:center;gap:6px;padding:4px 0;font-size:12px;cursor:pointer"><input type="checkbox" checked> 管理全体员工</label>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:8px">
+      <button class="btn" onclick="closeModal('editPlatformRole')">取消</button>
+      <button class="btn btn-primary" onclick="closeModal('editPlatformRole');showToast('平台角色权限已更新','success')">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: 编辑项目角色模板 -->
+<div class="modal" id="modal-editProjectRole">
+  <div class="modal-box" style="width:520px">
+    <div class="modal-title">编辑项目角色模板</div>
+    <div class="form-group">
+      <label>角色</label>
+      <input value="💻 Developer（开发者）">
+    </div>
+    <div class="form-group">
+      <label>各模块权限等级</label>
+      <div style="background:var(--bg);border-radius:8px;padding:12px">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)">
+          <span style="font-size:12px">📚 知识库</span>
+          <select style="width:auto;font-size:11px;padding:2px 6px"><option>完全控制</option><option selected>上传/查看</option><option>仅查看</option><option>无</option></select>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)">
+          <span style="font-size:12px">⚡ 技能库</span>
+          <select style="width:auto;font-size:11px;padding:2px 6px"><option>创建/审核/发布</option><option selected>创建/调用</option><option>仅调用</option><option>无</option></select>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)">
+          <span style="font-size:12px">🔩 工具集</span>
+          <select style="width:auto;font-size:11px;padding:2px 6px"><option>注册/配置/禁用</option><option>调用</option><option selected>调用</option><option>无</option></select>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)">
+          <span style="font-size:12px">🔌 集成</span>
+          <select style="width:auto;font-size:11px;padding:2px 6px"><option>接入/配置</option><option selected>使用</option><option>无</option></select>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)">
+          <span style="font-size:12px">👥 成员管理</span>
+          <select style="width:auto;font-size:11px;padding:2px 6px"><option>添加/移除</option><option selected>无</option></select>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)">
+          <span style="font-size:12px">📊 配额管理</span>
+          <select style="width:auto;font-size:11px;padding:2px 6px"><option>调整/加额</option><option selected>查看</option><option>无</option></select>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0">
+          <span style="font-size:12px">⚙️ 项目设置</span>
+          <select style="width:auto;font-size:11px;padding:2px 6px"><option>全部</option><option selected>无</option></select>
+        </div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>默认 Token 配额</label>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input type="number" value="200000" style="flex:1">
+        <span style="font-size:12px;color:var(--sub)">Token/月</span>
+      </div>
+    </div>
+    <div style="background:#FFF6ED;border:1px solid #FEC84B;border-radius:8px;padding:10px;margin-bottom:16px;font-size:12px;color:var(--sub)">
+      ⚠️ 修改后仅影响新建项目，已有项目需在项目内单独调整
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:8px">
+      <button class="btn" onclick="closeModal('editProjectRole')">取消</button>
+      <button class="btn btn-primary" onclick="closeModal('editProjectRole');showToast('项目角色模板已更新，权限矩阵已同步','success')">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: 修改成员角色 -->
+<div class="modal" id="modal-changeRole">
+  <div class="modal-box" style="width:500px">
+    <div class="modal-title">修改成员角色</div>
+    <div style="display:flex;gap:12px;align-items:center;padding:12px;background:var(--bg);border-radius:8px;margin-bottom:16px">
+      <div class="avatar" style="width:40px;height:40px;font-size:16px;background:var(--primary)">赵</div>
+      <div>
+        <div style="font-weight:600">赵六</div>
+        <div style="font-size:12px;color:var(--sub)">zhao6@company.com · 当前角色：Developer</div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>项目</label>
+      <input value="🛒 商城系统" disabled style="background:var(--bg)">
+    </div>
+    <div class="form-group">
+      <label>新角色</label>
+      <select>
+        <option>🛡️ Admin — 项目管理员（完全控制）</option>
+        <option selected>💻 Developer — 开发者（创建+调用）</option>
+        <option>🧪 QA — 测试（调用为主）</option>
+        <option>📋 PM — 产品经理（上传+创建）</option>
+        <option>👁️ Guest — 访客（受限查看）</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>变更原因（选填）</label>
+      <input placeholder="例如：项目交接、角色调整...">
+    </div>
+    <div style="background:#FFF6ED;border:1px solid #FEC84B;border-radius:8px;padding:12px;margin-bottom:16px;font-size:12px">
+      <div style="font-weight:600;margin-bottom:4px">⚠️ 权限变更影响</div>
+      <div style="color:var(--sub);line-height:1.6">
+        · 该成员的知识库权限将从「上传/查看」变为「上传/查看」（不变）<br>
+        · 技能库权限将保持「创建/调用」<br>
+        · 变更会即时生效，记录至审计日志<br>
+        · 成员将收到角色变更通知
+      </div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:8px">
+      <button class="btn" onclick="closeModal('changeRole')">取消</button>
+      <button class="btn btn-primary" onclick="closeModal('changeRole');showToast('已将赵六的角色变更为 Developer','success')">确认变更</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: 权限不足提示 -->
+<div class="modal" id="modal-permDenied">
+  <div class="modal-box" style="width:420px">
+    <div class="modal-title">⛔ 权限不足</div>
+    <div style="text-align:center;padding:20px 0">
+      <div style="font-size:48px;margin-bottom:12px">🔒</div>
+      <div style="font-size:14px;font-weight:600;margin-bottom:8px">您没有执行此操作的权限</div>
+      <div style="font-size:12px;color:var(--sub);line-height:1.6;margin-bottom:16px">
+        此操作需要 <strong>Admin</strong> 角色权限。<br>
+        您当前在该项目中的角色为 <strong>Developer</strong>。
+      </div>
+      <div style="background:var(--bg);border-radius:8px;padding:12px;font-size:12px;text-align:left;margin-bottom:16px">
+        <div style="font-weight:600;margin-bottom:6px">如需该权限，您可以：</div>
+        <div style="color:var(--sub);line-height:1.8">
+          1. 联系项目管理员（张三）申请角色升级<br>
+          2. 联系平台管理员申请临时权限<br>
+          3. 提交工单申请权限变更
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:center;gap:8px">
+      <button class="btn" onclick="closeModal('permDenied')">知道了</button>
+      <button class="btn btn-primary" onclick="closeModal('permDenied');showToast('已发送权限申请','success')">申请权限</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: 批量角色变更 -->
+<div class="modal" id="modal-batchRole">
+  <div class="modal-box" style="width:540px">
+    <div class="modal-title">批量角色变更</div>
+    <div style="font-size:12px;color:var(--sub);margin-bottom:16px">选中的成员将统一调整为目标角色，变更即时生效。</div>
+    <div style="background:var(--bg);border-radius:8px;padding:12px;margin-bottom:16px">
+      <div style="font-size:12px;font-weight:600;margin-bottom:8px">已选成员（3 人）</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <span class="badge badge-gray">赵六 (Developer)</span>
+        <span class="badge badge-gray">钱七 (Guest)</span>
+        <span class="badge badge-gray">孙九 (QA)</span>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>目标角色</label>
+      <select>
+        <option>💻 Developer — 开发者</option>
+        <option>🧪 QA — 测试</option>
+        <option>📋 PM — 产品经理</option>
+        <option>👁️ Guest — 访客</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>变更原因</label>
+      <input placeholder="例如：新成员加入，能力范围调整">
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:8px">
+      <button class="btn" onclick="closeModal('batchRole')">取消</button>
+      <button class="btn btn-primary" onclick="closeModal('batchRole');showToast('已批量更新 3 名成员的角色','success')">确认批量变更</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Action Preview -->
+<div class="modal" id="modal-actionPreview">
+  <div class="modal-box" style="width:520px">
+    <div class="modal-title" id="actionPreviewTitle">交互预览</div>
+    <div class="modal-desc" id="actionPreviewDesc">这里展示原型态的详情说明与下一步动作。</div>
+    <div class="modal-list" id="actionPreviewList"></div>
+    <div style="display:flex;justify-content:flex-end;margin-top:20px">
+      <button class="btn btn-primary" onclick="closeModal('actionPreview')">我知道了</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: 模板详情 -->
+<div class="modal" id="modal-templateDetail">
+  <div class="modal-box" style="width:640px">
+    <div class="modal-title" style="display:flex;align-items:center;gap:10px">
+      <span style="font-size:28px">🍃</span>
+      Spring Boot 微服务模板
+      <span class="badge badge-blue" style="font-size:10px">官方</span>
+      <span class="badge badge-green" style="font-size:10px">v2.4</span>
+    </div>
+    <div style="font-size:12px;color:var(--sub);margin-bottom:16px">含 SSO 对接、统一异常处理、日志规范、Swagger 文档、Docker 容器化、CI/CD Pipeline</div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+      <div>
+        <div style="font-size:12px;font-weight:600;margin-bottom:8px">📦 模板包含组件</div>
+        <div style="background:var(--bg);border-radius:8px;padding:12px;font-size:12px;line-height:1.8">
+          ✅ Spring Boot 3.2 + JDK 21 基础框架<br>
+          ✅ SSO / OAuth2 统一认证对接<br>
+          ✅ 统一异常处理 + 全局响应封装<br>
+          ✅ SLF4J + Logback 日志规范<br>
+          ✅ Swagger / OpenAPI 3 文档<br>
+          ✅ MyBatis-Plus + 分页插件<br>
+          ✅ Redis 缓存 + 分布式锁<br>
+          ✅ Docker + docker-compose 配置
+        </div>
+      </div>
+      <div>
+        <div style="font-size:12px;font-weight:600;margin-bottom:8px">🔧 内置工程配置</div>
+        <div style="background:var(--bg);border-radius:8px;padding:12px;font-size:12px;line-height:1.8">
+          ✅ CI Pipeline（编译 → 测试 → 扫描 → 构建）<br>
+          ✅ CD Pipeline（DEV 自动 / PRE 手动 / PROD 审批）<br>
+          ✅ Checkstyle + SpotBugs 代码规范<br>
+          ✅ JUnit 5 + Mockito 单测框架<br>
+          ✅ JaCoCo 覆盖率 ≥ 80% 门禁<br>
+          ✅ SonarQube 质量门禁<br>
+          ✅ Dockerfile + K8s 部署模板<br>
+          ✅ Prometheus 监控埋点
+        </div>
+      </div>
+    </div>
+
+    <div style="font-size:12px;font-weight:600;margin-bottom:8px">📁 目录结构预览</div>
+    <div style="background:#1a1a2e;color:#e0e0e0;border-radius:8px;padding:12px;font-family:monospace;font-size:11px;line-height:1.7;margin-bottom:16px;max-height:180px;overflow-y:auto">
+      <span style="color:#4FC1FF">your-service/</span><br>
+      ├── src/main/java/com/company/<br>
+      │   ├── config/          <span style="color:#6A9955">// SSO、Redis、Swagger 配置</span><br>
+      │   ├── controller/      <span style="color:#6A9955">// REST 控制器</span><br>
+      │   ├── service/         <span style="color:#6A9955">// 业务逻辑层</span><br>
+      │   ├── repository/      <span style="color:#6A9955">// 数据访问层</span><br>
+      │   ├── model/           <span style="color:#6A9955">// 实体 + DTO</span><br>
+      │   └── common/          <span style="color:#6A9955">// 异常处理、工具类</span><br>
+      ├── src/test/             <span style="color:#6A9955">// 单测 + 集成测试</span><br>
+      ├── Dockerfile<br>
+      ├── docker-compose.yml<br>
+      ├── Jenkinsfile           <span style="color:#6A9955">// CI/CD Pipeline</span><br>
+      └── pom.xml
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;font-size:12px">
+      <div style="background:var(--bg);border-radius:6px;padding:8px;text-align:center"><div style="color:var(--sub)">维护者</div><div style="font-weight:600">平台团队</div></div>
+      <div style="background:var(--bg);border-radius:6px;padding:8px;text-align:center"><div style="color:var(--sub)">累计使用</div><div style="font-weight:600">42 次</div></div>
+      <div style="background:var(--bg);border-radius:6px;padding:8px;text-align:center"><div style="color:var(--sub)">最近更新</div><div style="font-weight:600">2026-03-10</div></div>
+      <div style="background:var(--bg);border-radius:6px;padding:8px;text-align:center"><div style="color:var(--sub)">版本数</div><div style="font-weight:600">6 个</div></div>
+    </div>
+
+    <div style="font-size:12px;font-weight:600;margin-bottom:6px">📋 版本记录</div>
+    <div style="background:var(--bg);border-radius:8px;padding:10px;margin-bottom:16px;font-size:11px;color:var(--sub);line-height:1.8;max-height:100px;overflow-y:auto">
+      <strong>v2.4</strong> (2026-03-10) — 升级 Spring Boot 3.2，新增 GraalVM Native 支持<br>
+      <strong>v2.3</strong> (2026-02-15) — 新增 Redis 分布式锁组件，优化启动速度<br>
+      <strong>v2.2</strong> (2026-01-20) — 新增 SonarQube 质量门禁，升级 JaCoCo<br>
+      <strong>v2.1</strong> (2025-12-05) — 新增 K8s 部署模板，修复 Docker 构建问题
+    </div>
+
+    <div style="display:flex;justify-content:flex-end;gap:8px">
+      <button class="btn" onclick="closeModal('templateDetail')">关闭</button>
+      <button class="btn" onclick="closeModal('templateDetail');openModal('editTemplate')">✏️ 编辑模板</button>
+      <button class="btn btn-primary" onclick="closeModal('templateDetail');openModal('addService')">🚀 使用此模板创建服务</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: 上传自定义模板 -->
+<div class="modal" id="modal-uploadTemplate">
+  <div class="modal-box" style="width:540px">
+    <div class="modal-title">上传自定义模板</div>
+    <div style="font-size:12px;color:var(--sub);margin-bottom:16px">将已有项目骨架注册为公司标准模板，供其他项目复用</div>
+
+    <div class="form-group">
+      <label>模板来源</label>
+      <div style="display:flex;gap:8px;margin-bottom:4px">
+        <button class="btn btn-primary" id="btn-tpl-git" style="flex:1;font-size:12px" onclick="document.getElementById('tpl-src-git').style.display='';document.getElementById('tpl-src-zip').style.display='none';this.classList.add('btn-primary');document.getElementById('btn-tpl-zip').classList.remove('btn-primary')">🔗 从 Git 仓库导入</button>
+        <button class="btn" id="btn-tpl-zip" style="flex:1;font-size:12px" onclick="document.getElementById('tpl-src-git').style.display='none';document.getElementById('tpl-src-zip').style.display='';this.classList.add('btn-primary');document.getElementById('btn-tpl-git').classList.remove('btn-primary')">📂 上传 ZIP 文件</button>
+      </div>
+      <!-- Git 导入区 -->
+      <div id="tpl-src-git">
+        <div class="form-group">
+          <label>源仓库地址</label>
+          <input placeholder="https://github.com/your-org/your-template">
+        </div>
+        <div class="form-group">
+          <label>分支</label>
+          <input value="main" placeholder="main">
+        </div>
+      </div>
+      <!-- ZIP 上传区 -->
+      <div id="tpl-src-zip" style="display:none">
+        <div class="form-group">
+          <label>上传 ZIP 文件</label>
+          <div style="border:2px dashed var(--border);border-radius:8px;padding:24px;text-align:center;cursor:pointer;background:var(--bg)" onclick="showToast('已选择文件: my-template.zip (2.4 MB)','success');this.innerHTML='<div style=font-size:28px>✅</div><div style=font-weight:600;margin-top:6px>my-template.zip</div><div style=font-size:12px;color:var(--sub)>2.4 MB · 点击重新选择</div>'">
+            <div style="font-size:28px;margin-bottom:6px">📂</div>
+            <div style="font-weight:600">点击选择或拖拽 ZIP 文件到此处</div>
+            <div style="font-size:12px;color:var(--sub);margin-top:4px">支持 .zip 格式，最大 100MB</div>
+          </div>
+        </div>
+      </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="form-group">
+        <label>模板名称</label>
+        <input placeholder="例如: 电商后端服务模板">
+      </div>
+      <div class="form-group">
+        <label>图标</label>
+        <select><option>🍃 Spring</option><option>⚛️ React</option><option>🟢 Node</option><option>🐍 Python</option><option>🔷 Go</option><option>🛒 电商</option><option>📊 数据</option><option>🔧 工具</option></select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>模板描述</label>
+      <textarea rows="2" placeholder="描述模板的用途、适用场景和包含的核心组件"></textarea>
+    </div>
+    <div class="form-group">
+      <label>技术标签</label>
+      <input placeholder="用逗号分隔，例如: Spring Boot 3, MySQL, Redis">
+    </div>
+    <div class="form-group">
+      <label>类型</label>
+      <select><option>后端服务</option><option>前端应用</option><option>BFF 网关</option><option>数据服务</option><option>其他</option></select>
+    </div>
+    <div class="form-group">
+      <label>可见范围</label>
+      <div style="display:flex;gap:12px">
+        <label style="font-size:12px;display:flex;align-items:center;gap:4px"><input type="radio" name="tpl-scope" checked> 全平台可用</label>
+        <label style="font-size:12px;display:flex;align-items:center;gap:4px"><input type="radio" name="tpl-scope"> 仅限指定项目</label>
+      </div>
+    </div>
+    <div style="background:var(--primary-light);border:1px solid var(--primary);border-radius:8px;padding:10px;margin-bottom:16px;font-size:12px">
+      <strong>💡 提示：</strong>系统将自动扫描仓库，识别技术栈、CI 配置、Dockerfile 等，并在模板详情中展示目录结构。
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:8px">
+      <button class="btn" onclick="closeModal('uploadTemplate')">取消</button>
+      <button class="btn btn-primary" onclick="closeModal('uploadTemplate');showToast('模板正在导入中，扫描完成后自动发布','success')">导入并发布</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: 编辑模板 -->
+<div class="modal" id="modal-editTemplate">
+  <div class="modal-box" style="width:520px">
+    <div class="modal-title">编辑模板</div>
+    <div style="display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:center;margin-bottom:16px">
+      <span style="font-size:32px">🍃</span>
+      <div><div style="font-weight:600">Spring Boot 微服务模板</div><div style="font-size:12px;color:var(--sub)">官方模板 · 当前版本 v2.4</div></div>
+    </div>
+    <div class="form-group">
+      <label>模板名称</label>
+      <input value="Spring Boot 微服务模板">
+    </div>
+    <div class="form-group">
+      <label>模板描述</label>
+      <textarea rows="2">含 SSO 对接、统一异常处理、日志规范、Swagger 文档、Docker 容器化、CI/CD Pipeline</textarea>
+    </div>
+    <div class="form-group">
+      <label>技术标签</label>
+      <input value="Spring Boot 3, MySQL, Redis, Docker">
+    </div>
+    <div class="form-group">
+      <label>源仓库</label>
+      <input value="https://github.com/company/spring-boot-template" disabled style="background:var(--bg)">
+      <div style="font-size:11px;color:var(--sub);margin-top:4px">如需更新代码，请从仓库推送新版本后点击「同步」</div>
+    </div>
+    <div class="form-group">
+      <label>版本操作</label>
+      <div style="display:flex;gap:8px">
+        <button class="btn" style="flex:1;font-size:12px" onclick="showToast('正在从源仓库同步最新代码...','info')">🔄 同步最新版本</button>
+        <button class="btn" style="flex:1;font-size:12px" onclick="openActionPreview('发布新版本', '基于当前源仓库状态发布模板新版本', ['自动对比与上一版本的差异','填写版本号和更新说明','发布后使用此模板的项目可选择升级','不影响已用旧版本创建的服务'])">📦 发布新版本</button>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>可见范围</label>
+      <div style="display:flex;gap:12px">
+        <label style="font-size:12px;display:flex;align-items:center;gap:4px"><input type="radio" name="edit-tpl-scope" checked> 全平台可用</label>
+        <label style="font-size:12px;display:flex;align-items:center;gap:4px"><input type="radio" name="edit-tpl-scope"> 仅限指定项目</label>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px">
+      <button class="btn" style="color:var(--danger);font-size:12px" onclick="closeModal('editTemplate');openActionPreview('归档模板', '将模板标记为归档状态', ['归档后不再出现在模板选择列表中','已使用此模板创建的服务不受影响','可随时取消归档恢复可用'])">🗄️ 归档模板</button>
+      <div style="display:flex;gap:8px">
+        <button class="btn" onclick="closeModal('editTemplate')">取消</button>
+        <button class="btn btn-primary" onclick="closeModal('editTemplate');showToast('模板信息已更新','success')">保存</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Add Service -->
+<div class="modal" id="modal-addService">
+  <div class="modal-box" style="width:680px">
+    <div class="modal-title">添加代码服务</div>
+    <div class="modal-desc" style="margin-bottom:14px">为项目添加新的代码服务,可选择从模板创建或关联已有仓库</div>
+
+    <div class="modal-section-label">创建方式</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+      <div class="service-option" id="svc-opt-template" onclick="selectServiceOption('template')" style="border:2px solid var(--primary);background:var(--primary-light)">
+        <div style="font-size:32px;margin-bottom:8px">🗂️</div>
+        <div style="font-weight:600;margin-bottom:4px">选择模板创建</div>
+        <div style="font-size:12px;color:var(--sub)">从公司标准模板快速初始化服务</div>
+      </div>
+      <div class="service-option" id="svc-opt-repo" onclick="selectServiceOption('repo')" style="border:1px solid var(--border)">
+        <div style="font-size:32px;margin-bottom:8px">🔗</div>
+        <div style="font-weight:600;margin-bottom:4px">关联已有仓库</div>
+        <div style="font-size:12px;color:var(--sub)">填入 Git 地址,自动识别技术栈</div>
+      </div>
+    </div>
+
+    <div id="svc-template-section">
+      <div class="modal-section-label">选择模板 <a href="javascript:void(0)" onclick="closeModal('addService');showPage('templates')" style="font-size:11px;color:var(--primary);font-weight:400;margin-left:8px">查看全部模板 →</a></div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">
+        <div class="service-option" style="border:2px solid var(--primary);background:var(--primary-light);padding:10px;border-radius:8px;cursor:pointer;text-align:center">
+          <div style="font-size:22px">🍃</div>
+          <div style="font-weight:600;font-size:12px;margin:4px 0 2px">Spring Boot</div>
+          <div style="font-size:10px;color:var(--sub)">微服务 · v2.4</div>
+        </div>
+        <div class="service-option" style="border:1px solid var(--border);padding:10px;border-radius:8px;cursor:pointer;text-align:center">
+          <div style="font-size:22px">⚛️</div>
+          <div style="font-weight:600;font-size:12px;margin:4px 0 2px">React + TS</div>
+          <div style="font-size:10px;color:var(--sub)">前端 · v3.2</div>
+        </div>
+        <div class="service-option" style="border:1px solid var(--border);padding:10px;border-radius:8px;cursor:pointer;text-align:center">
+          <div style="font-size:22px">🟢</div>
+          <div style="font-weight:600;font-size:12px;margin:4px 0 2px">Node.js BFF</div>
+          <div style="font-size:10px;color:var(--sub)">网关 · v1.8</div>
+        </div>
+        <div class="service-option" style="border:1px solid var(--border);padding:10px;border-radius:8px;cursor:pointer;text-align:center">
+          <div style="font-size:22px">🐍</div>
+          <div style="font-weight:600;font-size:12px;margin:4px 0 2px">Python FastAPI</div>
+          <div style="font-size:10px;color:var(--sub)">数据 · v2.1</div>
+        </div>
+        <div class="service-option" style="border:1px solid var(--border);padding:10px;border-radius:8px;cursor:pointer;text-align:center">
+          <div style="font-size:22px">🔷</div>
+          <div style="font-weight:600;font-size:12px;margin:4px 0 2px">Go 微服务</div>
+          <div style="font-size:10px;color:var(--sub)">后端 · v1.5</div>
+        </div>
+        <div class="service-option" style="border:1px solid var(--border);padding:10px;border-radius:8px;cursor:pointer;text-align:center">
+          <div style="font-size:22px">🛒</div>
+          <div style="font-weight:600;font-size:12px;margin:4px 0 2px">电商后端</div>
+          <div style="font-size:10px;color:var(--sub)">自定义 · v1.2</div>
+        </div>
+      </div>
+
+      <div style="background:var(--primary-light);border:1px solid var(--primary);border-radius:8px;padding:10px;margin-bottom:14px;font-size:12px">
+        <div style="font-weight:600;margin-bottom:4px">🍃 Spring Boot 微服务模板 v2.4 将预配置：</div>
+        <div style="color:var(--sub);line-height:1.6">
+          CI Pipeline（编译→测试→扫描→构建）· CD Pipeline（DEV 自动/PRE 手动）· Checkstyle 代码规范 · JUnit 5 单测 · JaCoCo 覆盖率 ≥80% · Docker + K8s 部署模板 · Prometheus 监控
+        </div>
+      </div>
+
+      <div class="modal-section-label">基础配置</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="form-group">
+          <label class="form-label">服务名称</label>
+          <input placeholder="例如: order-service">
+        </div>
+        <div class="form-group">
+          <label class="form-label">服务负责人</label>
+          <select><option selected>当前用户</option><option>张三</option><option>李四</option></select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">服务描述</label>
+        <textarea rows="2" placeholder="简要描述服务职责和功能范围（选填）"></textarea>
+      </div>
+
+      <div class="modal-section-label" style="margin-top:16px">关联仓库</div>
+      <div class="form-group">
+        <label class="form-label">Git 仓库地址（可选，如为空则由系统根据模板自动创建）</label>
+        <input placeholder="https://github.com/your-org/your-repo">
+      </div>
+    </div>
+
+    <div id="svc-repo-section" style="display:none">
+      <div class="modal-section-label">关联仓库</div>
+      <div class="form-group">
+        <label class="form-label">Git 仓库地址</label>
+        <input placeholder="https://github.com/your-org/your-repo">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="form-group">
+          <label class="form-label">主干分支</label>
+          <input placeholder="main" value="main">
+        </div>
+        <div class="form-group">
+          <label class="form-label">服务名称</label>
+          <input placeholder="自动识别或手动输入">
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:20px">
+      <button class="btn" onclick="closeModal('addService')">取消</button>
+      <button class="btn btn-primary" onclick="closeModal('addService'); showToast('已添加服务（原型演示）', 'success')">添加服务</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Add Member -->
+<div class="modal" id="modal-addMember">
+  <div class="modal-box" style="width:640px">
+    <div class="modal-title">添加项目成员</div>
+    <div class="modal-desc" style="margin-bottom:14px">邀请成员加入本项目。如果成员已有平台凭证，将自动扩展其项目访问权限；如果是新成员，平台将自动生成凭证。</div>
+
+    <div class="form-group">
+      <label class="form-label">搜索成员</label>
+      <input placeholder="搜索成员姓名 / 邮箱 / 工号...">
+    </div>
+    
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="form-group">
+        <label class="form-label">项目角色</label>
+        <select id="addMemberRole" onchange="document.getElementById('rolePreviewArea').style.display='block'">
+          <option value="dev" selected>开发 (Developer)</option>
+          <option value="qa">测试 (QA)</option>
+          <option value="pm">产品 (PM)</option>
+          <option value="admin">项目管理员 (Admin)</option>
+          <option value="guest">访客 (Guest)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Token 月配额</label>
+        <select>
+          <option selected>100K（角色默认）</option>
+          <option>80K</option>
+          <option>200K</option>
+          <option>500K</option>
+          <option>无限制</option>
+          <option>自定义...</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="modal-section-label" style="margin-top:16px">🔑 凭证与接入</div>
+    <div style="background:var(--primary-light);border:1px solid var(--primary);border-radius:6px;padding:10px 12px;margin-bottom:12px;font-size:12px">
+      💡 <strong>一人一证模型</strong>：如果该成员已有平台凭证，系统将自动为其扩展本项目访问权限，无需生成新凭证。
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px;background:var(--bg);padding:12px;border-radius:8px">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+        <input type="checkbox" checked style="width:auto">
+        <div>
+          <div style="font-size:13px;font-weight:500">自动发送项目接入指南</div>
+          <div style="font-size:12px;color:var(--sub)">通过邮件发送本项目的 MCP 端点配置说明，成员按指引添加即可访问本项目 AI 能力。</div>
+        </div>
+      </label>
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+        <input type="checkbox" style="width:auto">
+        <div>
+          <div style="font-size:13px;font-weight:500">生成一键安装脚本</div>
+          <div style="font-size:12px;color:var(--sub)">额外生成 curl 一键脚本，成员复制执行即可完成 IDE 配置（约 30 秒）。</div>
+        </div>
+      </label>
+    </div>
+
+    <div class="modal-section-label" style="margin-top:16px">🤖 AI 能力预览（基于所选角色）</div>
+    <div id="rolePreviewArea" style="background:var(--bg);padding:12px;border-radius:8px;margin-top:4px">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px">
+        <div style="background:white;padding:8px 10px;border-radius:6px;border:1px solid var(--border)">
+          <div style="font-size:11px;color:var(--sub);margin-bottom:4px">📚 知识库权限</div>
+          <div style="font-size:13px;font-weight:600">项目知识库（只读）</div>
+          <div style="font-size:11px;color:var(--sub)">+ 继承全局知识库</div>
+        </div>
+        <div style="background:white;padding:8px 10px;border-radius:6px;border:1px solid var(--border)">
+          <div style="font-size:11px;color:var(--sub);margin-bottom:4px">⚡ 可用技能</div>
+          <div style="font-size:13px;font-weight:600">6 个代码相关技能</div>
+          <div style="font-size:11px;color:var(--sub)">代码审查 · Bug分析 · 单测生成...</div>
+        </div>
+        <div style="background:white;padding:8px 10px;border-radius:6px;border:1px solid var(--border)">
+          <div style="font-size:11px;color:var(--sub);margin-bottom:4px">🔧 可用工具</div>
+          <div style="font-size:13px;font-weight:600">5 个开发工具</div>
+          <div style="font-size:11px;color:var(--sub)">search_knowledge · query_jira...</div>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--sub)">💡 以上为「开发」角色默认 AI 能力配置，添加后可在成员的「权限设置」中单独调整。</div>
+    </div>
+
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:20px">
+      <button class="btn" onclick="closeModal('addMember')">取消</button>
+      <button class="btn btn-primary" onclick="closeModal('addMember'); showToast('已成功添加成员 → 凭证已生成（plt_***_****）→ 接入指南已发送至邮箱', 'success')">添加成员并分发凭证</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Edit Member Permission -->
+<div class="modal" id="modal-editMemberPerm">
+  <div class="modal-box" style="width:720px">
+    <div class="modal-title">成员权限设置</div>
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border)">
+      <div class="avatar" style="width:36px;height:36px;font-size:14px;background:#4F6EF7">张</div>
+      <div>
+        <div style="font-weight:600;font-size:14px" id="edit-member-name">张三</div>
+        <div style="font-size:12px;color:var(--sub)">zhangsan@company.com</div>
+      </div>
+      <span class="badge badge-blue" style="margin-left:auto">项目负责人</span>
+    </div>
+
+    <div class="tabs" id="editPermTabs" style="margin-bottom:16px">
+      <div class="tab active" onclick="switchTab('editPermTabs','editperm-role')">角色与配额</div>
+      <div class="tab" onclick="switchTab('editPermTabs','editperm-cred')">🔑 凭证管理</div>
+      <div class="tab" onclick="switchTab('editPermTabs','editperm-ai')">🤖 AI 能力分配</div>
+    </div>
+
+    <!-- Tab 1: 角色与配额 -->
+    <div id="editperm-role">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+        <div class="form-group">
+          <label class="form-label">变更角色</label>
+          <select>
+            <option selected>项目负责人 (Admin)</option>
+            <option>开发 (Developer)</option>
+            <option>测试 (QA)</option>
+            <option>产品 (PM)</option>
+            <option>访客 (Guest)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Token 月配额调整</label>
+          <select>
+            <option>20K</option>
+            <option>80K</option>
+            <option>100K</option>
+            <option>200K</option>
+            <option>500K</option>
+            <option selected>无限制</option>
+            <option>自定义...</option>
+          </select>
+        </div>
+      </div>
+      <div style="background:var(--bg);padding:12px;border-radius:8px;margin-bottom:16px">
+        <div style="font-size:12px;color:var(--sub);margin-bottom:6px">💡 变更角色将自动按「角色-AI能力矩阵」重新分配默认的凭证类型、AI 能力和配额。已单独覆写的配置不受影响。</div>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
+          <input type="checkbox" style="width:auto">
+          <span>同步重置此成员的 AI 能力为新角色默认值</span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Tab 2: 凭证管理 -->
+    <div id="editperm-cred" style="display:none">
+      <div style="background:#ECFDF3;border:1px solid #A6F4C5;border-radius:8px;padding:14px;margin-bottom:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:18px">🔑</span>
+            <div>
+              <div style="font-weight:600;font-size:14px">当前凭证</div>
+              <div style="font-size:12px;color:var(--sub)">状态正常 · 个人凭证</div>
+            </div>
+          </div>
+          <span class="badge badge-green">正常</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px">
+          <div style="background:white;padding:8px 10px;border-radius:6px"><span style="color:var(--sub)">凭证前缀</span><div style="font-family:monospace;font-weight:600;margin-top:2px">plt_z3_****f8a2</div></div>
+          <div style="background:white;padding:8px 10px;border-radius:6px"><span style="color:var(--sub)">凭证类型</span><div style="font-weight:600;margin-top:2px">个人凭证（Personal）</div></div>
+          <div style="background:white;padding:8px 10px;border-radius:6px"><span style="color:var(--sub)">创建时间</span><div style="font-weight:600;margin-top:2px">2026-03-19</div></div>
+          <div style="background:white;padding:8px 10px;border-radius:6px"><span style="color:var(--sub)">过期时间</span><div style="font-weight:600;margin-top:2px">2026-06-19（91 天后）</div></div>
+          <div style="background:white;padding:8px 10px;border-radius:6px"><span style="color:var(--sub)">最后使用</span><div style="font-weight:600;margin-top:2px">10 分钟前</div></div>
+          <div style="background:white;padding:8px 10px;border-radius:6px"><span style="color:var(--sub)">接入工具</span><div style="font-weight:600;margin-top:2px">Claude Code · Cursor</div></div>
+        </div>
+      </div>
+      <div style="font-weight:600;font-size:13px;margin-bottom:8px">凭证操作</div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;background:var(--bg);padding:10px 12px;border-radius:8px">
+          <div><div style="font-size:13px;font-weight:500">续签凭证</div><div style="font-size:12px;color:var(--sub)">延长凭证有效期，当前有效期至 2026-06-19</div></div>
+          <select style="width:auto;min-width:120px;font-size:12px;padding:4px 8px"><option>续签 30 天</option><option>续签 90 天</option><option>续签 180 天</option></select>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;background:var(--bg);padding:10px 12px;border-radius:8px">
+          <div><div style="font-size:13px;font-weight:500">轮换凭证</div><div style="font-size:12px;color:var(--sub)">生成新凭证并废弃旧凭证，成员需重新配置 IDE</div></div>
+          <button class="btn" style="padding:4px 12px;font-size:12px" onclick="showToast('已生成新凭证并发送配置邮件，旧凭证将在 24 小时后失效（原型演示）', 'success')">轮换</button>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;background:#FEF3F2;border:1px solid #FECDCA;padding:10px 12px;border-radius:8px">
+          <div><div style="font-size:13px;font-weight:600;color:var(--danger)">吊销凭证</div><div style="font-size:12px;color:var(--sub)">立即失效，该成员所有 IDE 接入（Cursor/Claude Code）将断开</div></div>
+          <button class="btn btn-danger" style="padding:4px 12px;font-size:12px" onclick="showToast('凭证已吊销', 'success')">立即吊销</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 3: AI 能力分配 -->
+    <div id="editperm-ai" style="display:none">
+      <div style="background:#EEF1FF;border:1px solid #C7D2FE;border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:12px;color:var(--primary)">
+        当前配置基于「项目负责人」角色默认值。下方修改为单独覆写，不影响角色矩阵全局配置。
+      </div>
+
+      <div style="font-weight:600;font-size:13px;margin-bottom:8px">📚 知识库权限</div>
+      <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:16px;background:var(--bg);padding:12px;border-radius:8px">
+        <label style="display:flex;align-items:center;justify-content:space-between;cursor:pointer">
+          <div style="display:flex;align-items:center;gap:8px"><input type="checkbox" checked style="width:auto"><span style="font-size:13px">商城需求文档 v2.3</span><span class="badge badge-blue" style="font-size:10px">项目</span></div>
+          <select style="width:auto;min-width:80px;font-size:11px;padding:2px 6px"><option>只读</option><option selected>读写</option></select>
+        </label>
+        <label style="display:flex;align-items:center;justify-content:space-between;cursor:pointer">
+          <div style="display:flex;align-items:center;gap:8px"><input type="checkbox" checked style="width:auto"><span style="font-size:13px">系统架构设计文档</span><span class="badge badge-blue" style="font-size:10px">项目</span></div>
+          <select style="width:auto;min-width:80px;font-size:11px;padding:2px 6px"><option>只读</option><option selected>读写</option></select>
+        </label>
+        <label style="display:flex;align-items:center;justify-content:space-between;cursor:pointer">
+          <div style="display:flex;align-items:center;gap:8px"><input type="checkbox" checked style="width:auto"><span style="font-size:13px">接口文档 - 商品模块</span><span class="badge badge-blue" style="font-size:10px">项目</span></div>
+          <select style="width:auto;min-width:80px;font-size:11px;padding:2px 6px"><option>只读</option><option selected>读写</option></select>
+        </label>
+        <label style="display:flex;align-items:center;justify-content:space-between;cursor:pointer">
+          <div style="display:flex;align-items:center;gap:8px"><input type="checkbox" checked style="width:auto"><span style="font-size:13px">编码规范手册</span><span class="badge badge-gray" style="font-size:10px">全局</span></div>
+          <select style="width:auto;min-width:80px;font-size:11px;padding:2px 6px"><option selected>只读</option><option>读写</option></select>
+        </label>
+        <label style="display:flex;align-items:center;justify-content:space-between;cursor:pointer">
+          <div style="display:flex;align-items:center;gap:8px"><input type="checkbox" checked style="width:auto"><span style="font-size:13px">安全规范手册</span><span class="badge badge-gray" style="font-size:10px">全局</span></div>
+          <select style="width:auto;min-width:80px;font-size:11px;padding:2px 6px"><option selected>只读</option><option>读写</option></select>
+        </label>
+      </div>
+
+      <div style="font-weight:600;font-size:13px;margin-bottom:8px">⚡ 可用技能</div>
+      <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:16px;background:var(--bg);padding:12px;border-radius:8px">
+        <div style="display:flex;flex-wrap:wrap;gap:6px">
+          <label style="display:flex;align-items:center;gap:4px;background:white;padding:4px 10px;border-radius:6px;border:1px solid var(--border);cursor:pointer;font-size:12px"><input type="checkbox" checked style="width:auto">代码审查</label>
+          <label style="display:flex;align-items:center;gap:4px;background:white;padding:4px 10px;border-radius:6px;border:1px solid var(--border);cursor:pointer;font-size:12px"><input type="checkbox" checked style="width:auto">需求分析</label>
+          <label style="display:flex;align-items:center;gap:4px;background:white;padding:4px 10px;border-radius:6px;border:1px solid var(--border);cursor:pointer;font-size:12px"><input type="checkbox" checked style="width:auto">文档生成</label>
+          <label style="display:flex;align-items:center;gap:4px;background:white;padding:4px 10px;border-radius:6px;border:1px solid var(--border);cursor:pointer;font-size:12px"><input type="checkbox" checked style="width:auto">Bug 分析</label>
+          <label style="display:flex;align-items:center;gap:4px;background:white;padding:4px 10px;border-radius:6px;border:1px solid var(--border);cursor:pointer;font-size:12px"><input type="checkbox" checked style="width:auto">安全扫描</label>
+          <label style="display:flex;align-items:center;gap:4px;background:white;padding:4px 10px;border-radius:6px;border:1px solid var(--border);cursor:pointer;font-size:12px"><input type="checkbox" checked style="width:auto">技术方案评审</label>
+          <label style="display:flex;align-items:center;gap:4px;background:white;padding:4px 10px;border-radius:6px;border:1px solid var(--border);cursor:pointer;font-size:12px"><input type="checkbox" checked style="width:auto">项目代码审查</label>
+          <label style="display:flex;align-items:center;gap:4px;background:white;padding:4px 10px;border-radius:6px;border:1px solid var(--border);cursor:pointer;font-size:12px"><input type="checkbox" checked style="width:auto">业务逻辑分析</label>
+          <label style="display:flex;align-items:center;gap:4px;background:white;padding:4px 10px;border-radius:6px;border:1px solid var(--border);cursor:pointer;font-size:12px"><input type="checkbox" checked style="width:auto">接口文档生成</label>
+          <label style="display:flex;align-items:center;gap:4px;background:white;padding:4px 10px;border-radius:6px;border:1px solid var(--border);cursor:pointer;font-size:12px"><input type="checkbox" checked style="width:auto">单测生成</label>
+          <label style="display:flex;align-items:center;gap:4px;background:white;padding:4px 10px;border-radius:6px;border:1px solid var(--border);cursor:pointer;font-size:12px"><input type="checkbox" checked style="width:auto">性能分析</label>
+          <label style="display:flex;align-items:center;gap:4px;background:white;padding:4px 10px;border-radius:6px;border:1px solid var(--border);cursor:pointer;font-size:12px"><input type="checkbox" checked style="width:auto">SQL 审查</label>
+        </div>
+        <div style="font-size:11px;color:var(--sub);margin-top:4px">已选 12/12 个技能（项目负责人默认全部）· 含 6 个全局技能 + 6 个项目技能</div>
+      </div>
+
+      <div style="font-weight:600;font-size:13px;margin-bottom:8px">🔧 可用工具</div>
+      <div style="display:flex;flex-direction:column;gap:6px;background:var(--bg);padding:12px;border-radius:8px">
+        <div style="display:flex;flex-wrap:wrap;gap:6px">
+          <label style="display:flex;align-items:center;gap:4px;background:white;padding:4px 10px;border-radius:6px;border:1px solid var(--border);cursor:pointer;font-size:12px"><input type="checkbox" checked style="width:auto">search_knowledge</label>
+          <label style="display:flex;align-items:center;gap:4px;background:white;padding:4px 10px;border-radius:6px;border:1px solid var(--border);cursor:pointer;font-size:12px"><input type="checkbox" checked style="width:auto">list_skills</label>
+          <label style="display:flex;align-items:center;gap:4px;background:white;padding:4px 10px;border-radius:6px;border:1px solid var(--border);cursor:pointer;font-size:12px"><input type="checkbox" checked style="width:auto">get_project_info</label>
+          <label style="display:flex;align-items:center;gap:4px;background:white;padding:4px 10px;border-radius:6px;border:1px solid var(--border);cursor:pointer;font-size:12px"><input type="checkbox" checked style="width:auto">query_jira</label>
+          <label style="display:flex;align-items:center;gap:4px;background:white;padding:4px 10px;border-radius:6px;border:1px solid var(--border);cursor:pointer;font-size:12px"><input type="checkbox" checked style="width:auto">create_jira</label>
+          <label style="display:flex;align-items:center;gap:4px;background:white;padding:4px 10px;border-radius:6px;border:1px solid var(--border);cursor:pointer;font-size:12px"><input type="checkbox" checked style="width:auto">query_gitlab</label>
+          <label style="display:flex;align-items:center;gap:4px;background:white;padding:4px 10px;border-radius:6px;border:1px solid var(--border);cursor:pointer;font-size:12px"><input type="checkbox" checked style="width:auto">report_bug</label>
+          <label style="display:flex;align-items:center;gap:4px;background:white;padding:4px 10px;border-radius:6px;border:1px solid var(--border);cursor:pointer;font-size:12px"><input type="checkbox" checked style="width:auto">trigger_deploy</label>
+        </div>
+        <div style="font-size:11px;color:var(--sub);margin-top:4px">已选 8/8 个工具（项目负责人默认全部）· 含 3 个内置 + 3 个企业级 + 2 个项目级工具</div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:20px">
+      <button class="btn" onclick="closeModal('editMemberPerm')">取消</button>
+      <button class="btn btn-primary" onclick="closeModal('editMemberPerm'); showToast('权限设置已保存', 'success')">保存更改</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Notifications -->
+<div class="modal" id="modal-notifications">
+  <div class="modal-box" style="width:560px">
+    <div class="modal-title" style="display:flex;align-items:center;justify-content:space-between">
+      <span>🔔 通知中心</span>
+      <button class="btn" style="padding:3px 10px;font-size:12px" onclick="closeModal('notifications'); showToast('已全部标记为已读', 'success')">全部已读</button>
+    </div>
+    <div style="display:flex;gap:4px;background:var(--bg);border-radius:8px;padding:4px;margin-bottom:16px">
+      <div style="flex:1;text-align:center;padding:6px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:500;background:white;box-shadow:0 1px 3px rgba(0,0,0,0.1)">全部 (6)</div>
+      <div style="flex:1;text-align:center;padding:6px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:500;color:var(--sub)">审批 (2)</div>
+      <div style="flex:1;text-align:center;padding:6px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:500;color:var(--sub)">告警 (1)</div>
+      <div style="flex:1;text-align:center;padding:6px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:500;color:var(--sub)">凭证 (3)</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:2px">
+      <div style="display:flex;gap:12px;padding:12px;border-radius:8px;background:#FEF3F2;border:1px solid #FECDCA;cursor:pointer" onclick="closeModal('notifications'); showPage('audit')">
+        <span style="font-size:18px;flex-shrink:0">🚨</span>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:600;margin-bottom:3px">生产告警：支付服务异常</div>
+          <div style="font-size:12px;color:var(--sub)">mall-backend 支付回调超时率升至 12%，触发 P1 告警规则</div>
+          <div style="font-size:11px;color:var(--sub);margin-top:4px">5 分钟前 · 商城系统</div>
+        </div>
+        <span class="badge badge-red" style="align-self:flex-start">紧急</span>
+      </div>
+      <div style="display:flex;gap:12px;padding:12px;border-radius:8px;background:var(--primary-light);border:1px solid #D1D9FE;cursor:pointer" onclick="closeModal('notifications'); showPage('skills')">
+        <span style="font-size:18px;flex-shrink:0">📋</span>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:600;margin-bottom:3px">审批请求：新技能「SQL 审查」待审核</div>
+          <div style="font-size:12px;color:var(--sub)">李四 提交了新技能「SQL 审查」的发布审批，请查看</div>
+          <div style="font-size:11px;color:var(--sub);margin-top:4px">30 分钟前 · 全局技能库</div>
+        </div>
+        <span class="badge badge-blue" style="align-self:flex-start">审批</span>
+      </div>
+      <div style="display:flex;gap:12px;padding:12px;border-radius:8px;background:var(--primary-light);border:1px solid #D1D9FE;cursor:pointer" onclick="closeModal('notifications'); showPage('keys')">
+        <span style="font-size:18px;flex-shrink:0">📋</span>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:600;margin-bottom:3px">审批请求：王五申请生产密钥权限</div>
+          <div style="font-size:12px;color:var(--sub)">王五 申请 key-prod 的访问权限，需管理员审批</div>
+          <div style="font-size:11px;color:var(--sub);margin-top:4px">1 小时前 · 商城系统</div>
+        </div>
+        <span class="badge badge-blue" style="align-self:flex-start">审批</span>
+      </div>
+      <div style="display:flex;gap:12px;padding:12px;border-radius:8px;background:#FFFAEB;border:1px solid #FEC84B;cursor:pointer" onclick="closeModal('notifications'); showPage('keys')">
+        <span style="font-size:18px;flex-shrink:0">🔑</span>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:600;margin-bottom:3px">凭证即将过期（3 个）</div>
+          <div style="font-size:12px;color:var(--sub)">王五、赵七、李婷 的平台凭证将在 7 天内过期</div>
+          <div style="font-size:11px;color:var(--sub);margin-top:4px">今天 09:00 · 系统提醒</div>
+        </div>
+        <span class="badge badge-yellow" style="align-self:flex-start">提醒</span>
+      </div>
+      <div style="display:flex;gap:12px;padding:12px;border-radius:8px;cursor:pointer" onclick="closeModal('notifications'); showPage('knowledge')">
+        <span style="font-size:18px;flex-shrink:0">📚</span>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:500;margin-bottom:3px;color:var(--sub)">知识库处理完成</div>
+          <div style="font-size:12px;color:var(--sub)">「系统架构设计文档」向量化完成，共 186 个知识块</div>
+          <div style="font-size:11px;color:var(--sub);margin-top:4px">2 小时前 · 商城系统</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:12px;padding:12px;border-radius:8px;cursor:pointer" onclick="closeModal('notifications'); showPage('my-usage')">
+        <span style="font-size:18px;flex-shrink:0">📊</span>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:500;margin-bottom:3px;color:var(--sub)">月度用量报告已生成</div>
+          <div style="font-size:12px;color:var(--sub)">2 月份用量报告已生成，本月 Token 消耗较上月增长 12%</div>
+          <div style="font-size:11px;color:var(--sub);margin-top:4px">昨天 10:00 · 系统报告</div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:center;margin-top:16px">
+      <button class="btn" onclick="closeModal('notifications')">关闭</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Upload Document -->
+<div class="modal" id="modal-uploadDoc">
+  <div class="modal-box" style="width:600px">
+    <div class="modal-title">上传文档到知识库</div>
+    <div class="modal-desc" style="margin-bottom:14px">上传文档后系统自动进行切块、向量化，处理完成后 AI 可通过语义检索调用。</div>
+
+    <div class="modal-section-label">文件上传</div>
+    <div style="border:2px dashed var(--border);border-radius:12px;padding:40px 20px;text-align:center;cursor:pointer;transition:all 0.15s;margin-bottom:16px" onmouseover="this.style.borderColor='var(--primary)';this.style.background='var(--primary-light)'" onmouseout="this.style.borderColor='var(--border)';this.style.background='transparent'">
+      <div style="font-size:32px;margin-bottom:8px">📄</div>
+      <div style="font-weight:600;margin-bottom:4px">拖拽文件到此处，或点击选择</div>
+      <div style="font-size:12px;color:var(--sub)">支持 PDF、Markdown、Word、TXT、HTML · 单文件最大 50MB</div>
+    </div>
+
+    <div class="modal-section-label">文档配置</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="form-group">
+        <label class="form-label">目标知识库</label>
+        <select>
+          <option>商城系统需求文档</option>
+          <option>系统架构设计文档</option>
+          <option>接口文档 - 商品模块</option>
+          <option>+ 新建知识库...</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">文档类型</label>
+        <select>
+          <option>自动识别</option>
+          <option>PRD / 需求文档</option>
+          <option>技术设计文档</option>
+          <option>API / 接口文档</option>
+          <option>运维手册</option>
+          <option>其他</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">切块策略</label>
+      <select>
+        <option selected>智能切块（推荐，根据文档结构自动识别段落）</option>
+        <option>按标题层级切块</option>
+        <option>固定长度切块（512 tokens）</option>
+        <option>固定长度切块（1024 tokens）</option>
+      </select>
+    </div>
+    <div style="background:var(--bg);border-radius:8px;padding:12px;font-size:12px;color:var(--sub)">
+      💡 上传后预计 2-5 分钟完成向量化。处理完成后会通过通知中心提醒您。
+    </div>
+
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
+      <button class="btn" onclick="closeModal('uploadDoc')">取消</button>
+      <button class="btn btn-primary" onclick="closeModal('uploadDoc'); showToast('文档已上传，正在进行向量化处理...', 'success')">上传并处理</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Register Tool -->
+<div class="modal" id="modal-registerTool">
+  <div class="modal-box" style="width:640px">
+    <div class="modal-title">注册新工具</div>
+    <div class="modal-desc" style="margin-bottom:14px">将 API 或函数注册为平台工具，AI Agent 可在运行时自动调用。</div>
+
+    <div class="modal-section-label">工具信息</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="form-group">
+        <label class="form-label">工具名称</label>
+        <input placeholder="例：query_order_status">
+      </div>
+      <div class="form-group">
+        <label class="form-label">工具分类</label>
+        <select>
+          <option>企业级</option>
+          <option>项目级</option>
+          <option>平台内置</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">工具描述（AI 理解用途）</label>
+      <textarea rows="2" placeholder="查询指定订单的当前状态，包括支付状态、物流状态等"></textarea>
+    </div>
+
+    <div class="modal-section-label">接口配置</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="form-group">
+        <label class="form-label">协议类型</label>
+        <select>
+          <option>HTTP REST API</option>
+          <option>gRPC</option>
+          <option>MCP Tool</option>
+          <option>本地函数</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">请求方法</label>
+        <select>
+          <option>GET</option>
+          <option>POST</option>
+          <option>PUT</option>
+          <option>DELETE</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">接口地址</label>
+      <input placeholder="https://api.internal.com/v1/orders/{orderId}/status">
+    </div>
+
+    <div class="modal-section-label">参数定义</div>
+    <div style="background:var(--bg);border-radius:8px;padding:12px">
+      <div style="display:grid;grid-template-columns:2fr 1fr 3fr 40px;gap:8px;font-size:12px;font-weight:600;color:var(--sub);margin-bottom:8px">
+        <span>参数名</span><span>类型</span><span>描述</span><span></span>
+      </div>
+      <div style="display:grid;grid-template-columns:2fr 1fr 3fr 40px;gap:8px;align-items:center;margin-bottom:6px">
+        <input placeholder="orderId" style="font-size:12px;padding:6px 8px">
+        <select style="font-size:12px;padding:6px 4px"><option>string</option><option>number</option><option>boolean</option><option>object</option></select>
+        <input placeholder="订单ID" style="font-size:12px;padding:6px 8px">
+        <span style="color:var(--danger);cursor:pointer;text-align:center">✕</span>
+      </div>
+      <button class="btn" style="padding:4px 10px;font-size:12px;margin-top:4px">+ 添加参数</button>
+    </div>
+
+    <div class="modal-section-label">权限控制</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="form-group">
+        <label class="form-label">认证方式</label>
+        <select>
+          <option>平台凭证自动注入</option>
+          <option>Bearer Token</option>
+          <option>API Key</option>
+          <option>无认证</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">调用权限</label>
+        <select>
+          <option>所有角色</option>
+          <option>仅 Admin / Developer</option>
+          <option>仅 Admin</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
+      <button class="btn" onclick="closeModal('registerTool')">取消</button>
+      <button class="btn" onclick="closeModal('registerTool'); showToast('工具已保存为草稿', 'success')">💾 保存草稿</button>
+      <button class="btn btn-primary" onclick="closeModal('registerTool'); showToast('工具注册成功，可在技能和 Agent 中引用', 'success')">注册工具</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Publish Atomic Capability -->
+<div class="modal" id="modal-publishAtomic">
+  <div class="modal-box" style="width:640px">
+    <div class="modal-title">发布新原子能力</div>
+    <div class="modal-desc" style="margin-bottom:14px">将可复用的 AI 能力封装为原子能力，供其他项目和团队引用。</div>
+
+    <div class="modal-section-label">基础信息</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="form-group">
+        <label class="form-label">能力名称</label>
+        <input placeholder="例：智能摘要生成器">
+      </div>
+      <div class="form-group">
+        <label class="form-label">分类</label>
+        <select>
+          <option>模型调用</option>
+          <option>知识检索</option>
+          <option>Agent 能力</option>
+          <option>MCP 开发</option>
+          <option>数据处理</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">能力描述</label>
+      <textarea rows="2" placeholder="描述能力用途、适用场景和接入方式"></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Git 仓库地址</label>
+      <input placeholder="https://github.com/your-org/capability-repo">
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="form-group">
+        <label class="form-label">运行环境</label>
+        <select><option>Python 3.11+</option><option>Node.js 18+</option><option>Java 17+</option><option>Go 1.21+</option><option>Docker</option></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">版本号</label>
+        <input placeholder="1.0.0" value="1.0.0">
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
+      <button class="btn" onclick="closeModal('publishAtomic')">取消</button>
+      <button class="btn btn-primary" onclick="closeModal('publishAtomic'); showToast('原子能力已提交审核', 'success')">提交发布</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Create Integration (MCP) -->
+<div class="modal" id="modal-createIntegration">
+  <div class="modal-box" style="width:640px">
+    <div class="modal-title">接入自建 MCP Server</div>
+    <div class="modal-desc" style="margin-bottom:14px">将自建的 MCP Server 接入平台，统一管理并暴露给项目中的 AI Agent。</div>
+
+    <div class="modal-section-label">MCP 配置</div>
+    <div class="form-group">
+      <label class="form-label">MCP Server 名称</label>
+      <input placeholder="例：internal-data-mcp">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Server URL</label>
+      <input placeholder="https://your-mcp-server.internal.com/mcp">
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="form-group">
+        <label class="form-label">传输协议</label>
+        <select>
+          <option>Streamable HTTP（推荐）</option>
+          <option>SSE</option>
+          <option>stdio</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">认证方式</label>
+        <select>
+          <option>Bearer Token</option>
+          <option>OAuth 2.0</option>
+          <option>API Key</option>
+          <option>无认证</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">认证凭据</label>
+      <input type="password" placeholder="Bearer Token / API Key">
+    </div>
+
+    <div class="modal-section-label">权限范围</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="form-group">
+        <label class="form-label">可见范围</label>
+        <select>
+          <option>企业全局</option>
+          <option>指定项目</option>
+          <option>仅管理员</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">自动发现工具</label>
+        <select>
+          <option selected>是（推荐）</option>
+          <option>否，手动配置</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
+      <button class="btn" onclick="closeModal('createIntegration')">取消</button>
+      <button class="btn" onclick="closeModal('createIntegration'); showToast('正在测试连通性...', 'info')">🔍 测试连通性</button>
+      <button class="btn btn-primary" onclick="closeModal('createIntegration'); showToast('MCP Server 接入成功，已发现 5 个工具', 'success')">保存并启用</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Add Upstream API Key -->
+<div class="modal" id="modal-addUpstreamKey">
+  <div class="modal-box" style="width:680px">
+    <div class="modal-title">添加上游供应商 API Key</div>
+    <div class="modal-desc" style="margin-bottom:14px">添加新的 AI 供应商 API Key，平台代理层将使用此 Key 转发成员请求。真实 Key 不会暴露给任何成员。</div>
+
+    <div class="modal-section-label">供应商信息</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="form-group">
+        <label class="form-label">AI 供应商</label>
+        <select id="upstreamProvider">
+          <option value="anthropic">Anthropic (Claude)</option>
+          <option value="openai">OpenAI (GPT)</option>
+          <option value="deepseek">DeepSeek</option>
+          <option value="google">Google (Gemini)</option>
+          <option value="custom">自定义供应商...</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Key 用途标识</label>
+        <select>
+          <option>主用 Key</option>
+          <option>备用 Key（灾备）</option>
+          <option>测试专用 Key</option>
+          <option>特定项目专用</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="modal-section-label">Key 配置</div>
+    <div class="form-group">
+      <label class="form-label">API Key</label>
+      <input type="password" placeholder="粘贴供应商提供的 API Key（如 sk-ant-api03-xxxxxx）">
+      <div style="font-size:11px;color:var(--sub);margin-top:4px">Key 将加密存储，仅在代理转发时解密使用</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="form-group">
+        <label class="form-label">API Base URL</label>
+        <input placeholder="https://api.anthropic.com" value="https://api.anthropic.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label">代理端点路径</label>
+        <input placeholder="/proxy/anthropic" value="/proxy/anthropic">
+      </div>
+    </div>
+
+    <div class="modal-section-label">可用模型</div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px">
+      <label style="display:flex;align-items:center;gap:4px;background:white;padding:5px 10px;border-radius:6px;border:1px solid var(--border);cursor:pointer;font-size:12px"><input type="checkbox" checked style="width:auto">claude-sonnet-4-6</label>
+      <label style="display:flex;align-items:center;gap:4px;background:white;padding:5px 10px;border-radius:6px;border:1px solid var(--border);cursor:pointer;font-size:12px"><input type="checkbox" checked style="width:auto">claude-haiku-4-5</label>
+      <label style="display:flex;align-items:center;gap:4px;background:white;padding:5px 10px;border-radius:6px;border:1px solid var(--border);cursor:pointer;font-size:12px"><input type="checkbox" style="width:auto">claude-opus-4-6</label>
+    </div>
+
+    <div class="modal-section-label">配额与限制</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+      <div class="form-group">
+        <label class="form-label">月 Token 配额</label>
+        <input placeholder="10000000" value="10000000">
+      </div>
+      <div class="form-group">
+        <label class="form-label">RPM 速率限制</label>
+        <input placeholder="4000" value="4000">
+      </div>
+      <div class="form-group">
+        <label class="form-label">月费用预警</label>
+        <input placeholder="$2000" value="$2000">
+      </div>
+    </div>
+
+    <div class="modal-section-label">故障转移</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="form-group">
+        <label class="form-label">故障时降级到</label>
+        <select>
+          <option>Anthropic 备用 Key</option>
+          <option>OpenAI gpt-4o</option>
+          <option>DeepSeek deepseek-v3</option>
+          <option>不降级（直接报错）</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">故障检测阈值</label>
+        <select>
+          <option>连续 3 次失败</option>
+          <option selected>连续 5 次失败</option>
+          <option>连续 10 次失败</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="background:var(--bg);border-radius:8px;padding:12px;margin-top:4px">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+        <input type="checkbox" checked style="width:auto">
+        <div>
+          <div style="font-size:13px;font-weight:500">添加后立即执行连通性测试</div>
+          <div style="font-size:12px;color:var(--sub)">验证 Key 有效性、可用模型列表和响应延迟</div>
+        </div>
+      </label>
+    </div>
+
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:20px">
+      <button class="btn" onclick="closeModal('addUpstreamKey')">取消</button>
+      <button class="btn" onclick="closeModal('addUpstreamKey'); showToast('连通性测试通过 · 延迟 52ms · 3 个模型可用', 'success')">🔍 仅测试</button>
+      <button class="btn btn-primary" onclick="closeModal('addUpstreamKey'); showToast('供应商 Key 添加成功，已通过连通性测试', 'success')">添加并测试</button>
+    </div>
+  </div>
+</div>
+
+<!-- RAG Pipeline 配置弹窗 (PRD 5.3) -->
+<div class="modal-overlay" id="modal-ragConfig" onclick="if(event.target===this)closeModal('ragConfig')">
+  <div class="modal" style="max-width:640px">
+    <div class="modal-header">
+      <h3>⚙️ RAG Pipeline 配置</h3>
+      <button class="modal-close" onclick="closeModal('ragConfig')">&times;</button>
+    </div>
+    <div style="background:var(--primary-light);border-radius:6px;padding:10px 14px;margin-bottom:16px;font-size:12px;color:var(--primary)">
+      💡 RAG Pipeline 决定文档如何被解析、分块、向量化和检索。调整后需重新索引受影响文档。
+    </div>
+
+    <div class="modal-section-label">文档解析</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+      <div class="form-group">
+        <label class="form-label">解析引擎</label>
+        <select>
+          <option selected>Apache Tika + LlamaIndex（推荐）</option>
+          <option>Unstructured.io</option>
+          <option>LangChain Document Loaders</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">支持格式</label>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">
+          <span class="badge badge-blue">PDF</span>
+          <span class="badge badge-blue">Word</span>
+          <span class="badge badge-blue">Markdown</span>
+          <span class="badge badge-blue">TXT</span>
+          <span class="badge badge-blue">代码文件</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-section-label">智能分块策略</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+      <div class="form-group">
+        <label class="form-label">分块方式</label>
+        <select>
+          <option>按固定长度</option>
+          <option selected>语义完整性分块（推荐）</option>
+          <option>按段落/章节</option>
+          <option>递归字符分割</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">块大小 (tokens)</label>
+        <input type="number" value="512" placeholder="512">
+      </div>
+      <div class="form-group">
+        <label class="form-label">块重叠 (tokens)</label>
+        <input type="number" value="64" placeholder="64">
+      </div>
+      <div class="form-group">
+        <label class="form-label">最大块数/文档</label>
+        <input type="number" value="200" placeholder="200">
+      </div>
+    </div>
+
+    <div class="modal-section-label">向量化 (Embedding)</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+      <div class="form-group">
+        <label class="form-label">Embedding 模型</label>
+        <select>
+          <option selected>BGE-M3（中英双语，推荐）</option>
+          <option>text-embedding-3-large (OpenAI)</option>
+          <option>voyage-3 (Anthropic)</option>
+          <option>自定义模型</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">向量维度</label>
+        <input value="1024" disabled style="background:var(--bg)">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Vector DB</label>
+        <select>
+          <option selected>pgvector (PostgreSQL)</option>
+          <option>Milvus</option>
+          <option>Pinecone</option>
+          <option>Weaviate</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">索引类型</label>
+        <select>
+          <option selected>HNSW（推荐）</option>
+          <option>IVFFlat</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="modal-section-label">检索策略</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+      <div class="form-group">
+        <label class="form-label">检索方式</label>
+        <select>
+          <option>纯向量检索</option>
+          <option selected>混合检索：向量 + BM25（推荐）</option>
+          <option>纯关键词检索</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Top-K 返回数</label>
+        <input type="number" value="5" placeholder="5">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Reranking 模型</label>
+        <select>
+          <option selected>BGE-Reranker</option>
+          <option>Cohere Rerank</option>
+          <option>不使用 Reranking</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">相似度阈值</label>
+        <input type="number" value="0.7" step="0.1" placeholder="0.7">
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
+      <button class="btn" onclick="closeModal('ragConfig')">取消</button>
+      <button class="btn" onclick="showToast('检索效果测试中...','info'); setTimeout(()=>showToast('测试完成：Top-5 命中率 82%，平均延迟 180ms','success'), 1500)">🧪 测试检索效果</button>
+      <button class="btn btn-primary" onclick="closeModal('ragConfig'); showToast('RAG Pipeline 配置已保存，3 篇文档将重新索引','success')">保存配置</button>
+    </div>
+  </div>
+</div>
+
+<!-- 告警规则配置弹窗 (PRD 12.1) -->
+<div class="modal-overlay" id="modal-alertRule" onclick="if(event.target===this)closeModal('alertRule')">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-header">
+      <h3>🔔 新增告警规则</h3>
+      <button class="modal-close" onclick="closeModal('alertRule')">&times;</button>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">告警名称</label>
+      <input placeholder="例：Token 配额超限告警">
+    </div>
+    <div class="form-group">
+      <label class="form-label">告警类型</label>
+      <select>
+        <option>凭证安全</option>
+        <option>配额与用量</option>
+        <option>上游服务</option>
+        <option>性能指标</option>
+        <option>安全事件</option>
+      </select>
+    </div>
+
+    <div class="modal-section-label">触发条件</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px">
+      <div class="form-group">
+        <label class="form-label">指标</label>
+        <select>
+          <option>凭证过期天数</option>
+          <option selected>Token 使用率</option>
+          <option>API 错误率</option>
+          <option>P99 延迟</option>
+          <option>连续失败次数</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">运算符</label>
+        <select>
+          <option>≥</option>
+          <option>≤</option>
+          <option>==</option>
+          <option>包含</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">阈值</label>
+        <input value="90" placeholder="阈值">
+      </div>
+    </div>
+
+    <div class="modal-section-label">通知渠道</div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px">
+      <label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" checked style="width:auto"> 📧 邮件</label>
+      <label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" checked style="width:auto"> 🔔 站内通知</label>
+      <label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" style="width:auto"> 💬 企业微信</label>
+      <label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" style="width:auto"> 📱 短信</label>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">通知对象</label>
+      <select>
+        <option>平台管理员</option>
+        <option>项目管理员</option>
+        <option>相关成员</option>
+        <option>自定义成员列表</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">告警级别</label>
+      <div style="display:flex;gap:8px">
+        <label style="display:flex;align-items:center;gap:4px;cursor:pointer;padding:6px 12px;border:1px solid var(--border);border-radius:6px">
+          <input type="radio" name="alertLevel" style="width:auto"> <span class="badge badge-blue">提醒</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:4px;cursor:pointer;padding:6px 12px;border:1px solid var(--border);border-radius:6px">
+          <input type="radio" name="alertLevel" checked style="width:auto"> <span class="badge badge-yellow">警告</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:4px;cursor:pointer;padding:6px 12px;border:1px solid var(--border);border-radius:6px">
+          <input type="radio" name="alertLevel" style="width:auto"> <span class="badge badge-red">严重</span>
+        </label>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:20px">
+      <button class="btn" onclick="closeModal('alertRule')">取消</button>
+      <button class="btn btn-primary" onclick="closeModal('alertRule'); showToast('告警规则已创建并启用','success')">创建规则</button>
+    </div>
+  </div>
+</div>
+
+<!-- 服务账号凭证创建弹窗 (PRD 4.1) -->
+<div class="modal-overlay" id="modal-serviceAccount" onclick="if(event.target===this)closeModal('serviceAccount')">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-header">
+      <h3>🤖 创建服务账号凭证</h3>
+      <button class="modal-close" onclick="closeModal('serviceAccount')">&times;</button>
+    </div>
+
+    <div style="background:#FFF6ED;border:1px solid var(--warning);border-radius:6px;padding:10px 14px;margin-bottom:16px;font-size:12px">
+      ⚠️ 服务账号凭证不绑定个人身份，用于 CI/CD Pipeline、自动化脚本、Agent 等场景。创建后需管理员审批。
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">账号名称</label>
+      <input placeholder="例：ci-bot-mall, auto-review-agent">
+    </div>
+    <div class="form-group">
+      <label class="form-label">用途说明</label>
+      <textarea rows="2" placeholder="说明此服务账号的使用场景，如：商城系统 CI/CD 流水线中自动代码审查"></textarea>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="form-group">
+        <label class="form-label">绑定项目</label>
+        <select>
+          <option>全局（跨项目）</option>
+          <option>商城系统</option>
+          <option>用户中心</option>
+          <option>支付网关</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">有效期</label>
+        <select>
+          <option>90 天</option>
+          <option selected>180 天</option>
+          <option>365 天</option>
+          <option>自定义</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="modal-section-label">权限范围</div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" checked style="width:auto"> 📚 知识库检索（只读）</label>
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" checked style="width:auto"> ⚡ 技能调用</label>
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" style="width:auto"> 🔩 工具执行</label>
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" style="width:auto"> 🔌 MCP 集成访问</label>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="form-group">
+        <label class="form-label">Token 配额 (月)</label>
+        <input value="100000" placeholder="100000">
+      </div>
+      <div class="form-group">
+        <label class="form-label">IP 白名单（可选）</label>
+        <input placeholder="10.0.1.0/24, 172.16.0.0/16">
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:20px">
+      <button class="btn" onclick="closeModal('serviceAccount')">取消</button>
+      <button class="btn btn-primary" onclick="closeModal('serviceAccount'); showToast('服务账号创建申请已提交，等待管理员审批','success')">提交创建申请</button>
+    </div>
+  </div>
+</div>
+
+<!-- 技能审核弹窗 (PRD 6.4) -->
+<div class="modal-overlay" id="modal-skillReview" onclick="if(event.target===this)closeModal('skillReview')">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-header">
+      <h3>🔍 技能审核</h3>
+      <button class="modal-close" onclick="closeModal('skillReview')">&times;</button>
+    </div>
+
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-body">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <div>
+            <div style="font-weight:700;font-size:15px">安全扫描</div>
+            <div style="font-size:12px;color:var(--sub)">security-scan · v1.0.0 · 提交者：李四</div>
+          </div>
+          <span class="badge badge-yellow">🔍 待审核</span>
+        </div>
+        <div style="font-size:13px;margin-bottom:8px">对代码进行 OWASP Top 10 安全扫描，检测 SQL 注入、XSS、CSRF 等漏洞风险</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <span class="badge badge-blue">全局技能</span>
+          <span class="badge badge-gray">安全</span>
+          <span class="badge badge-gray">绑定工具: 2</span>
+          <span class="badge badge-gray">关联知识库: 1</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">审核意见</label>
+      <textarea rows="3" placeholder="填写审核意见..."></textarea>
+    </div>
+
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
+      <button class="btn" onclick="closeModal('skillReview')">取消</button>
+      <button class="btn btn-danger" onclick="closeModal('skillReview'); showToast('技能已驳回，已通知提交者修改','info')">驳回</button>
+      <button class="btn btn-primary" onclick="closeModal('skillReview'); showToast('技能已审核通过并发布，全员可用','success')">✅ 通过并发布</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-stack" id="toastStack"></div>
+
+<script src="assets/js/templates/personal-pages.js"></script>
+<script src="assets/js/templates/platform-pages.js"></script>
+<script src="assets/js/templates/project-pages.js"></script>
+<script src="assets/js/app.js"></script>
+</body>
+</html>

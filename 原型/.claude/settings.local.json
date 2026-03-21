@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -o 'grid-3.*导入 Git 仓库.*mcp-sub\\\\\\\\\\\\u003e从 GitHub / GitLab / 自建 Git 导入\\\\\\\\\\\\u003c/div\\\\\\\\\\\\u003e.*\\\\\\\\\\\\u003c/div\\\\\\\\\\\\u003e.*\\\\\\\\\\\\u003c/div\\\\\\\\\\\\u003e.*\\\\\\\\\\\\u003c/div\\\\\\\\\\\\u003e' \"C:/Users/76741/Desktop/原型/assets/js/templates/project-pages.js\")",
+      "Bash(grep -oP 'grid-3.{1,1000}导入 Git 仓库.{1,300}')"
+    ]
+  }
+}

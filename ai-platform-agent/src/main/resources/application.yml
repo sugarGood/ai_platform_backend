@@ -1,0 +1,28 @@
+spring:
+  application:
+    name: ai-platform-agent
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://192.168.0.11:3306/ai_platform?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8&autoReconnect=true&rewriteBatchedStatements=true
+    username: root
+    password: cqcdi@135!
+  sql:
+    init:
+      mode: never
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+  global-config:
+    db-config:
+      id-type: auto
+
+server:
+  port: 8081
+
+ai:
+  gateway:
+    providers:
+      CODEX:
+        base-url: https://api.openai.com
+        chat-completions-path: /v1/chat/completions

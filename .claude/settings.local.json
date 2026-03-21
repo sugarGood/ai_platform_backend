@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__database-mcp__query",
+      "mcp__database-mcp__list_tables",
+      "mcp__database-mcp__execute",
+      "Bash(find /c/Users/76741/Desktop/ai_platform/backend/src/main/java/com/aiplatform/backend -type f -name *.java)",
+      "mcp__database-mcp__describe_table"
+    ]
+  }
+}
