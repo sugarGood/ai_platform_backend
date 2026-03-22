@@ -151,7 +151,7 @@
     overview:'概览', knowledge:'知识库',
     incidents:'事故与告警', services:'代码服务', members:'成员权限',
     'ai-cap':'AI 能力', keymanagement:'配额管理', psettings:'项目设置',
-    workspace:'接入与凭证'
+    workspace:'接入与凭证', lekai:'乐知助手'
   };
 
   function showProjectPage(name) {
@@ -425,6 +425,80 @@
     document.getElementById('wf-stat-rate').textContent = meta.rate;
     document.getElementById('wf-stat-time').textContent = meta.time;
     document.getElementById('wf-stat-token').textContent = meta.token;
+  }
+
+  // ── 乐知对话功能 ──
+  const lekaiConversations = {
+    '今天项目有什么 Bug 或告警吗？': [
+      '正在检索事故中心与监控数据...',
+      '🚨 **当前有 1 个待处理事故**\n\n**支付服务 NullPointerException**（严重）\n- 位置：`PaymentService.processOrder:142`\n- 根因：checkout 接口未对 `paymentMethod` 做非空校验\n- 建议修复：在 `OrderController:89` 加参数校验\n- 状态：处理中（张三负责）\n\n生产环境监控正常，P99 延迟 120ms，无其他告警。'
+    ],
+    '帮我查一下生产环境的服务状态': [
+      '正在查询服务健康状态...',
+      '✅ **生产环境整体正常**\n\n| 服务 | 状态 | 版本 | P99 延迟 |\n|------|------|------|---------|\n| mall-backend | 🟢 健康 | v2.3.1 | 120ms |\n| mall-frontend | 🔵 构建中 | feature/search | — |\n| mall-mobile | 🟢 健康 | v2.1.0 | — |\n\nmall-frontend 正在构建 feature/search（ES接入），预计 15 分钟完成，不影响生产。'
+    ],
+    '帮我解释一下订单状态机的设计': [
+      '正在检索项目知识库...（命中「系统架构设计文档」· 相关度 95%）',
+      '📚 **订单状态机设计**（来源：系统架构设计文档）\n\n订单共有 6 个状态：\n\n`待支付` → `已支付` → `备货中` → `已发货` → `已完成`\n↓\n`已取消`（可从待支付/已支付转入）\n\n**关键规则：**\n- 超时 30 分钟未支付自动取消\n- 已发货状态不可直接取消，需走退货流程\n- 状态流转均记录操作日志\n\n当前 Sprint 正在重构此模块（OrderService），任务进度 65%，预计明天完成。'
+    ],
+    '最近一次 Sprint 完成情况怎么样？': [
+      '正在分析 Sprint 数据...',
+      '📋 **Sprint 8 当前进度**（3/1 - 3/14）\n\n- 已完成：23 SP / 总计 40 SP（58%）\n- 剩余：17 SP，还有 6 天\n- 速度：3.8 SP/天，完成概率 **78%**\n\n**风险项：**\n⚠️ 订单状态机重构（8SP）进度 65%，有轻微延期风险\n⚠️ 支付联调依赖第三方沙箱，建议今天协调\n\n整体符合预期，按当前速率月底用量预计 496K Token，不超限。'
+    ]
+  };
+
+  function lekaiSendQuick(text) {
+    const input = document.getElementById('lekai-input');
+    if (input) input.value = text;
+    lekaiSend();
+  }
+
+  function lekaiSend() {
+    const input = document.getElementById('lekai-input');
+    const messages = document.getElementById('lekai-messages');
+    const welcome = document.getElementById('lekai-welcome');
+    if (!input || !messages) return;
+    const text = input.value.trim();
+    if (!text) return;
+
+    // 隐藏欢迎区
+    if (welcome) welcome.style.display = 'none';
+    input.value = '';
+    input.style.height = 'auto';
+
+    // 添加用户消息
+    const userMsg = document.createElement('div');
+    userMsg.style.cssText = 'display:flex;justify-content:flex-end';
+    userMsg.innerHTML = `<div style="max-width:70%;background:var(--primary);color:white;border-radius:14px 14px 2px 14px;padding:10px 14px;font-size:13px;line-height:1.6">${escapeHtml(text)}</div>`;
+    messages.appendChild(userMsg);
+
+    // 添加 loading
+    const loadingMsg = document.createElement('div');
+    loadingMsg.style.cssText = 'display:flex;align-items:flex-start;gap:10px';
+    loadingMsg.innerHTML = `
+      <div style="width:32px;height:32px;background:linear-gradient(135deg,#4F6EF7,#7A5AF8);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">🔮</div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:2px 14px 14px 14px;padding:10px 14px;font-size:13px;color:var(--sub)">乐知正在思考...</div>`;
+    messages.appendChild(loadingMsg);
+    messages.scrollTop = messages.scrollHeight;
+
+    // 查找预设回答
+    const reply = lekaiConversations[text];
+    const thinkText = reply ? reply[0] : '正在检索项目知识库与监控数据...';
+    const replyText = reply ? reply[1] : `关于「${text}」的查询已收到。\n\n这是乐知原型演示，实际部署后将通过 RAG 检索项目知识库、调用监控 API，为你提供基于真实项目数据的精准回答。`;
+
+    // 第一步：显示检索状态
+    setTimeout(() => {
+      loadingMsg.querySelector('div:last-child').textContent = thinkText;
+      messages.scrollTop = messages.scrollHeight;
+
+      // 第二步：显示回答
+      setTimeout(() => {
+        loadingMsg.querySelector('div:last-child').innerHTML =
+          replyText.replace(/\n/g, '<br>').replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/`(.+?)`/g, '<code>$1</code>');
+        loadingMsg.querySelector('div:last-child').style.color = 'var(--text)';
+        messages.scrollTop = messages.scrollHeight;
+      }, 1000);
+    }, 800);
   }
 
   function handlePrototypeButton(btn) {

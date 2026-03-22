@@ -5,7 +5,11 @@
       "mcp__database-mcp__list_tables",
       "mcp__database-mcp__execute",
       "Bash(find /c/Users/76741/Desktop/ai_platform/backend/src/main/java/com/aiplatform/backend -type f -name *.java)",
-      "mcp__database-mcp__describe_table"
+      "mcp__database-mcp__describe_table",
+      "Bash(grep -E \"\\\\.\\(ts|js|json\\)$\")",
+      "Bash(find /c/Users/76741/Desktop/ai_platform_backend/ai-platform-agent -type f -name *.java -o -name *.py -o -name *.ts -o -name *.js)",
+      "Bash(grep -E \"\\\\.\\(java|sql\\)$\")",
+      "Bash(mvn compile:*)"
     ]
   }
 }

@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 
+import java.math.BigDecimal;
+
 /**
  * AI 模型引用实体（网关只读视图）。
  *
@@ -26,6 +28,12 @@ public class AiModelRef {
     /** 模型名称 */
     private String name;
 
+    /** 每百万输入 Token 单价 */
+    private BigDecimal inputPricePer1m;
+
+    /** 每百万输出 Token 单价 */
+    private BigDecimal outputPricePer1m;
+
     /** 模型状态（如 ACTIVE、DEPRECATED） */
     private String status;
 
@@ -37,6 +45,10 @@ public class AiModelRef {
     public void setCode(String code) { this.code = code; }
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
+    public BigDecimal getInputPricePer1m() { return inputPricePer1m; }
+    public void setInputPricePer1m(BigDecimal inputPricePer1m) { this.inputPricePer1m = inputPricePer1m; }
+    public BigDecimal getOutputPricePer1m() { return outputPricePer1m; }
+    public void setOutputPricePer1m(BigDecimal outputPricePer1m) { this.outputPricePer1m = outputPricePer1m; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
 }

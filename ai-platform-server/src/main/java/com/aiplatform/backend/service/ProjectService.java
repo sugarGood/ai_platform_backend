@@ -27,16 +27,22 @@ public class ProjectService {
     );
 
     private final ProjectMapper projectMapper;
+    private final ProjectAgentService projectAgentService;
 
-    public ProjectService(ProjectMapper projectMapper) {
+    public ProjectService(ProjectMapper projectMapper,
+                          ProjectAgentService projectAgentService) {
         this.projectMapper = projectMapper;
+        this.projectAgentService = projectAgentService;
     }
 
     /**
-     * 创建新项目，初始化项目 Token 池配额（双池之二）。
+     * 创建新项目，初始化项目 Token 池配额（双池之二），并自动创建专属智能体。
      *
      * <p>若请求未指定 {@code monthlyTokenQuota}，按项目类型取默认值：
      * PRODUCT=500K, PLATFORM=800K, DATA/OTHER=300K。</p>
+     *
+     * <p>项目插入成功后，自动调用 {@link ProjectAgentService#initForProject}
+     * 为该项目创建一个默认配置的专属智能体。</p>
      *
      * @param request 创建项目的请求参数
      * @return 持久化后的项目实体
@@ -62,6 +68,10 @@ public class ProjectService {
                 request.overQuotaStrategy() != null ? request.overQuotaStrategy() : "BLOCK");
 
         projectMapper.insert(project);
+
+        // 自动为新项目创建专属智能体（createdBy 取项目负责人 ID）
+        projectAgentService.initForProject(project, request.ownerUserId());
+
         return project;
     }
 

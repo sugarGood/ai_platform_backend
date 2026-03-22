@@ -94,3 +94,107 @@ CREATE TABLE IF NOT EXISTS ai_usage_events (
     occurred_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Project context enrichment tables (read-only refs for gateway)
+
+CREATE TABLE IF NOT EXISTS skills (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    skill_key VARCHAR(64) NOT NULL,
+    name VARCHAR(128) NOT NULL,
+    description TEXT,
+    scope VARCHAR(16) NOT NULL,
+    project_id BIGINT,
+    category VARCHAR(32) NOT NULL DEFAULT 'OTHER',
+    system_prompt TEXT,
+    knowledge_refs TEXT,
+    bound_tools TEXT,
+    parameters TEXT,
+    slash_command VARCHAR(64),
+    version VARCHAR(16) NOT NULL DEFAULT '1.0.0',
+    status VARCHAR(16) NOT NULL DEFAULT 'DRAFT',
+    usage_count BIGINT NOT NULL DEFAULT 0,
+    satisfaction_up INT NOT NULL DEFAULT 0,
+    satisfaction_down INT NOT NULL DEFAULT 0,
+    created_by BIGINT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    published_at TIMESTAMP,
+    CONSTRAINT uk_skill_key UNIQUE (skill_key)
+);
+
+CREATE TABLE IF NOT EXISTS project_skills (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    project_id BIGINT NOT NULL,
+    skill_id BIGINT NOT NULL,
+    status VARCHAR(16) NOT NULL DEFAULT 'ACTIVE',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT uk_project_skill UNIQUE (project_id, skill_id)
+);
+
+CREATE TABLE IF NOT EXISTS knowledge_bases (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(128) NOT NULL,
+    description TEXT,
+    scope VARCHAR(16) NOT NULL,
+    project_id BIGINT,
+    category VARCHAR(64),
+    embedding_model VARCHAR(64) NOT NULL DEFAULT 'bge-m3',
+    doc_count INT NOT NULL DEFAULT 0,
+    total_chunks INT NOT NULL DEFAULT 0,
+    hit_rate DECIMAL(5,2),
+    inject_mode VARCHAR(16) NOT NULL DEFAULT 'ON_DEMAND',
+    status VARCHAR(16) NOT NULL DEFAULT 'ACTIVE',
+    created_by BIGINT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS project_knowledge_configs (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    project_id BIGINT NOT NULL,
+    kb_id BIGINT NOT NULL,
+    search_weight DECIMAL(3,2) NOT NULL DEFAULT 1.00,
+    status VARCHAR(16) NOT NULL DEFAULT 'ACTIVE',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT uk_proj_kb UNIQUE (project_id, kb_id)
+);
+
+CREATE TABLE IF NOT EXISTS projects (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(128) NOT NULL,
+    code VARCHAR(64) NOT NULL,
+    description TEXT,
+    project_type VARCHAR(32) NOT NULL DEFAULT 'PRODUCT',
+    owner_user_id BIGINT,
+    monthly_token_quota BIGINT NOT NULL DEFAULT 0,
+    used_tokens_this_month BIGINT NOT NULL DEFAULT 0,
+    alert_threshold_pct TINYINT NOT NULL DEFAULT 80,
+    over_quota_strategy VARCHAR(32) NOT NULL DEFAULT 'BLOCK',
+    last_quota_reset_at TIMESTAMP,
+    status VARCHAR(16) NOT NULL DEFAULT 'ACTIVE',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT uk_projects_code UNIQUE (code)
+);
+
+CREATE TABLE IF NOT EXISTS project_agents (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    project_id BIGINT NOT NULL,
+    name VARCHAR(128) NOT NULL,
+    description TEXT,
+    avatar_icon VARCHAR(64),
+    system_prompt TEXT,
+    preferred_model VARCHAR(128),
+    enable_rag TINYINT NOT NULL DEFAULT 1,
+    enable_skills TINYINT NOT NULL DEFAULT 1,
+    enable_tools TINYINT NOT NULL DEFAULT 1,
+    enable_deploy TINYINT NOT NULL DEFAULT 0,
+    enable_monitoring TINYINT NOT NULL DEFAULT 0,
+    status VARCHAR(16) NOT NULL DEFAULT 'ACTIVE',
+    created_by BIGINT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT uk_project_agent_project UNIQUE (project_id)
+);

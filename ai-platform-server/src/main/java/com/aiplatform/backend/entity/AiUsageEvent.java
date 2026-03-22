@@ -3,6 +3,10 @@ package com.aiplatform.backend.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -21,10 +25,16 @@ import java.time.LocalDateTime;
  *
  * <p>用于用量统计、费用核算和审计追踪。</p>
  */
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @TableName("ai_usage_events")
 public class AiUsageEvent {
 
-    /** 主键 ID，自增 */
+    /**
+     * 主键 ID，自增
+     */
     @TableId(type = IdType.AUTO)
     private Long id;
 
@@ -56,19 +66,29 @@ public class AiUsageEvent {
     // AI 调用来源
     // ---------------------------------------------------------------
 
-    /** 供应商 ID（关联 {@code ai_providers.id}） */
+    /**
+     * 供应商 ID（关联 {@code ai_providers.id}）
+     */
     private Long providerId;
 
-    /** 上游 API Key ID（关联 {@code provider_api_keys.id}），用于成本核算 */
+    /**
+     * 上游 API Key ID（关联 {@code provider_api_keys.id}），用于成本核算
+     */
     private Long providerApiKeyId;
 
-    /** 使用的模型 ID（关联 {@code ai_models.id}） */
+    /**
+     * 使用的模型 ID（关联 {@code ai_models.id}）
+     */
     private Long modelId;
 
-    /** 客户端应用 ID（如 Cursor、Claude Code 等，关联 {@code client_apps.id}） */
+    /**
+     * 客户端应用 ID（如 Cursor、Claude Code 等，关联 {@code client_apps.id}）
+     */
     private Long clientAppId;
 
-    /** 触发的技能 ID（关联 {@code skills.id}），无技能触发时为 NULL */
+    /**
+     * 触发的技能 ID（关联 {@code skills.id}），无技能触发时为 NULL
+     */
     private Long skillId;
 
     // ---------------------------------------------------------------
@@ -87,26 +107,38 @@ public class AiUsageEvent {
      */
     private String requestMode;
 
-    /** 请求追踪 ID，用于跨服务链路追踪 */
+    /**
+     * 请求追踪 ID，用于跨服务链路追踪
+     */
     private String requestId;
 
-    /** 会话 ID，用于关联多轮对话 */
+    /**
+     * 会话 ID，用于关联多轮对话
+     */
     private String conversationId;
 
     // ---------------------------------------------------------------
     // Token 消耗
     // ---------------------------------------------------------------
 
-    /** 输入 Token 数（Prompt Tokens） */
+    /**
+     * 输入 Token 数（Prompt Tokens）
+     */
     private Long inputTokens;
 
-    /** 输出 Token 数（Completion Tokens） */
+    /**
+     * 输出 Token 数（Completion Tokens）
+     */
     private Long outputTokens;
 
-    /** 总 Token 数 = inputTokens + outputTokens，双池扣减的实际数值 */
+    /**
+     * 总 Token 数 = inputTokens + outputTokens，双池扣减的实际数值
+     */
     private Long totalTokens;
 
-    /** 本次调用估算费用（USD），按模型单价计算 */
+    /**
+     * 本次调用估算费用（USD），按模型单价计算
+     */
     private BigDecimal costAmount;
 
     // ---------------------------------------------------------------
@@ -140,62 +172,26 @@ public class AiUsageEvent {
      */
     private String status;
 
-    /** 错误信息，status 非 SUCCESS 时填写 */
+    /**
+     * 错误信息，status 非 SUCCESS 时填写
+     */
     private String errorMessage;
 
-    /** 代理层延迟（毫秒），不含上游响应时间 */
+    /**
+     * 代理层延迟（毫秒），不含上游响应时间
+     */
     private Integer latencyMs;
 
-    /** 事件发生时间 */
+    /**
+     * 事件发生时间
+     */
     private LocalDateTime occurredAt;
 
-    /** 记录写入时间 */
+    /**
+     * 记录写入时间
+     */
     private LocalDateTime createdAt;
 
-    // ---------------------------------------------------------------
-    // Getters & Setters
-    // ---------------------------------------------------------------
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+}
 
-    public Long getCredentialId() { return credentialId; }
-    public void setCredentialId(Long credentialId) { this.credentialId = credentialId; }
-
-    public Long getProjectId() { return projectId; }
-    public void setProjectId(Long projectId) { this.projectId = projectId; }
-
-    public Long getUserId() { return userId; }
-    public void setUserId(Long userId) { this.userId = userId; }
-
-    public Long getProviderId() { return providerId; }
-    public void setProviderId(Long providerId) { this.providerId = providerId; }
-
-    public Long getProviderApiKeyId() { return providerApiKeyId; }
-    public void setProviderApiKeyId(Long providerApiKeyId) { this.providerApiKeyId = providerApiKeyId; }
-
-    public Long getModelId() { return modelId; }
-    public void setModelId(Long modelId) { this.modelId = modelId; }
-
-    public Long getClientAppId() { return clientAppId; }
-    public void setClientAppId(Long clientAppId) { this.clientAppId = clientAppId; }
-
-    public Long getSkillId() { return skillId; }
-    public void setSkillId(Long skillId) { this.skillId = skillId; }
-
-    public String getSourceType() { return sourceType; }
-    public void setSourceType(String sourceType) { this.sourceType = sourceType; }
-
-    public String getRequestMode() { return requestMode; }
-    public void setRequestMode(String requestMode) { this.requestMode = requestMode; }
-
-    public String getRequestId() { return requestId; }
-    public void setRequestId(String requestId) { this.requestId = requestId; }
-
-    public String getConversationId() { return conversationId; }
-    public void setConversationId(String conversationId) { this.conversationId = conversationId; }
-
-    public Long getInputTokens() { return inputTokens; }
-    public void setInputTokens(Long inputTokens) { this.inputTokens = inputTokens; }
-
-    

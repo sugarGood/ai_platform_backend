@@ -26,3 +26,20 @@ ai:
       CODEX:
         base-url: https://api.openai.com
         chat-completions-path: /v1/chat/completions
+
+  rag:
+    # Qdrant 向量数据库地址（Windows Docker 本地）
+    qdrant:
+      base-url: http://127.0.0.1:6333
+      collection-prefix: kb_
+
+    # Ollama embedding 服务地址
+    ollama:
+      base-url: http://127.0.0.1:11434
+      embedding-model: bge-m3
+
+    # 检索参数
+    search:
+      top-k: 5
+      score-threshold: 0.5
+      max-chunk-chars: 800

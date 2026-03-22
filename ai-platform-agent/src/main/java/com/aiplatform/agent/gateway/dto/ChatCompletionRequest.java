@@ -1,5 +1,8 @@
 package com.aiplatform.agent.gateway.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.List;
 
 /**
@@ -11,11 +14,21 @@ import java.util.List;
  * @param messages    消息列表，包含对话上下文
  * @param temperature 温度参数，控制生成文本的随机性（0.0~2.0）
  * @param maxTokens   最大生成 Token 数
+ * @param stream      是否启用流式响应，转发给上游时使用
  */
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public record ChatCompletionRequest(
         String model,
         List<ChatCompletionMessage> messages,
         Double temperature,
-        Integer maxTokens
+        @JsonProperty("max_tokens") Integer maxTokens,
+        Boolean stream
 ) {
+    /**
+     * 兼容构造器：不含 stream 字段（默认 null，上游按非流式处理）。
+     */
+    public ChatCompletionRequest(String model, List<ChatCompletionMessage> messages,
+                                  Double temperature, Integer maxTokens) {
+        this(model, messages, temperature, maxTokens, null);
+    }
 }

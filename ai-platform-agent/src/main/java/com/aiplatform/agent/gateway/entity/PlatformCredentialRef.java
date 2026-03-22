@@ -37,6 +37,15 @@ public class PlatformCredentialRef {
     /** 绑定的项目 ID，为空表示不限定项目 */
     private Long boundProjectId;
 
+    /** 个人月度 Token 配额上限，0 表示不限制 */
+    private Long monthlyTokenQuota;
+
+    /** 个人当月已消耗 Token 数 */
+    private Long usedTokensThisMonth;
+
+    /** 超配额策略：BLOCK / ALLOW_WITH_ALERT / DOWNGRADE_MODEL */
+    private String overQuotaStrategy;
+
     /** 凭证状态（如 ACTIVE、REVOKED） */
     private String status;
 
@@ -57,6 +66,12 @@ public class PlatformCredentialRef {
     public void setName(String name) { this.name = name; }
     public Long getBoundProjectId() { return boundProjectId; }
     public void setBoundProjectId(Long boundProjectId) { this.boundProjectId = boundProjectId; }
+    public Long getMonthlyTokenQuota() { return monthlyTokenQuota; }
+    public void setMonthlyTokenQuota(Long monthlyTokenQuota) { this.monthlyTokenQuota = monthlyTokenQuota; }
+    public Long getUsedTokensThisMonth() { return usedTokensThisMonth; }
+    public void setUsedTokensThisMonth(Long usedTokensThisMonth) { this.usedTokensThisMonth = usedTokensThisMonth; }
+    public String getOverQuotaStrategy() { return overQuotaStrategy; }
+    public void setOverQuotaStrategy(String overQuotaStrategy) { this.overQuotaStrategy = overQuotaStrategy; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
     public LocalDateTime getExpiresAt() { return expiresAt; }

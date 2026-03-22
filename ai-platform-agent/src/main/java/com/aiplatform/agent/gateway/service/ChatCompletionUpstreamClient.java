@@ -42,13 +42,17 @@ public class ChatCompletionUpstreamClient {
                                               ChatCompletionRequest request) {
         String apiKey = decryptApiKey(apiKeyEncrypted);
 
+        // 上游要求 stream=true 才会返回 SSE 分块响应
+        ChatCompletionRequest streamRequest = new ChatCompletionRequest(
+                request.model(), request.messages(), request.temperature(), request.maxTokens(), Boolean.TRUE);
+
         WebClient client = webClientBuilder.baseUrl(baseUrl).build();
 
         return client.post()
                 .uri("/v1/chat/completions")
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + apiKey)
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(request)
+                .bodyValue(streamRequest)
                 .retrieve()
                 .bodyToFlux(String.class);
     }
