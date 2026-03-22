@@ -52,16 +52,41 @@ public class GatewayService {
     }
 
     /**
+     * 解析最终生效的项目 ID。
+     *
+     * <p>优先级：
+     * <ol>
+     *   <li>请求头 {@code X-Project-Id} 显式传入（兼容能自定义请求头的调用方）</li>
+     *   <li>凭证绑定的当前工作项目 {@code boundProjectId}（员工在个人页面切换项目后生效，
+     *       Cursor / Claude Code / Codex 等工具无需任何额外配置）</li>
+     *   <li>{@code null}，不关联项目，仅做纯模型调用</li>
+     * </ol>
+     * </p>
+     *
+     * @param headerProjectId 请求头传入的项目 ID，可为 null
+     * @param credential      认证通过的平台凭证
+     * @return 最终生效的项目 ID
+     */
+    private Long resolveProjectId(Long headerProjectId, PlatformCredentialRef credential) {
+        if (headerProjectId != null) {
+            return headerProjectId;
+        }
+        return credential.getBoundProjectId();
+    }
+
+    /**
      * 执行聊天补全请求的完整流程（同步模式）。
      *
-     * @param authorization 请求头中的 Authorization 值
-     * @param projectId     项目 ID（可为 null）
-     * @param request       聊天补全请求参数
+     * @param authorization   请求头中的 Authorization 值
+     * @param headerProjectId 请求头 X-Project-Id 中的项目 ID（可为 null，自动回退到凭证绑定的工作项目）
+     * @param request         聊天补全请求参数
      * @return 上游供应商返回的原始 JSON 响应
      */
-    public String chatCompletion(String authorization, Long projectId, ChatCompletionRequest request) {
+    public String chatCompletion(String authorization, Long headerProjectId, ChatCompletionRequest request) {
         // 1. 凭证认证
         PlatformCredentialRef credential = credentialAuthService.authenticate(authorization);
+        // 项目 ID 解析：优先请求头 > 凭证绑定的工作项目 > null
+        Long projectId = resolveProjectId(headerProjectId, credential);
         // 2. 配额校验（双池）
         quotaCheckService.check(credential, projectId);
         // 3. 路由解析
@@ -125,14 +150,16 @@ public class GatewayService {
      * <p>返回 SSE 流式响应。Token 用量在流式模式下无法实时统计，
      * 配额扣减依赖上游最后一个 chunk 中的 usage 字段（如果有）。</p>
      *
-     * @param authorization 请求头中的 Authorization 值
-     * @param projectId     项目 ID（可为 null）
-     * @param request       聊天补全请求参数
+     * @param authorization   请求头中的 Authorization 值
+     * @param headerProjectId 请求头 X-Project-Id 中的项目 ID（可为 null，自动回退到凭证绑定的工作项目）
+     * @param request         聊天补全请求参数
      * @return 流式响应数据
      */
-    public Flux<String> chatCompletionStream(String authorization, Long projectId, ChatCompletionRequest request) {
+    public Flux<String> chatCompletionStream(String authorization, Long headerProjectId, ChatCompletionRequest request) {
         // 1. 凭证认证
         PlatformCredentialRef credential = credentialAuthService.authenticate(authorization);
+        // 项目 ID 解析：优先请求头 > 凭证绑定的工作项目 > null
+        Long projectId = resolveProjectId(headerProjectId, credential);
 
         // 2. 配额校验（双池）
         quotaCheckService.check(credential, projectId);
