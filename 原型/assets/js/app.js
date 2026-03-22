@@ -101,7 +101,7 @@
     document.getElementById('sidebar-global').style.display = 'flex';
     document.getElementById('sidebar-project').style.display = 'none';
 
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.page').forEach(p => { p.classList.remove('active'); p.style.display = ''; });
     document.querySelectorAll('#sidebar-global .nav-item').forEach(n => n.classList.remove('active'));
     const nextPage = document.getElementById('page-' + name);
     if (!nextPage) {
@@ -155,7 +155,7 @@
   };
 
   function showProjectPage(name) {
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.page').forEach(p => { p.classList.remove('active'); p.style.display = ''; });
     document.querySelectorAll('#sidebar-project .nav-item').forEach(n => n.classList.remove('active'));
     const pageId = name === 'agile' ? 'page-proj-agile'
                  : name === 'ai-cap' ? 'page-proj-ai-cap'
@@ -168,9 +168,13 @@
       return;
     }
     el.classList.add('active');
+    // lekai 页面需要 flex 布局，其他页面 active class 会触发 display:block
+    if (name === 'lekai') el.style.display = 'flex';
     document.getElementById('topbar-title').textContent =
             document.getElementById('proj-name').textContent + ' · ' + (projPageTitles[name] || name);
-    const nav = document.getElementById('pnav-' + name);
+    // 配额管理导航 ID 为 pnav-quota 而非 pnav-keymanagement
+    const navId = name === 'keymanagement' ? 'pnav-quota' : 'pnav-' + name;
+    const nav = document.getElementById(navId);
     if(nav) nav.classList.add('active');
   }
 
