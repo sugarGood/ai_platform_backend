@@ -1,0 +1,1 @@
+{"doc":" 项目数据访问接口，继承 MyBatis Plus 的 {@link BaseMapper} 以获取通用 CRUD 能力。\n\n <p>对应实体：{@link Project}，映射数据库 {@code projects} 表。</p>\n","fields":[],"enumConstants":[],"methods":[],"constructors":[]}

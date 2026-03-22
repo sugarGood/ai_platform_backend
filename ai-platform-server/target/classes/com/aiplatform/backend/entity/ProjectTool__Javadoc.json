@@ -1,0 +1,1 @@
+{"doc":" 项目工具启用实体，对应 project_tools 表。\n\n <p>记录项目与工具定义的关联关系，表示项目启用了哪些工具。</p>\n","fields":[{"name":"id","doc":"主键ID "},{"name":"projectId","doc":"项目ID "},{"name":"toolId","doc":"工具定义ID "},{"name":"status","doc":"状态：ACTIVE / INACTIVE "},{"name":"createdAt","doc":"创建时间 "},{"name":"updatedAt","doc":"最后更新时间 "}],"enumConstants":[],"methods":[],"constructors":[]}

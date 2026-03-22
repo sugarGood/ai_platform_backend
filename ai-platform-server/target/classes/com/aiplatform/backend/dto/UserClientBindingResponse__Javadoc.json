@@ -1,0 +1,1 @@
+{"doc":" 用户客户端绑定响应 DTO。\n\n @param id            绑定 ID\n @param userId        用户 ID\n @param clientAppId   客户端 ID\n @param bindingStatus 绑定状态\n @param lastActiveAt  最后活跃时间\n @param createdAt     创建时间\n @param updatedAt     更新时间\n","fields":[],"enumConstants":[],"methods":[],"constructors":[]}

@@ -1,0 +1,1 @@
+{"doc":" 权限点定义数据访问接口。\n\n <p>继承 MyBatis-Plus 的 {@link BaseMapper}，提供权限点定义表（permission_definitions）的基础 CRUD 操作。</p>\n","fields":[],"enumConstants":[],"methods":[],"constructors":[]}

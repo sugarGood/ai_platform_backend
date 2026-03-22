@@ -1,0 +1,1 @@
+{"doc":" 创建研发客户端的请求参数。\n\n @param code                  客户端编码（必填，如 claude_code）\n @param name                  客户端名称（必填）\n @param icon                  图标\n @param supportsMcp           是否支持 MCP 协议\n @param supportsCustomGateway 是否支持自定义网关\n @param setupInstruction      接入指南（Markdown）\n","fields":[],"enumConstants":[],"methods":[],"constructors":[]}

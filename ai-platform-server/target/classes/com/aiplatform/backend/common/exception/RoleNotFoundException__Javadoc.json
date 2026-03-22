@@ -1,0 +1,1 @@
+{"doc":" 角色不存在异常。\n\n <p>当根据ID查询角色但未找到对应记录时抛出此异常，\n HTTP 状态码返回 404 Not Found。</p>\n","fields":[],"enumConstants":[],"methods":[],"constructors":[{"name":"<init>","paramTypes":["java.lang.Long"],"doc":" 构造函数。\n\n @param roleId 未找到的角色ID\n"}]}

@@ -1,0 +1,1 @@
+{"doc":" 研发客户端管理控制器。\n\n <p>路径前缀：{@code /api/client-apps}</p>\n","fields":[],"enumConstants":[],"methods":[],"constructors":[{"name":"<init>","paramTypes":["com.aiplatform.backend.service.ClientAppService"],"doc":"构造函数。 "}]}

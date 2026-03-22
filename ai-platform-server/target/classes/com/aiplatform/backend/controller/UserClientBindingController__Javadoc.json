@@ -1,0 +1,1 @@
+{"doc":" 用户客户端绑定管理控制器。\n\n <p>路径前缀：{@code /api/user-client-bindings}</p>\n","fields":[],"enumConstants":[],"methods":[],"constructors":[{"name":"<init>","paramTypes":["com.aiplatform.backend.service.UserClientBindingService"],"doc":"构造函数。 "}]}

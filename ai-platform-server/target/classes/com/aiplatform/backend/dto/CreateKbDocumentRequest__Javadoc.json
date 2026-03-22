@@ -1,0 +1,1 @@
+{"doc":" 创建知识库文档请求 DTO。\n\n @param kbId       所属知识库ID（必填）\n @param title      文档标题（必填）\n @param fileType   文件类型：pdf / docx / md 等（必填）\n @param filePath   文件存储路径\n @param fileSize   文件大小（字节）\n @param injectMode 注入方式，默认 ON_DEMAND\n","fields":[],"enumConstants":[],"methods":[],"constructors":[]}

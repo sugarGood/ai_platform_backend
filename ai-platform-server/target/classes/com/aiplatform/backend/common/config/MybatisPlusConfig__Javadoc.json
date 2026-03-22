@@ -1,0 +1,1 @@
+{"doc":" MyBatis Plus 配置类，注册所需的拦截器插件。\n\n <p>当前注册了分页拦截器，使 MyBatis Plus 的 {@code Page} 查询能够自动生成\n 带 {@code LIMIT/OFFSET} 的分页 SQL。</p>\n","fields":[],"enumConstants":[],"methods":[{"name":"mybatisPlusInterceptor","paramTypes":[],"doc":" 创建 MyBatis Plus 拦截器并添加分页插件。\n\n @return 配置好的 {@link MybatisPlusInterceptor} 实例\n"}],"constructors":[]}

@@ -1,0 +1,1 @@
+{"doc":" 创建项目服务的请求参数。\n\n @param name        服务名称（必填）\n @param description 服务描述\n @param gitRepoUrl  Git 仓库地址\n @param mainBranch  主分支名称（默认 \"main\"）\n @param framework   技术框架\n @param language    编程语言\n","fields":[],"enumConstants":[],"methods":[],"constructors":[]}

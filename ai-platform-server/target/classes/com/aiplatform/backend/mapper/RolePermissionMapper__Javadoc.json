@@ -1,0 +1,1 @@
+{"doc":" 角色-权限关联数据访问接口。\n\n <p>继承 MyBatis-Plus 的 {@link BaseMapper}，提供角色-权限关联表（role_permissions）的基础 CRUD 操作。</p>\n","fields":[],"enumConstants":[],"methods":[],"constructors":[]}

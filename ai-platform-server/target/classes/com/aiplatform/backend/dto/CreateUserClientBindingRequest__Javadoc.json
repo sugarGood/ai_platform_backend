@@ -1,0 +1,1 @@
+{"doc":" 创建用户客户端绑定的请求参数。\n\n @param userId      用户 ID（必填）\n @param clientAppId 客户端 ID（必填）\n","fields":[],"enumConstants":[],"methods":[],"constructors":[]}

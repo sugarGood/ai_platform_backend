@@ -1,0 +1,1 @@
+{"doc":" 创建权限点的请求参数。\n\n @param module 权限所属模块，如 knowledge、model，不可为空\n @param permissionKey 权限点编码，全局唯一，如 knowledge.upload，不可为空\n @param name 权限点名称，用于界面展示，不可为空\n @param description 权限点描述，可选\n @param permissionScope 适用范围：PLATFORM 或 PROJECT，可选\n","fields":[],"enumConstants":[],"methods":[],"constructors":[]}

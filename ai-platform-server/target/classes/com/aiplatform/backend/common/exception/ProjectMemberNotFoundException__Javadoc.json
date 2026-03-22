@@ -1,0 +1,1 @@
+{"doc":" 项目成员不存在异常。\n\n <p>当根据项目 ID 和成员 ID 查询成员但未找到对应记录时抛出，返回 HTTP 404。</p>\n","fields":[],"enumConstants":[],"methods":[],"constructors":[{"name":"<init>","paramTypes":["java.lang.Long","java.lang.Long"],"doc":" 构造项目成员不存在异常。\n\n @param projectId 项目 ID\n @param memberId  未找到的成员记录 ID\n"}]}

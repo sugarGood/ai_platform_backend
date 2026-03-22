@@ -1,0 +1,1 @@
+{"doc":" 项目成员响应 DTO，用于向客户端返回成员信息。\n\n @param id        成员记录 ID\n @param projectId 所属项目 ID\n @param userId    用户 ID\n @param role      成员角色\n @param joinedAt  加入项目时间\n","fields":[],"enumConstants":[],"methods":[{"name":"from","paramTypes":["com.aiplatform.backend.entity.ProjectMember"],"doc":" 将项目成员实体转换为响应 DTO。\n\n @param member 项目成员实体\n @return 项目成员响应 DTO\n"}],"constructors":[]}

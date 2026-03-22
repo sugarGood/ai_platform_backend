@@ -1,0 +1,1 @@
+{"doc":" 分配角色权限的请求参数。\n\n <p>用于为指定角色分配特定权限点及其访问级别。</p>\n\n @param roleId 角色ID，不可为空\n @param permissionId 权限点ID，不可为空\n @param accessLevel 访问级别：NONE / VIEW / CALL / CREATE / FULL_CONTROL，不可为空\n","fields":[],"enumConstants":[],"methods":[],"constructors":[]}

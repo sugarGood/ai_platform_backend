@@ -1,0 +1,1 @@
+{"doc":" 创建故障转移策略的请求参数。\n\n @param name             策略名称（必填）\n @param primaryKeyId     主用 API 密钥ID（必填）\n @param fallbackKeyId    备用 API 密钥ID（必填）\n @param triggerCondition 触发条件（必填），如 ERROR_RATE、LATENCY\n @param triggerThreshold 触发阈值\n @param autoRecovery     是否自动恢复到主用密钥\n","fields":[],"enumConstants":[],"methods":[],"constructors":[]}

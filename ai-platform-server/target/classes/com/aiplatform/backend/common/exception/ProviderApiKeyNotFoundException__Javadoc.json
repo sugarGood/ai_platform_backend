@@ -1,0 +1,1 @@
+{"doc":" 上游 API 密钥不存在时抛出的异常。\n","fields":[],"enumConstants":[],"methods":[],"constructors":[{"name":"<init>","paramTypes":["java.lang.Long"],"doc":" 根据密钥ID构造异常。\n\n @param keyId 未找到的密钥ID\n"}]}

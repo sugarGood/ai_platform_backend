@@ -1,0 +1,1 @@
+{"doc":" 成员 AI 配额数据访问接口。\n\n <p>继承 MyBatis-Plus 的 {@link BaseMapper}，提供成员配额表的基础 CRUD 操作。</p>\n","fields":[],"enumConstants":[],"methods":[],"constructors":[]}

@@ -1,0 +1,1 @@
+{"doc":" 用户客户端绑定数据访问接口。\n\n <p>继承 MyBatis-Plus {@link BaseMapper}，提供 {@code user_client_bindings} 表的基础 CRUD 操作。</p>\n","fields":[],"enumConstants":[],"methods":[],"constructors":[]}

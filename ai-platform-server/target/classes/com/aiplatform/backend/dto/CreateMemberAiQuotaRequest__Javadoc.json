@@ -1,0 +1,1 @@
+{"doc":" 创建成员 AI 配额请求 DTO。\n\n @param userId     用户ID（必填）\n @param projectId  项目ID，为 NULL 时表示个人总配额\n @param quotaType  配额类型：TOKEN_QUOTA / COST_QUOTA / REQUEST_QUOTA（必填）\n @param quotaLimit 配额上限（必填）\n @param resetCycle 重置周期：DAILY / WEEKLY / MONTHLY，默认 MONTHLY\n","fields":[],"enumConstants":[],"methods":[],"constructors":[]}
