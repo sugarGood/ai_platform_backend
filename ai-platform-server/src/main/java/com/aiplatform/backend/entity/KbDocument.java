@@ -5,6 +5,10 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 
 import java.time.LocalDateTime;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * 知识库文档实体，对应 kb_documents 表。
@@ -12,6 +16,10 @@ import java.time.LocalDateTime;
  * <p>表示知识库中的单个文档，记录文档的元信息、处理状态和检索统计。
  * 文档上传后经过分块处理，用于 AI 检索增强。</p>
  */
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @TableName("kb_documents")
 public class KbDocument {
 
@@ -61,34 +69,4 @@ public class KbDocument {
     /** 最后更新时间 */
     private LocalDateTime updatedAt;
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public Long getKbId() { return kbId; }
-    public void setKbId(Long kbId) { this.kbId = kbId; }
-    public String getTitle() { return title; }
-    public void setTitle(String title) { this.title = title; }
-    public String getFileType() { return fileType; }
-    public void setFileType(String fileType) { this.fileType = fileType; }
-    public String getFilePath() { return filePath; }
-    public void setFilePath(String filePath) { this.filePath = filePath; }
-    public Long getFileSize() { return fileSize; }
-    public void setFileSize(Long fileSize) { this.fileSize = fileSize; }
-    public Integer getChunkCount() { return chunkCount; }
-    public void setChunkCount(Integer chunkCount) { this.chunkCount = chunkCount; }
-    public Integer getHitCount() { return hitCount; }
-    public void setHitCount(Integer hitCount) { this.hitCount = hitCount; }
-    public String getInjectMode() { return injectMode; }
-    public void setInjectMode(String injectMode) { this.injectMode = injectMode; }
-    public Integer getRefProjects() { return refProjects; }
-    public void setRefProjects(Integer refProjects) { this.refProjects = refProjects; }
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
-    public String getErrorMessage() { return errorMessage; }
-    public void setErrorMessage(String errorMessage) { this.errorMessage = errorMessage; }
-    public Long getUploadedBy() { return uploadedBy; }
-    public void setUploadedBy(Long uploadedBy) { this.uploadedBy = uploadedBy; }
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 }

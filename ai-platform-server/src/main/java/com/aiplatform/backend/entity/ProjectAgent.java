@@ -5,6 +5,10 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 
 import java.time.LocalDateTime;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * 项目专属智能体实体，对应 {@code project_agents} 表。
@@ -13,6 +17,10 @@ import java.time.LocalDateTime;
  * 智能体聚合了项目关联的技能 System Prompt、知识库 RAG、工具调用能力，
  * 可回答「今天项目有什么 Bug」「帮我发布到生产」等项目相关问题。</p>
  */
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @TableName("project_agents")
 public class ProjectAgent {
 
@@ -68,51 +76,4 @@ public class ProjectAgent {
     // Getters & Setters
     // ---------------------------------------------------------------
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public Long getProjectId() { return projectId; }
-    public void setProjectId(Long projectId) { this.projectId = projectId; }
-
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
-
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
-
-    public String getAvatarIcon() { return avatarIcon; }
-    public void setAvatarIcon(String avatarIcon) { this.avatarIcon = avatarIcon; }
-
-    public String getSystemPrompt() { return systemPrompt; }
-    public void setSystemPrompt(String systemPrompt) { this.systemPrompt = systemPrompt; }
-
-    public String getPreferredModel() { return preferredModel; }
-    public void setPreferredModel(String preferredModel) { this.preferredModel = preferredModel; }
-
-    public Boolean getEnableRag() { return enableRag; }
-    public void setEnableRag(Boolean enableRag) { this.enableRag = enableRag; }
-
-    public Boolean getEnableSkills() { return enableSkills; }
-    public void setEnableSkills(Boolean enableSkills) { this.enableSkills = enableSkills; }
-
-    public Boolean getEnableTools() { return enableTools; }
-    public void setEnableTools(Boolean enableTools) { this.enableTools = enableTools; }
-
-    public Boolean getEnableDeploy() { return enableDeploy; }
-    public void setEnableDeploy(Boolean enableDeploy) { this.enableDeploy = enableDeploy; }
-
-    public Boolean getEnableMonitoring() { return enableMonitoring; }
-    public void setEnableMonitoring(Boolean enableMonitoring) { this.enableMonitoring = enableMonitoring; }
-
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
-
-    public Long getCreatedBy() { return createdBy; }
-    public void setCreatedBy(Long createdBy) { this.createdBy = createdBy; }
-
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 }

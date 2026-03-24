@@ -6,11 +6,19 @@ import com.baomidou.mybatisplus.annotation.TableName;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * AI 模型实体，对应 ai_models 表。
  * <p>记录各供应商下的具体 AI 模型信息，包括定价、上下文窗口等参数。</p>
  */
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @TableName("ai_models")
 public class AiModel {
 
@@ -48,26 +56,4 @@ public class AiModel {
     /** 更新时间 */
     private LocalDateTime updatedAt;
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public Long getProviderId() { return providerId; }
-    public void setProviderId(Long providerId) { this.providerId = providerId; }
-    public String getCode() { return code; }
-    public void setCode(String code) { this.code = code; }
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
-    public String getModelFamily() { return modelFamily; }
-    public void setModelFamily(String modelFamily) { this.modelFamily = modelFamily; }
-    public Integer getContextWindow() { return contextWindow; }
-    public void setContextWindow(Integer contextWindow) { this.contextWindow = contextWindow; }
-    public BigDecimal getInputPricePer1m() { return inputPricePer1m; }
-    public void setInputPricePer1m(BigDecimal inputPricePer1m) { this.inputPricePer1m = inputPricePer1m; }
-    public BigDecimal getOutputPricePer1m() { return outputPricePer1m; }
-    public void setOutputPricePer1m(BigDecimal outputPricePer1m) { this.outputPricePer1m = outputPricePer1m; }
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 }

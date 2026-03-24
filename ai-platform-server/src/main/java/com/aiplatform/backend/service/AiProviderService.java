@@ -68,4 +68,14 @@ public class AiProviderService {
         }
         return provider;
     }
+
+    /** 编辑供应商（仅更新非null字段）。 */
+    public AiProvider update(Long id, CreateAiProviderRequest request) {
+        AiProvider provider = getByIdOrThrow(id);
+        if (request.name() != null) provider.setName(request.name());
+        if (request.baseUrl() != null) provider.setBaseUrl(request.baseUrl());
+        if (request.providerType() != null) provider.setProviderType(request.providerType());
+        aiProviderMapper.updateById(provider);
+        return provider;
+    }
 }

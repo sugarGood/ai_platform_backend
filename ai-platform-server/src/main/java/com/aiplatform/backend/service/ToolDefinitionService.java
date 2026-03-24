@@ -104,14 +104,39 @@ public class ToolDefinitionService {
         return pt;
     }
 
-    /**
-     * 查询项目已启用的工具列表。
-     *
-     * @param projectId 项目ID
-     * @return 该项目启用的工具关联列表
-     */
+    /** 查询项目已启用的工具列表。 */
     public List<ProjectTool> listProjectTools(Long projectId) {
         return projectToolMapper.selectList(Wrappers.<ProjectTool>lambdaQuery()
                 .eq(ProjectTool::getProjectId, projectId).orderByAsc(ProjectTool::getId));
+    }
+
+    /** 编辑工具定义（仅更新非null字段）。 */
+    public ToolDefinition update(Long id, CreateToolDefinitionRequest request) {
+        ToolDefinition tool = getByIdOrThrow(id);
+        if (request.displayName() != null) tool.setDisplayName(request.displayName());
+        if (request.description() != null) tool.setDescription(request.description());
+        if (request.category() != null) tool.setCategory(request.category());
+        if (request.inputSchema() != null) tool.setInputSchema(request.inputSchema());
+        if (request.outputSchema() != null) tool.setOutputSchema(request.outputSchema());
+        if (request.implType() != null) tool.setImplType(request.implType());
+        if (request.implConfig() != null) tool.setImplConfig(request.implConfig());
+        if (request.auditLevel() != null) tool.setAuditLevel(request.auditLevel());
+        toolDefinitionMapper.updateById(tool);
+        return tool;
+    }
+
+    /** 禁用工具（status → INACTIVE）。 */
+    public ToolDefinition disable(Long id) {
+        ToolDefinition tool = getByIdOrThrow(id);
+        tool.setStatus("INACTIVE");
+        toolDefinitionMapper.updateById(tool);
+        return tool;
+    }
+
+    /** 项目禁用（解绑）工具。 */
+    public void disableForProject(Long projectId, Long projectToolId) {
+        projectToolMapper.delete(Wrappers.<ProjectTool>lambdaQuery()
+                .eq(ProjectTool::getProjectId, projectId)
+                .eq(ProjectTool::getId, projectToolId));
     }
 }

@@ -89,9 +89,28 @@ public class ProviderApiKeyService {
      */
     public ProviderApiKey getByIdOrThrow(Long keyId) {
         ProviderApiKey key = providerApiKeyMapper.selectById(keyId);
-        if (key == null) {
-            throw new ProviderApiKeyNotFoundException(keyId);
-        }
+        if (key == null) throw new ProviderApiKeyNotFoundException(keyId);
+        return key;
+    }
+
+    /** 编辑Key配置（配额、限速等）。 */
+    public ProviderApiKey update(Long id, CreateProviderApiKeyRequest request) {
+        ProviderApiKey key = getByIdOrThrow(id);
+        if (request.label() != null) key.setLabel(request.label());
+        if (request.modelsAllowed() != null) key.setModelsAllowed(request.modelsAllowed());
+        if (request.monthlyQuotaTokens() != null) key.setMonthlyQuotaTokens(request.monthlyQuotaTokens());
+        if (request.rateLimitRpm() != null) key.setRateLimitRpm(request.rateLimitRpm());
+        if (request.rateLimitTpm() != null) key.setRateLimitTpm(request.rateLimitTpm());
+        if (request.proxyEndpoint() != null) key.setProxyEndpoint(request.proxyEndpoint());
+        providerApiKeyMapper.updateById(key);
+        return key;
+    }
+
+    /** 吊销 Key（status → REVOKED）。 */
+    public ProviderApiKey revoke(Long id) {
+        ProviderApiKey key = getByIdOrThrow(id);
+        key.setStatus("REVOKED");
+        providerApiKeyMapper.updateById(key);
         return key;
     }
 }

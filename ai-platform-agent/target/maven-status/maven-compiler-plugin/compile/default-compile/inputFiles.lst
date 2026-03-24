@@ -1,7 +1,12 @@
 C:\Users\76741\Desktop\ai_platform_backend\ai-platform-agent\src\main\java\com\aiplatform\agent\AiPlatformAgentApplication.java
+C:\Users\76741\Desktop\ai_platform_backend\ai-platform-agent\src\main\java\com\aiplatform\agent\common\config\MinioConfig.java
+C:\Users\76741\Desktop\ai_platform_backend\ai-platform-agent\src\main\java\com\aiplatform\agent\common\config\MinioProperties.java
 C:\Users\76741\Desktop\ai_platform_backend\ai-platform-agent\src\main\java\com\aiplatform\agent\common\exception\GatewayProviderNotConfiguredException.java
+C:\Users\76741\Desktop\ai_platform_backend\ai-platform-agent\src\main\java\com\aiplatform\agent\common\exception\GlobalExceptionHandler.java
+C:\Users\76741\Desktop\ai_platform_backend\ai-platform-agent\src\main\java\com\aiplatform\agent\gateway\controller\CredentialController.java
 C:\Users\76741\Desktop\ai_platform_backend\ai-platform-agent\src\main\java\com\aiplatform\agent\gateway\controller\GatewayController.java
 C:\Users\76741\Desktop\ai_platform_backend\ai-platform-agent\src\main\java\com\aiplatform\agent\gateway\controller\KnowledgeController.java
+C:\Users\76741\Desktop\ai_platform_backend\ai-platform-agent\src\main\java\com\aiplatform\agent\gateway\controller\ProjectAgentChatController.java
 C:\Users\76741\Desktop\ai_platform_backend\ai-platform-agent\src\main\java\com\aiplatform\agent\gateway\dto\ChatCompletionMessage.java
 C:\Users\76741\Desktop\ai_platform_backend\ai-platform-agent\src\main\java\com\aiplatform\agent\gateway\dto\ChatCompletionRequest.java
 C:\Users\76741\Desktop\ai_platform_backend\ai-platform-agent\src\main\java\com\aiplatform\agent\gateway\dto\ChatCompletionResponse.java
@@ -11,6 +16,7 @@ C:\Users\76741\Desktop\ai_platform_backend\ai-platform-agent\src\main\java\com\a
 C:\Users\76741\Desktop\ai_platform_backend\ai-platform-agent\src\main\java\com\aiplatform\agent\gateway\entity\KnowledgeBaseRef.java
 C:\Users\76741\Desktop\ai_platform_backend\ai-platform-agent\src\main\java\com\aiplatform\agent\gateway\entity\KnowledgeSearchLogRef.java
 C:\Users\76741\Desktop\ai_platform_backend\ai-platform-agent\src\main\java\com\aiplatform\agent\gateway\entity\PlatformCredentialRef.java
+C:\Users\76741\Desktop\ai_platform_backend\ai-platform-agent\src\main\java\com\aiplatform\agent\gateway\entity\ProjectAgentRef.java
 C:\Users\76741\Desktop\ai_platform_backend\ai-platform-agent\src\main\java\com\aiplatform\agent\gateway\entity\ProjectKnowledgeConfigRef.java
 C:\Users\76741\Desktop\ai_platform_backend\ai-platform-agent\src\main\java\com\aiplatform\agent\gateway\entity\ProjectRef.java
 C:\Users\76741\Desktop\ai_platform_backend\ai-platform-agent\src\main\java\com\aiplatform\agent\gateway\entity\ProjectSkillRef.java
@@ -22,6 +28,7 @@ C:\Users\76741\Desktop\ai_platform_backend\ai-platform-agent\src\main\java\com\a
 C:\Users\76741\Desktop\ai_platform_backend\ai-platform-agent\src\main\java\com\aiplatform\agent\gateway\mapper\KnowledgeBaseRefMapper.java
 C:\Users\76741\Desktop\ai_platform_backend\ai-platform-agent\src\main\java\com\aiplatform\agent\gateway\mapper\KnowledgeSearchLogRefMapper.java
 C:\Users\76741\Desktop\ai_platform_backend\ai-platform-agent\src\main\java\com\aiplatform\agent\gateway\mapper\PlatformCredentialRefMapper.java
+C:\Users\76741\Desktop\ai_platform_backend\ai-platform-agent\src\main\java\com\aiplatform\agent\gateway\mapper\ProjectAgentRefMapper.java
 C:\Users\76741\Desktop\ai_platform_backend\ai-platform-agent\src\main\java\com\aiplatform\agent\gateway\mapper\ProjectKnowledgeConfigRefMapper.java
 C:\Users\76741\Desktop\ai_platform_backend\ai-platform-agent\src\main\java\com\aiplatform\agent\gateway\mapper\ProjectRefMapper.java
 C:\Users\76741\Desktop\ai_platform_backend\ai-platform-agent\src\main\java\com\aiplatform\agent\gateway\mapper\ProjectSkillRefMapper.java
@@ -33,7 +40,9 @@ C:\Users\76741\Desktop\ai_platform_backend\ai-platform-agent\src\main\java\com\a
 C:\Users\76741\Desktop\ai_platform_backend\ai-platform-agent\src\main\java\com\aiplatform\agent\gateway\service\GatewayRoutingService.java
 C:\Users\76741\Desktop\ai_platform_backend\ai-platform-agent\src\main\java\com\aiplatform\agent\gateway\service\GatewayService.java
 C:\Users\76741\Desktop\ai_platform_backend\ai-platform-agent\src\main\java\com\aiplatform\agent\gateway\service\KnowledgeIngestionService.java
+C:\Users\76741\Desktop\ai_platform_backend\ai-platform-agent\src\main\java\com\aiplatform\agent\gateway\service\KnowledgeRetrievalService.java
 C:\Users\76741\Desktop\ai_platform_backend\ai-platform-agent\src\main\java\com\aiplatform\agent\gateway\service\KnowledgeSearchLogService.java
+C:\Users\76741\Desktop\ai_platform_backend\ai-platform-agent\src\main\java\com\aiplatform\agent\gateway\service\ProjectAgentChatService.java
 C:\Users\76741\Desktop\ai_platform_backend\ai-platform-agent\src\main\java\com\aiplatform\agent\gateway\service\ProjectContextEnrichmentService.java
 C:\Users\76741\Desktop\ai_platform_backend\ai-platform-agent\src\main\java\com\aiplatform\agent\gateway\service\QdrantSearchService.java
 C:\Users\76741\Desktop\ai_platform_backend\ai-platform-agent\src\main\java\com\aiplatform\agent\gateway\service\QuotaCheckService.java

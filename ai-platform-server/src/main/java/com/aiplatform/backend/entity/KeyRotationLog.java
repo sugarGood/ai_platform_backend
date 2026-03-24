@@ -5,12 +5,20 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 
 import java.time.LocalDateTime;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * 密钥轮换日志实体，对应 {@code key_rotation_logs} 表。
  *
  * <p>记录平台凭证和上游 API 密钥的轮换操作历史。</p>
  */
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @TableName("key_rotation_logs")
 public class KeyRotationLog {
 
@@ -38,26 +46,4 @@ public class KeyRotationLog {
     /** 创建时间 */
     private LocalDateTime createdAt;
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public String getTargetType() { return targetType; }
-    public void setTargetType(String targetType) { this.targetType = targetType; }
-    public Long getTargetId() { return targetId; }
-    public void setTargetId(Long targetId) { this.targetId = targetId; }
-    public String getTargetLabel() { return targetLabel; }
-    public void setTargetLabel(String targetLabel) { this.targetLabel = targetLabel; }
-    public String getRotationType() { return rotationType; }
-    public void setRotationType(String rotationType) { this.rotationType = rotationType; }
-    public String getOldKeyPrefix() { return oldKeyPrefix; }
-    public void setOldKeyPrefix(String oldKeyPrefix) { this.oldKeyPrefix = oldKeyPrefix; }
-    public String getNewKeyPrefix() { return newKeyPrefix; }
-    public void setNewKeyPrefix(String newKeyPrefix) { this.newKeyPrefix = newKeyPrefix; }
-    public String getResult() { return result; }
-    public void setResult(String result) { this.result = result; }
-    public String getErrorMessage() { return errorMessage; }
-    public void setErrorMessage(String errorMessage) { this.errorMessage = errorMessage; }
-    public Long getOperatedBy() { return operatedBy; }
-    public void setOperatedBy(Long operatedBy) { this.operatedBy = operatedBy; }
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }

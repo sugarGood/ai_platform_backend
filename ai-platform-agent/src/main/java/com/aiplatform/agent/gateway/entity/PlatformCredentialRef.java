@@ -5,6 +5,10 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 
 import java.time.LocalDateTime;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * 平台凭证引用实体（网关只读视图）。
@@ -12,6 +16,10 @@ import java.time.LocalDateTime;
  * <p>映射 {@code platform_credentials} 表，网关模块通过该实体读取凭证信息，
  * 用于验证调用方身份。网关侧仅执行读取操作，不对凭证数据做写入变更。</p>
  */
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @TableName("platform_credentials")
 public class PlatformCredentialRef {
 
@@ -52,28 +60,4 @@ public class PlatformCredentialRef {
     /** 过期时间，为空表示永不过期 */
     private LocalDateTime expiresAt;
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public Long getUserId() { return userId; }
-    public void setUserId(Long userId) { this.userId = userId; }
-    public String getCredentialType() { return credentialType; }
-    public void setCredentialType(String credentialType) { this.credentialType = credentialType; }
-    public String getKeyHash() { return keyHash; }
-    public void setKeyHash(String keyHash) { this.keyHash = keyHash; }
-    public String getKeyPrefix() { return keyPrefix; }
-    public void setKeyPrefix(String keyPrefix) { this.keyPrefix = keyPrefix; }
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
-    public Long getBoundProjectId() { return boundProjectId; }
-    public void setBoundProjectId(Long boundProjectId) { this.boundProjectId = boundProjectId; }
-    public Long getMonthlyTokenQuota() { return monthlyTokenQuota; }
-    public void setMonthlyTokenQuota(Long monthlyTokenQuota) { this.monthlyTokenQuota = monthlyTokenQuota; }
-    public Long getUsedTokensThisMonth() { return usedTokensThisMonth; }
-    public void setUsedTokensThisMonth(Long usedTokensThisMonth) { this.usedTokensThisMonth = usedTokensThisMonth; }
-    public String getOverQuotaStrategy() { return overQuotaStrategy; }
-    public void setOverQuotaStrategy(String overQuotaStrategy) { this.overQuotaStrategy = overQuotaStrategy; }
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
-    public LocalDateTime getExpiresAt() { return expiresAt; }
-    public void setExpiresAt(LocalDateTime expiresAt) { this.expiresAt = expiresAt; }
 }

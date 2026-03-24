@@ -6,6 +6,7 @@ import com.aiplatform.backend.entity.ProjectSkill;
 import com.aiplatform.backend.entity.Skill;
 import com.aiplatform.backend.mapper.ProjectSkillMapper;
 import com.aiplatform.backend.mapper.SkillMapper;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import org.springframework.stereotype.Service;
 
@@ -82,12 +83,16 @@ public class SkillService {
     }
 
     /**
-     * 查询所有技能列表。
+     * 查询技能列表，支持按 scope 过滤。
      *
+     * @param scope 作用域过滤（GLOBAL/PROJECT），null 表示全部
      * @return 按ID升序排列的技能列表
      */
-    public List<Skill> list() {
-        return skillMapper.selectList(Wrappers.<Skill>lambdaQuery().orderByAsc(Skill::getId));
+    public List<Skill> list(String scope) {
+        LambdaQueryWrapper<Skill> q = Wrappers.<Skill>lambdaQuery();
+        if (scope != null && !scope.isBlank()) q.eq(Skill::getScope, scope);
+        q.orderByAsc(Skill::getId);
+        return skillMapper.selectList(q);
     }
 
     /**
@@ -127,12 +132,59 @@ public class SkillService {
 
     /**
      * 查询项目已启用的技能列表。
-     *
-     * @param projectId 项目ID
-     * @return 该项目启用的技能关联列表
      */
     public List<ProjectSkill> listProjectSkills(Long projectId) {
         return projectSkillMapper.selectList(Wrappers.<ProjectSkill>lambdaQuery()
                 .eq(ProjectSkill::getProjectId, projectId).orderByAsc(ProjectSkill::getId));
+    }
+
+    /** 编辑技能（仅更新非null字段）。 */
+    public Skill update(Long id, CreateSkillRequest request) {
+        Skill skill = getByIdOrThrow(id);
+        if (request.name() != null) skill.setName(request.name());
+        if (request.description() != null) skill.setDescription(request.description());
+        if (request.category() != null) skill.setCategory(request.category());
+        if (request.systemPrompt() != null) skill.setSystemPrompt(request.systemPrompt());
+        if (request.knowledgeRefs() != null) skill.setKnowledgeRefs(request.knowledgeRefs());
+        if (request.boundTools() != null) skill.setBoundTools(request.boundTools());
+        if (request.parameters() != null) skill.setParameters(request.parameters());
+        if (request.slashCommand() != null) skill.setSlashCommand(request.slashCommand());
+        skillMapper.updateById(skill);
+        return skill;
+    }
+
+    /** 审核技能：approved=true → PUBLISHED，否则 → DRAFT。 */
+    public Skill review(Long id, boolean approved, String comment) {
+        Skill skill = getByIdOrThrow(id);
+        skill.setStatus(approved ? "PUBLISHED" : "DRAFT");
+        if (approved) skill.setPublishedAt(LocalDateTime.now());
+        skillMapper.updateById(skill);
+        return skill;
+    }
+
+    /** 废弃技能（PUBLISHED → DEPRECATED）。 */
+    public Skill deprecate(Long id) {
+        Skill skill = getByIdOrThrow(id);
+        skill.setStatus("DEPRECATED");
+        skillMapper.updateById(skill);
+        return skill;
+    }
+
+    /** 记录技能反馈（UP/DOWN）。 */
+    public void feedback(Long id, String rating) {
+        Skill skill = getByIdOrThrow(id);
+        if ("UP".equalsIgnoreCase(rating)) {
+            skill.setSatisfactionUp(skill.getSatisfactionUp() + 1);
+        } else if ("DOWN".equalsIgnoreCase(rating)) {
+            skill.setSatisfactionDown(skill.getSatisfactionDown() + 1);
+        }
+        skillMapper.updateById(skill);
+    }
+
+    /** 项目禁用（解绑）技能。 */
+    public void disableForProject(Long projectId, Long projectSkillId) {
+        projectSkillMapper.delete(Wrappers.<ProjectSkill>lambdaQuery()
+                .eq(ProjectSkill::getProjectId, projectId)
+                .eq(ProjectSkill::getId, projectSkillId));
     }
 }

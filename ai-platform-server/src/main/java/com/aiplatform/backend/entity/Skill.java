@@ -5,6 +5,10 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 
 import java.time.LocalDateTime;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * 技能定义实体，对应 skills 表。
@@ -12,6 +16,10 @@ import java.time.LocalDateTime;
  * <p>技能是平台 AI 能力编排的核心单元，定义了角色 Prompt、关联知识库、绑定工具等配置。
  * 支持通过斜杠命令触发，并提供使用统计和满意度反馈追踪。</p>
  */
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @TableName("skills")
 public class Skill {
 
@@ -79,46 +87,4 @@ public class Skill {
     /** 发布时间 */
     private LocalDateTime publishedAt;
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public String getSkillKey() { return skillKey; }
-    public void setSkillKey(String skillKey) { this.skillKey = skillKey; }
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
-    public String getScope() { return scope; }
-    public void setScope(String scope) { this.scope = scope; }
-    public Long getProjectId() { return projectId; }
-    public void setProjectId(Long projectId) { this.projectId = projectId; }
-    public String getCategory() { return category; }
-    public void setCategory(String category) { this.category = category; }
-    public String getSystemPrompt() { return systemPrompt; }
-    public void setSystemPrompt(String systemPrompt) { this.systemPrompt = systemPrompt; }
-    public String getKnowledgeRefs() { return knowledgeRefs; }
-    public void setKnowledgeRefs(String knowledgeRefs) { this.knowledgeRefs = knowledgeRefs; }
-    public String getBoundTools() { return boundTools; }
-    public void setBoundTools(String boundTools) { this.boundTools = boundTools; }
-    public String getParameters() { return parameters; }
-    public void setParameters(String parameters) { this.parameters = parameters; }
-    public String getSlashCommand() { return slashCommand; }
-    public void setSlashCommand(String slashCommand) { this.slashCommand = slashCommand; }
-    public String getVersion() { return version; }
-    public void setVersion(String version) { this.version = version; }
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
-    public Long getUsageCount() { return usageCount; }
-    public void setUsageCount(Long usageCount) { this.usageCount = usageCount; }
-    public Integer getSatisfactionUp() { return satisfactionUp; }
-    public void setSatisfactionUp(Integer satisfactionUp) { this.satisfactionUp = satisfactionUp; }
-    public Integer getSatisfactionDown() { return satisfactionDown; }
-    public void setSatisfactionDown(Integer satisfactionDown) { this.satisfactionDown = satisfactionDown; }
-    public Long getCreatedBy() { return createdBy; }
-    public void setCreatedBy(Long createdBy) { this.createdBy = createdBy; }
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
-    public LocalDateTime getPublishedAt() { return publishedAt; }
-    public void setPublishedAt(LocalDateTime publishedAt) { this.publishedAt = publishedAt; }
 }

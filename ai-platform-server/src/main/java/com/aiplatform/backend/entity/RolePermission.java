@@ -5,6 +5,10 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 
 import java.time.LocalDateTime;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * 角色-权限关联实体，对应数据库 role_permissions 表。
@@ -12,6 +16,10 @@ import java.time.LocalDateTime;
  * <p>定义角色与权限点之间的多对多关联关系，并指定具体的访问级别，
  * 实现细粒度的权限控制。</p>
  */
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @TableName("role_permissions")
 public class RolePermission {
 
@@ -34,16 +42,4 @@ public class RolePermission {
     /** 更新时间 */
     private LocalDateTime updatedAt;
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public Long getRoleId() { return roleId; }
-    public void setRoleId(Long roleId) { this.roleId = roleId; }
-    public Long getPermissionId() { return permissionId; }
-    public void setPermissionId(Long permissionId) { this.permissionId = permissionId; }
-    public String getAccessLevel() { return accessLevel; }
-    public void setAccessLevel(String accessLevel) { this.accessLevel = accessLevel; }
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 }

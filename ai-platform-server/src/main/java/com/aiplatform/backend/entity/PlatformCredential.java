@@ -5,6 +5,10 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 
 import java.time.LocalDateTime;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * 平台凭证实体，对应 {@code platform_credentials} 表。
@@ -29,6 +33,10 @@ import java.time.LocalDateTime;
  * 上游真实 API Key（{@code provider_api_keys}）永不下发给成员，
  * 由平台代理层透明转发。</p>
  */
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @TableName("platform_credentials")
 public class PlatformCredential {
 
@@ -141,60 +149,4 @@ public class PlatformCredential {
     // Getters & Setters
     // ---------------------------------------------------------------
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public Long getUserId() { return userId; }
-    public void setUserId(Long userId) { this.userId = userId; }
-
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
-
-    public String getKeyPrefix() { return keyPrefix; }
-    public void setKeyPrefix(String keyPrefix) { this.keyPrefix = keyPrefix; }
-
-    public String getKeyHash() { return keyHash; }
-    public void setKeyHash(String keyHash) { this.keyHash = keyHash; }
-
-    public String getCredentialType() { return credentialType; }
-    public void setCredentialType(String credentialType) { this.credentialType = credentialType; }
-
-    public Long getMonthlyTokenQuota() { return monthlyTokenQuota; }
-    public void setMonthlyTokenQuota(Long monthlyTokenQuota) { this.monthlyTokenQuota = monthlyTokenQuota; }
-
-    public Long getUsedTokensThisMonth() { return usedTokensThisMonth; }
-    public void setUsedTokensThisMonth(Long usedTokensThisMonth) { this.usedTokensThisMonth = usedTokensThisMonth; }
-
-    public Integer getAlertThresholdPct() { return alertThresholdPct; }
-    public void setAlertThresholdPct(Integer alertThresholdPct) { this.alertThresholdPct = alertThresholdPct; }
-
-    public String getOverQuotaStrategy() { return overQuotaStrategy; }
-    public void setOverQuotaStrategy(String overQuotaStrategy) { this.overQuotaStrategy = overQuotaStrategy; }
-
-    public LocalDateTime getLastQuotaResetAt() { return lastQuotaResetAt; }
-    public void setLastQuotaResetAt(LocalDateTime lastQuotaResetAt) { this.lastQuotaResetAt = lastQuotaResetAt; }
-
-    public LocalDateTime getExpiresAt() { return expiresAt; }
-    public void setExpiresAt(LocalDateTime expiresAt) { this.expiresAt = expiresAt; }
-
-    public LocalDateTime getLastUsedAt() { return lastUsedAt; }
-    public void setLastUsedAt(LocalDateTime lastUsedAt) { this.lastUsedAt = lastUsedAt; }
-
-    public String getLastUsedIp() { return lastUsedIp; }
-    public void setLastUsedIp(String lastUsedIp) { this.lastUsedIp = lastUsedIp; }
-
-    public LocalDateTime getRevokedAt() { return revokedAt; }
-    public void setRevokedAt(LocalDateTime revokedAt) { this.revokedAt = revokedAt; }
-
-    public String getRevokeReason() { return revokeReason; }
-    public void setRevokeReason(String revokeReason) { this.revokeReason = revokeReason; }
-
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
-
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 }

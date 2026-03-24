@@ -80,9 +80,19 @@ public class AiModelService {
      */
     public AiModel getByIdOrThrow(Long modelId) {
         AiModel model = aiModelMapper.selectById(modelId);
-        if (model == null) {
-            throw new AiModelNotFoundException(modelId);
-        }
+        if (model == null) throw new AiModelNotFoundException(modelId);
+        return model;
+    }
+
+    /** 编辑模型（含定价）。 */
+    public AiModel update(Long id, CreateAiModelRequest request) {
+        AiModel model = getByIdOrThrow(id);
+        if (request.name() != null) model.setName(request.name());
+        if (request.modelFamily() != null) model.setModelFamily(request.modelFamily());
+        if (request.contextWindow() != null) model.setContextWindow(request.contextWindow());
+        if (request.inputPricePer1m() != null) model.setInputPricePer1m(request.inputPricePer1m());
+        if (request.outputPricePer1m() != null) model.setOutputPricePer1m(request.outputPricePer1m());
+        aiModelMapper.updateById(model);
         return model;
     }
 }

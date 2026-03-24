@@ -1,6 +1,10 @@
 spring:
   application:
     name: ai-platform-backend
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 55MB
   datasource:
     driverClassName: com.mysql.cj.jdbc.Driver
     # jdbc 所有参数配置参考 https://lionli.blog.csdn.net/article/details/122018562
@@ -22,6 +26,32 @@ mybatis-plus:
 
 server:
   port: 8080
+
+# 内网 AI Agent（网关）地址，仅服务端可达；客户端只访问本服务的 /api/ai/agent/** 代理接口
+ai:
+  agent:
+    base-url: ${AI_AGENT_BASE_URL:http://127.0.0.1:8081}
+
+# 知识库原始文件 MinIO（与 Agent 使用相同桶与鉴权，便于入库时按 objectKey 拉取）
+# 示例：endpoint 对应 ip:port，如 192.168.0.35:9000 → http://192.168.0.35:9000
+minio:
+  endpoint: ${MINIO_ENDPOINT:http://192.168.0.35:9000}
+  access-key: ${MINIO_ACCESS_KEY:minioadmin}
+  secret-key: "cqcdi@135!"
+  bucket-name: ${MINIO_BUCKET:ai-platform}
+
+knowledge:
+  ingest:
+    enabled: ${KNOWLEDGE_INGEST_ENABLED:true}
+
+# JWT 配置
+jwt:
+  # HS256 签名密钥，生产环境请替换为 32 字符以上的随机字符串并通过环境变量注入
+  secret: ${JWT_SECRET:ai-platform-default-secret-key-change-in-prod}
+  # Access Token 有效期（秒），默认 86400 = 24h
+  access-token-ttl-seconds: ${JWT_ACCESS_TTL:86400}
+  # Refresh Token 有效期（秒），默认 604800 = 7d
+  refresh-token-ttl-seconds: ${JWT_REFRESH_TTL:604800}
 
 # SpringDoc OpenAPI 配置
 springdoc:

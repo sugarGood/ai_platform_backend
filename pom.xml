@@ -14,7 +14,7 @@
     <artifactId>ai-platform-backend</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
-    <name>ai-platform-parent</name>
+    <name>ai-platform-backend</name>
     <description>AI Platform multi-module parent</description>
 
     <modules>

@@ -5,6 +5,10 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 
 import java.time.LocalDateTime;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * 角色定义实体，对应数据库 roles 表。
@@ -12,6 +16,10 @@ import java.time.LocalDateTime;
  * <p>定义平台和项目级别的角色信息，包括角色编码、适用范围、
  * 默认Token配额等属性，支持系统内置角色和自定义角色。</p>
  */
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @TableName("roles")
 public class Role {
 
@@ -46,24 +54,4 @@ public class Role {
     /** 更新时间 */
     private LocalDateTime updatedAt;
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
-    public String getCode() { return code; }
-    public void setCode(String code) { this.code = code; }
-    public String getRoleScope() { return roleScope; }
-    public void setRoleScope(String roleScope) { this.roleScope = roleScope; }
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
-    public Boolean getIsSystem() { return isSystem; }
-    public void setIsSystem(Boolean isSystem) { this.isSystem = isSystem; }
-    public Long getDefaultQuotaTokens() { return defaultQuotaTokens; }
-    public void setDefaultQuotaTokens(Long defaultQuotaTokens) { this.defaultQuotaTokens = defaultQuotaTokens; }
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 }

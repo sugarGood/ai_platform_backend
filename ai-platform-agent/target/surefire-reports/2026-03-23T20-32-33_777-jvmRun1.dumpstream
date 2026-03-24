@@ -1,0 +1,3 @@
+# Created at 2026-03-23T20:32:34.598
+Corrupted channel by directly writing to native stream in forked JVM 1. Stream 'C:\Users\76741\Desktop\ai_platform_backend\ai-platform-agent>doskey codex="C:\Program Files\nodejs\node_global\codex.cmd" --no-alt-screen $* '.
+

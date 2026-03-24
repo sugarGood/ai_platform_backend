@@ -79,4 +79,34 @@ public class ServiceEntityService {
             throw new com.aiplatform.backend.common.exception.ProjectNotFoundException(projectId);
         }
     }
+
+    /** 根据ID查询服务，不存在则抛出异常。 */
+    public ServiceEntity getByIdOrThrow(Long id) {
+        ServiceEntity e = serviceEntityMapper.selectById(id);
+        if (e == null) throw new RuntimeException("Service not found: " + id);
+        return e;
+    }
+
+    /** 编辑服务（仅更新非null字段）。 */
+    public ServiceEntity update(Long projectId, Long serviceId, CreateServiceRequest request) {
+        ensureProjectExists(projectId);
+        ServiceEntity entity = getByIdOrThrow(serviceId);
+        if (request.name() != null) entity.setName(request.name());
+        if (request.description() != null) entity.setDescription(request.description());
+        if (request.gitRepoUrl() != null) entity.setGitRepoUrl(request.gitRepoUrl());
+        if (request.mainBranch() != null) entity.setMainBranch(request.mainBranch());
+        if (request.framework() != null) entity.setFramework(request.framework());
+        if (request.language() != null) entity.setLanguage(request.language());
+        serviceEntityMapper.updateById(entity);
+        return entity;
+    }
+
+    /** 归档服务（status → INACTIVE）。 */
+    public ServiceEntity archive(Long projectId, Long serviceId) {
+        ensureProjectExists(projectId);
+        ServiceEntity entity = getByIdOrThrow(serviceId);
+        entity.setStatus("INACTIVE");
+        serviceEntityMapper.updateById(entity);
+        return entity;
+    }
 }

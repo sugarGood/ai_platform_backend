@@ -1,20 +1,12 @@
 package com.aiplatform.backend.common.exception;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ResponseStatus;
 
-/**
- * 故障转移策略不存在时抛出的异常。
- */
-@ResponseStatus(HttpStatus.NOT_FOUND)
-public class ProviderFailoverPolicyNotFoundException extends RuntimeException {
+/** 供应商故障切换策略不存在。 */
+public class ProviderFailoverPolicyNotFoundException extends BusinessException {
 
-    /**
-     * 根据策略ID构造异常。
-     *
-     * @param policyId 未找到的策略ID
-     */
     public ProviderFailoverPolicyNotFoundException(Long policyId) {
-        super("Provider failover policy not found: " + policyId);
+        super(HttpStatus.NOT_FOUND.value(), BizErrorCode.PROVIDER_FAILOVER_POLICY_NOT_FOUND,
+                "故障切换策略不存在: " + policyId);
     }
 }

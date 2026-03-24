@@ -2,9 +2,13 @@ package com.aiplatform.backend.service;
 
 import com.aiplatform.backend.common.dto.PageResponse;
 import com.aiplatform.backend.dto.CreateProjectRequest;
+import com.aiplatform.backend.dto.ProjectOverviewResponse;
 import com.aiplatform.backend.dto.ProjectResponse;
+import com.aiplatform.backend.dto.UpdateProjectRequest;
 import com.aiplatform.backend.entity.Project;
 import com.aiplatform.backend.mapper.ProjectMapper;
+import com.aiplatform.backend.mapper.ProjectMemberMapper;
+import com.aiplatform.backend.mapper.ServiceEntityMapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.stereotype.Service;
@@ -28,11 +32,17 @@ public class ProjectService {
 
     private final ProjectMapper projectMapper;
     private final ProjectAgentService projectAgentService;
+    private final ProjectMemberMapper projectMemberMapper;
+    private final ServiceEntityMapper serviceEntityMapper;
 
     public ProjectService(ProjectMapper projectMapper,
-                          ProjectAgentService projectAgentService) {
+                          ProjectAgentService projectAgentService,
+                          ProjectMemberMapper projectMemberMapper,
+                          ServiceEntityMapper serviceEntityMapper) {
         this.projectMapper = projectMapper;
         this.projectAgentService = projectAgentService;
+        this.projectMemberMapper = projectMemberMapper;
+        this.serviceEntityMapper = serviceEntityMapper;
     }
 
     /**
@@ -111,5 +121,70 @@ public class ProjectService {
             throw new com.aiplatform.backend.common.exception.ProjectNotFoundException(projectId);
         }
         return project;
+    }
+
+    /**
+     * 更新项目信息（仅更新非 null 字段）。
+     *
+     * @param projectId 项目 ID
+     * @param request   更新请求
+     * @return 更新后的项目实体
+     */
+    public Project update(Long projectId, UpdateProjectRequest request) {
+        Project project = getByIdOrThrow(projectId);
+        if (request.name() != null)              project.setName(request.name());
+        if (request.description() != null)       project.setDescription(request.description());
+        if (request.icon() != null)              project.setIcon(request.icon());
+        if (request.ownerUserId() != null)       project.setOwnerUserId(request.ownerUserId());
+        if (request.monthlyTokenQuota() != null) project.setMonthlyTokenQuota(request.monthlyTokenQuota());
+        if (request.alertThresholdPct() != null) project.setAlertThresholdPct(request.alertThresholdPct());
+        if (request.overQuotaStrategy() != null) project.setOverQuotaStrategy(request.overQuotaStrategy());
+        projectMapper.updateById(project);
+        return project;
+    }
+
+    /**
+     * 归档项目（status → ARCHIVED）。
+     *
+     * @param projectId 项目 ID
+     * @return 更新后的项目实体
+     */
+    public Project archive(Long projectId) {
+        Project project = getByIdOrThrow(projectId);
+        project.setStatus("ARCHIVED");
+        projectMapper.updateById(project);
+        return project;
+    }
+
+    /**
+     * 获取项目概览聚合数据（成员数、服务数、Token 用量）。
+     *
+     * @param projectId 项目 ID
+     * @return 项目概览响应
+     */
+    public ProjectOverviewResponse overview(Long projectId) {
+        Project project = getByIdOrThrow(projectId);
+        long memberCount = projectMemberMapper.selectCount(
+                Wrappers.lambdaQuery(com.aiplatform.backend.entity.ProjectMember.class)
+                        .eq(com.aiplatform.backend.entity.ProjectMember::getProjectId, projectId)
+        );
+        long serviceCount = serviceEntityMapper.selectCount(
+                Wrappers.lambdaQuery(com.aiplatform.backend.entity.ServiceEntity.class)
+                        .eq(com.aiplatform.backend.entity.ServiceEntity::getProjectId, projectId)
+        );
+        Long quota = project.getMonthlyTokenQuota();
+        Long used  = project.getUsedTokensThisMonth() != null ? project.getUsedTokensThisMonth() : 0L;
+        Double usedPct = (quota != null && quota > 0) ? (used * 100.0 / quota) : null;
+        return new ProjectOverviewResponse(
+                project.getId(),
+                project.getName(),
+                project.getStatus(),
+                memberCount,
+                serviceCount,
+                quota,
+                used,
+                usedPct,
+                project.getOverQuotaStrategy()
+        );
     }
 }

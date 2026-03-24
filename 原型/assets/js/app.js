@@ -2,10 +2,31 @@
   var pageRoot = document.getElementById('page-root');
   var pages = window.PrototypePages || {};
 
+  function decodePseudoUnicodeEscapes(text) {
+    function decodeCodePoint(match, hex) {
+      var codePoint = parseInt(hex, 16);
+      if (!Number.isFinite(codePoint) || codePoint < 0 || codePoint > 0x10FFFF) {
+        return match;
+      }
+      try {
+        return String.fromCodePoint(codePoint);
+      } catch (error) {
+        return match;
+      }
+    }
+
+    return String(text || '')
+      .replace(/\\U([0-9a-f]{8})/gi, decodeCodePoint)
+      .replace(/\bU([0-9a-f]{8})\b/gi, decodeCodePoint)
+      .replace(/\\?u([0-9a-f]{8})/gi, decodeCodePoint)
+      .replace(/U\+([0-9a-f]{4,6})/gi, decodeCodePoint)
+      .replace(/\\u\{([0-9a-f]{1,6})\}/gi, decodeCodePoint);
+  }
+
   if (pageRoot) {
-    pageRoot.innerHTML = Object.keys(pages).map(function (key) {
+    pageRoot.innerHTML = decodePseudoUnicodeEscapes(Object.keys(pages).map(function (key) {
       return pages[key];
-    }).join('\n\n');
+    }).join('\n\n'));
   }
 
 // Generate dashboard chart bars
@@ -45,7 +66,9 @@
   }
 
   function normalizeText(text) {
-    return String(text || '').replace(/\s+/g, ' ').trim();
+    return decodePseudoUnicodeEscapes(text)
+      .replace(/\s+/g, ' ')
+      .trim();
   }
 
   function showToast(message, type = 'info') {

@@ -67,4 +67,14 @@ public class DepartmentService {
         }
         return department;
     }
+
+    /** 编辑部门（仅更新非null字段）。 */
+    public Department update(Long id, CreateDepartmentRequest request) {
+        Department department = getByIdOrThrow(id);
+        if (request.name() != null) department.setName(request.name());
+        if (request.code() != null) department.setCode(request.code());
+        if (request.description() != null) department.setDescription(request.description());
+        departmentMapper.updateById(department);
+        return department;
+    }
 }

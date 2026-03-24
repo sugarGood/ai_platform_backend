@@ -20,6 +20,13 @@ mybatis-plus:
 server:
   port: 8081
 
+# 与控制面相同桶配置，用于按 objectKey 拉取知识库原文
+minio:
+  endpoint: ${MINIO_ENDPOINT:http://192.168.0.35:9000}
+  access-key: ${MINIO_ACCESS_KEY:minioadmin}
+  secret-key: "cqcdi@135!"
+  bucket-name: ${MINIO_BUCKET:ai-platform}
+
 ai:
   gateway:
     providers:
@@ -41,5 +48,6 @@ ai:
     # 检索参数
     search:
       top-k: 5
-      score-threshold: 0.5
+      # 余弦相似度下限（在应用层过滤）。短词/单词 Query 往往整体分数偏低，过高易无结果；可用检索接口 body 覆盖 scoreThreshold
+      score-threshold: 0.35
       max-chunk-chars: 800

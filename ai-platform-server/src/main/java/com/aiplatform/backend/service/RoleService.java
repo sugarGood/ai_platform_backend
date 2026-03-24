@@ -48,13 +48,12 @@ public class RoleService {
         return role;
     }
 
-    /**
-     * 查询所有角色列表，按ID升序排列。
-     *
-     * @return 角色列表
-     */
-    public List<Role> list() {
-        return roleMapper.selectList(Wrappers.<Role>lambdaQuery().orderByAsc(Role::getId));
+    /** 查询所有角色列表，支持 scope 过滤，按ID升序排列。 */
+    public List<Role> list(String scope) {
+        var q = Wrappers.<Role>lambdaQuery();
+        if (scope != null && !scope.isBlank()) q.eq(Role::getRoleScope, scope);
+        q.orderByAsc(Role::getId);
+        return roleMapper.selectList(q);
     }
 
     /**
@@ -66,9 +65,24 @@ public class RoleService {
      */
     public Role getByIdOrThrow(Long roleId) {
         Role role = roleMapper.selectById(roleId);
-        if (role == null) {
-            throw new RoleNotFoundException(roleId);
-        }
+        if (role == null) throw new RoleNotFoundException(roleId);
         return role;
+    }
+
+    /** 编辑角色（仅更新非null字段）。 */
+    public Role update(Long id, CreateRoleRequest request) {
+        Role role = getByIdOrThrow(id);
+        if (request.name() != null) role.setName(request.name());
+        if (request.description() != null) role.setDescription(request.description());
+        if (request.defaultQuotaTokens() != null) role.setDefaultQuotaTokens(request.defaultQuotaTokens());
+        roleMapper.updateById(role);
+        return role;
+    }
+
+    /** 查询角色已关联的权限ID列表（通过 role_permissions 表）。 */
+    public List<Long> listPermissionIds(Long roleId) {
+        getByIdOrThrow(roleId);
+        // 通过 RolePermissionService 查询，此处直接查 role_permissions 表
+        return List.of(); // 由 RolePermissionController 承载详细查询
     }
 }

@@ -3,6 +3,10 @@ package com.aiplatform.agent.gateway.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * 项目引用实体（网关只读视图）。
@@ -10,6 +14,10 @@ import com.baomidou.mybatisplus.annotation.TableName;
  * <p>映射 {@code projects} 表，网关通过该实体读取项目的 Token 配额信息，
  * 用于双池配额校验中的项目池检查。</p>
  */
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @TableName("projects")
 public class ProjectRef {
 
@@ -31,18 +39,4 @@ public class ProjectRef {
 
     private String status;
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
-    public String getCode() { return code; }
-    public void setCode(String code) { this.code = code; }
-    public Long getMonthlyTokenQuota() { return monthlyTokenQuota; }
-    public void setMonthlyTokenQuota(Long monthlyTokenQuota) { this.monthlyTokenQuota = monthlyTokenQuota; }
-    public Long getUsedTokensThisMonth() { return usedTokensThisMonth; }
-    public void setUsedTokensThisMonth(Long usedTokensThisMonth) { this.usedTokensThisMonth = usedTokensThisMonth; }
-    public String getOverQuotaStrategy() { return overQuotaStrategy; }
-    public void setOverQuotaStrategy(String overQuotaStrategy) { this.overQuotaStrategy = overQuotaStrategy; }
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
 }

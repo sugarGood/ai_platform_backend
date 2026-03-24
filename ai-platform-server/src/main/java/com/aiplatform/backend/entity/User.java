@@ -5,11 +5,19 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 
 import java.time.LocalDateTime;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * 平台用户实体，对应 users 表。
  * <p>记录平台中所有注册用户的基本信息、所属部门及平台角色。</p>
  */
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @TableName("users")
 public class User {
 
@@ -38,8 +46,18 @@ public class User {
     /** 手机号 */
     private String phone;
 
-    /** 平台角色：SUPER_ADMIN（超级管理员）/ PLATFORM_ADMIN（平台管理员）/ MEMBER（普通成员） */
+    /**
+     * 平台角色 ID，关联 {@code roles.id}（role_scope = PLATFORM）。
+     * <p>与 {@code platformRole} 枚举字段并存：
+     * {@code platformRole} 用于快速枚举过滤，{@code roleId} 用于精确权限查询。</p>
+     */
+    private Long roleId;
+
+    /** 平台角色快捷字段：SUPER_ADMIN / PLATFORM_ADMIN / MEMBER（与 roles.code 保持一致） */
     private String platformRole;
+
+    /** BCrypt 哈希后的密码，不返回给前端 */
+    private String passwordHash;
 
     /** 状态：ACTIVE（启用）/ DISABLED（禁用） */
     private String status;
@@ -50,28 +68,4 @@ public class User {
     /** 更新时间 */
     private LocalDateTime updatedAt;
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
-    public String getUsername() { return username; }
-    public void setUsername(String username) { this.username = username; }
-    public String getFullName() { return fullName; }
-    public void setFullName(String fullName) { this.fullName = fullName; }
-    public String getAvatarUrl() { return avatarUrl; }
-    public void setAvatarUrl(String avatarUrl) { this.avatarUrl = avatarUrl; }
-    public Long getDepartmentId() { return departmentId; }
-    public void setDepartmentId(Long departmentId) { this.departmentId = departmentId; }
-    public String getJobTitle() { return jobTitle; }
-    public void setJobTitle(String jobTitle) { this.jobTitle = jobTitle; }
-    public String getPhone() { return phone; }
-    public void setPhone(String phone) { this.phone = phone; }
-    public String getPlatformRole() { return platformRole; }
-    public void setPlatformRole(String platformRole) { this.platformRole = platformRole; }
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 }

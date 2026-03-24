@@ -10,7 +10,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -59,22 +61,44 @@ public class QdrantSearchService {
     }
 
     /**
+     * 检索与问题最相关的文档片段（条数使用配置项 {@code ai.rag.search.top-k}）。
+     */
+    public List<ChunkResult> search(Long kbId, float[] queryVector) {
+        return search(kbId, queryVector, topK);
+    }
+
+    /**
      * 检索与问题最相关的文档片段。
      *
      * @param kbId        知识库 ID（对应 knowledge_bases.id）
      * @param queryVector 问题的 embedding 向量
+     * @param limit       返回条数上限，会被限制在 1～100 之间
      * @return 检索结果列表，已按相似度降序排列，低于阈值的已过滤
      */
-    public List<ChunkResult> search(Long kbId, float[] queryVector) {
-        String collection = collectionPrefix + kbId;
-        log.debug("Qdrant 检索，collection={}, topK={}, threshold={}", collection, topK, scoreThreshold);
+    public List<ChunkResult> search(Long kbId, float[] queryVector, int limit) {
+        return search(kbId, queryVector, limit, null);
+    }
 
-        SearchRequest requestBody = new SearchRequest(
-                queryVector,
-                topK,
-                true,   // with_payload=true，返回 chunk_text 等元数据
-                new ScoreThreshold(scoreThreshold)
-        );
+    /**
+     * @param scoreThresholdOverride 为 null 时使用配置 {@code ai.rag.search.score-threshold}；短词/英文词可传更低值（如 0.25）提升召回
+     */
+    public List<ChunkResult> search(Long kbId, float[] queryVector, int limit, Double scoreThresholdOverride) {
+        int effLimit = limit > 0 ? Math.min(Math.max(limit, 1), 100) : topK;
+        double thr = scoreThresholdOverride != null
+                ? Math.min(1.0, Math.max(0.0, scoreThresholdOverride))
+                : scoreThreshold;
+        // 多取候选再在应用层按阈值截断，避免「只取 Top5 但分数都略低于阈值」时结果为空（常见于短 Query）
+        int fetchLimit = Math.min(128, Math.max(effLimit * 10, 20));
+
+        String collection = collectionPrefix + kbId;
+        log.debug("Qdrant 检索，collection={}, returnLimit={}, fetchLimit={}, scoreThreshold={}",
+                collection, effLimit, fetchLimit, thr);
+
+        Map<String, Object> requestBody = new LinkedHashMap<>();
+        requestBody.put("vector", queryVector);
+        requestBody.put("limit", fetchLimit);
+        requestBody.put("with_payload", true);
+        // 使用 Qdrant 文档约定的扁平数字字段；此前嵌套对象会导致阈值未生效或行为异常
 
         try {
             SearchResponse response = webClient.post()
@@ -89,23 +113,27 @@ public class QdrantSearchService {
                 return Collections.emptyList();
             }
 
-            return response.result().stream()
-                    .filter(p -> p.score() >= scoreThreshold)
-                    .map(p -> {
-                        String text = extractPayloadString(p.payload(), "chunk_text");
-                        // 截断过长的 chunk，避免 context 窗口撑满
-                        if (text != null && text.length() > maxChunkChars) {
-                            text = text.substring(0, maxChunkChars) + "...";
-                        }
-                        return new ChunkResult(
-                                kbId,
-                                extractPayloadLong(p.payload(), "doc_id"),
-                                extractPayloadString(p.payload(), "doc_title"),
-                                text,
-                                p.score()
-                        );
-                    })
-                    .toList();
+            List<ChunkResult> ranked = new ArrayList<>();
+            for (SearchPoint p : response.result()) {
+                if (p.score() < thr) {
+                    continue;
+                }
+                String text = extractPayloadString(p.payload(), "chunk_text");
+                if (text != null && text.length() > maxChunkChars) {
+                    text = text.substring(0, maxChunkChars) + "...";
+                }
+                ranked.add(new ChunkResult(
+                        kbId,
+                        extractPayloadLong(p.payload(), "doc_id"),
+                        extractPayloadString(p.payload(), "doc_title"),
+                        text,
+                        p.score()
+                ));
+                if (ranked.size() >= effLimit) {
+                    break;
+                }
+            }
+            return ranked;
 
         } catch (WebClientResponseException.NotFound e) {
             // collection 不存在（向量尚未入库），静默返回空，不影响正常对话
@@ -137,24 +165,8 @@ public class QdrantSearchService {
     ) {}
 
     // ---------------------------------------------------------------
-    // Qdrant REST API 请求 / 响应 DTO
+    // Qdrant REST API 响应 DTO
     // ---------------------------------------------------------------
-
-    /**
-     * Qdrant 搜索请求体。
-     * 参考：POST /collections/{name}/points/search
-     */
-    private record SearchRequest(
-            @JsonProperty("vector") float[] vector,
-            @JsonProperty("limit") int limit,
-            @JsonProperty("with_payload") boolean withPayload,
-            @JsonProperty("score_threshold") ScoreThreshold scoreThreshold
-    ) {}
-
-    /** Qdrant score_threshold 包装对象 */
-    private record ScoreThreshold(
-            @JsonProperty("score_threshold") double value
-    ) {}
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     private record SearchResponse(

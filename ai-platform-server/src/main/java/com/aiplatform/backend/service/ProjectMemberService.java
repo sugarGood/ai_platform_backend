@@ -112,6 +112,21 @@ public class ProjectMemberService {
         return member;
     }
 
+    /**
+     * 更新项目成员角色。
+     *
+     * @param projectId 项目 ID
+     * @param memberId  成员记录 ID
+     * @param role      新角色
+     * @return 更新后的成员实体
+     */
+    public ProjectMember updateRole(Long projectId, Long memberId, String role) {
+        ProjectMember member = getByProjectAndId(projectId, memberId);
+        member.setRole(role);
+        projectMemberMapper.updateById(member);
+        return member;
+    }
+
     private void ensureProjectExists(Long projectId) {
         if (projectMapper.selectById(projectId) == null) {
             throw new com.aiplatform.backend.common.exception.ProjectNotFoundException(projectId);

@@ -44,6 +44,16 @@ public class KnowledgeSearchLogService {
     @Async
     public void logAsync(Long kbId, Long projectId, Long userId,
                          String query, List<ChunkResult> chunks, long latencyMs) {
+        logAsync(kbId, projectId, userId, query, chunks, latencyMs, "AI_AUTO");
+    }
+
+    /**
+     * @param source 检索来源，须为表 {@code knowledge_search_logs.source} ENUM：
+     *               {@code AI_AUTO}、{@code MANUAL_TEST}、{@code MCP_TOOL}
+     */
+    @Async
+    public void logAsync(Long kbId, Long projectId, Long userId,
+                         String query, List<ChunkResult> chunks, long latencyMs, String source) {
         try {
             // 命中的文档 ID 列表序列化为 JSON 数组字符串，如 [1,3,5]
             String hitDocIds = null;
@@ -72,7 +82,7 @@ public class KnowledgeSearchLogService {
                     .searchScope(projectId != null ? "PROJECT" : "GLOBAL")
                     .resultCount(chunks.size())
                     .latencyMs((int) latencyMs)
-                    .source("AI_AUTO")
+                    .source(source != null ? source : "AI_AUTO")
                     .createdAt(LocalDateTime.now())
                     .hitDocIds(hitDocIds)
                     .relevanceScore(relevanceScore)

@@ -1,9 +1,10 @@
 package com.aiplatform.agent.gateway.service;
 
-import com.aiplatform.agent.gateway.entity.KnowledgeBaseRef;
 import com.aiplatform.agent.gateway.mapper.KnowledgeBaseRefMapper;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.minio.GetObjectArgs;
+import io.minio.MinioClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -20,7 +22,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -31,12 +32,13 @@ import java.util.regex.Pattern;
  *
  * <p>工作流程：</p>
  * <ol>
- *   <li>读取本地文件内容</li>
+ *   <li>从本机路径或 MinIO 对象读取文本内容</li>
  *   <li>按 Markdown 标题（#、##、###）分块</li>
  *   <li>调用 EmbeddingService 向量化每个 chunk</li>
  *   <li>调用 Qdrant REST API 存入向量库</li>
- *   <li>更新 kb_documents 表状态为 READY</li>
  * </ol>
+ *
+ * <p>{@code kb_documents} 状态由控制面在上传后的异步任务中根据本接口响应回写。</p>
  */
 @Service
 public class KnowledgeIngestionService {
@@ -47,40 +49,56 @@ public class KnowledgeIngestionService {
     private final String collectionPrefix;
     private final EmbeddingService embeddingService;
     private final KnowledgeBaseRefMapper knowledgeBaseMapper;
+    private final MinioClient minioClient;
+    private final String minioBucketName;
 
     public KnowledgeIngestionService(
             WebClient.Builder webClientBuilder,
             @Value("${ai.rag.qdrant.base-url}") String qdrantBaseUrl,
             @Value("${ai.rag.qdrant.collection-prefix}") String collectionPrefix,
             EmbeddingService embeddingService,
-            KnowledgeBaseRefMapper knowledgeBaseMapper) {
+            KnowledgeBaseRefMapper knowledgeBaseMapper,
+            MinioClient minioClient,
+            @Value("${minio.bucket-name}") String minioBucketName) {
         this.webClient = webClientBuilder.baseUrl(qdrantBaseUrl).build();
         this.collectionPrefix = collectionPrefix;
         this.embeddingService = embeddingService;
         this.knowledgeBaseMapper = knowledgeBaseMapper;
+        this.minioClient = minioClient;
+        this.minioBucketName = minioBucketName;
     }
 
     /**
      * 从本地文件入库到 Qdrant。
      *
-     * @param kbId       知识库 ID
-     * @param filePath   本地文件路径（支持 .md、.txt）
-     * @param docId      文档 ID（kb_documents.id）
-     * @param docTitle   文档标题
-     * @throws IOException 文件读取失败
+     * @return 成功写入向量库的 chunk 数量
      */
-    public void ingestFromFile(Long kbId, String filePath, Long docId, String docTitle) throws IOException {
-        log.info("开始入库，kb_id={}，file={}", kbId, filePath);
-
-        // 1. 读取文件内容
+    public int ingestFromFile(Long kbId, String filePath, Long docId, String docTitle) throws IOException {
+        log.info("开始入库，kb_id={}，source=file，path={}", kbId, filePath);
         String content = readFile(filePath);
-        log.debug("文件读取成功，大小={}KB", content.length() / 1024);
+        return ingestPlainText(kbId, docId, docTitle, content);
+    }
 
-        // 2. 分块
+    /**
+     * 从 MinIO 对象键拉取正文后入库（与控制面上传生成的 objectKey 一致）。
+     */
+    public int ingestFromMinioObject(String objectKey, Long kbId, Long docId, String docTitle) throws Exception {
+        log.info("开始入库，kb_id={}，source=minio，objectKey={}", kbId, objectKey);
+        byte[] raw;
+        try (InputStream in = minioClient.getObject(
+                GetObjectArgs.builder().bucket(minioBucketName).object(objectKey).build())) {
+            raw = in.readAllBytes();
+        }
+        String content = new String(raw, StandardCharsets.UTF_8);
+        return ingestPlainText(kbId, docId, docTitle, content);
+    }
+
+    private int ingestPlainText(Long kbId, Long docId, String docTitle, String content) {
+        log.debug("内容读取成功，大小={}KB", content.length() / 1024);
+
         List<String> chunks = chunkMarkdown(content);
         log.info("分块完成，共 {} 个 chunk", chunks.size());
 
-        // 3. 向量化 + 存入 Qdrant
         String collection = collectionPrefix + kbId;
         ensureCollection(collection);
 
@@ -88,11 +106,8 @@ public class KnowledgeIngestionService {
         for (int i = 0; i < chunks.size(); i++) {
             String chunk = chunks.get(i);
             try {
-                // 向量化
                 float[] vector = embeddingService.embed(chunk);
-
-                // 存入 Qdrant
-                long pointId = docId * 10000 + i; // 生成唯一 point ID
+                long pointId = docId * 10000 + i;
                 storePoint(collection, pointId, vector, chunk, docId, docTitle);
                 successCount++;
 
@@ -105,6 +120,7 @@ public class KnowledgeIngestionService {
         }
 
         log.info("入库完成，kb_id={}，成功 {}/{} 个 chunk", kbId, successCount, chunks.size());
+        return successCount;
     }
 
     // ---------------------------------------------------------------

@@ -9,13 +9,11 @@
         <outputRelativeToContentRoot value="true" />
         <module name="ai-platform-agent" />
       </profile>
-      <profile name="Annotation profile for ai-platform-parent" enabled="true">
+      <profile name="Annotation profile for ai-platform-backend" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="false">
-          <entry name="D:/Program/apache-maven-3.8.4-bin/repository/com/github/therapi/therapi-runtime-javadoc-scribe/0.15.0/therapi-runtime-javadoc-scribe-0.15.0.jar" />
-          <entry name="D:/Program/apache-maven-3.8.4-bin/repository/com/github/therapi/therapi-runtime-javadoc/0.15.0/therapi-runtime-javadoc-0.15.0.jar" />
           <entry name="D:/Program/apache-maven-3.8.4-bin/repository/com/github/therapi/therapi-runtime-javadoc-scribe/0.15.0/therapi-runtime-javadoc-scribe-0.15.0.jar" />
           <entry name="D:/Program/apache-maven-3.8.4-bin/repository/com/github/therapi/therapi-runtime-javadoc/0.15.0/therapi-runtime-javadoc-0.15.0.jar" />
           <entry name="D:/Program/apache-maven-3.8.4-bin/repository/org/projectlombok/lombok/1.18.38/lombok-1.18.38.jar" />

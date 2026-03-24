@@ -16,6 +16,12 @@ mybatis-plus:
     db-config:
       id-type: auto
 
+minio:
+  endpoint: http://127.0.0.1:19000
+  access-key: test
+  secret-key: testsecret
+  bucket-name: ai-platform
+
 ai:
   gateway:
     providers:

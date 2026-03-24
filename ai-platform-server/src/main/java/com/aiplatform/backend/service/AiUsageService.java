@@ -102,4 +102,79 @@ public class AiUsageService {
         Page<AiUsageEvent> result = aiUsageEventMapper.selectPage(new Page<>(page, size), query);
         return PageResponse.from(result, AiUsageEventResponse::from);
     }
+
+    /** 查询我的用量概览（当月总 Token、请求数、费用）。 */
+    public java.util.Map<String, Object> myUsageSummary(Long userId) {
+        var query = Wrappers.<AiUsageEvent>lambdaQuery()
+                .eq(AiUsageEvent::getUserId, userId)
+                .ge(AiUsageEvent::getOccurredAt,
+                        java.time.LocalDateTime.now().withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0));
+        var events = aiUsageEventMapper.selectList(query);
+        long totalTokens = events.stream().mapToLong(e -> e.getTotalTokens() != null ? e.getTotalTokens() : 0).sum();
+        long totalRequests = events.size();
+        java.math.BigDecimal totalCost = events.stream()
+                .map(e -> e.getCostAmount() != null ? e.getCostAmount() : java.math.BigDecimal.ZERO)
+                .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
+        return java.util.Map.of(
+                "userId", userId,
+                "totalTokens", totalTokens,
+                "totalRequests", totalRequests,
+                "totalCost", totalCost,
+                "period", "CURRENT_MONTH"
+        );
+    }
+
+    /** 查询项目用量统计摘要。 */
+    public java.util.Map<String, Object> projectUsageSummary(Long projectId) {
+        var query = Wrappers.<AiUsageEvent>lambdaQuery()
+                .eq(AiUsageEvent::getProjectId, projectId)
+                .ge(AiUsageEvent::getOccurredAt,
+                        java.time.LocalDateTime.now().withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0));
+        var events = aiUsageEventMapper.selectList(query);
+        long totalTokens = events.stream().mapToLong(e -> e.getTotalTokens() != null ? e.getTotalTokens() : 0).sum();
+        long totalRequests = events.size();
+        java.math.BigDecimal totalCost = events.stream()
+                .map(e -> e.getCostAmount() != null ? e.getCostAmount() : java.math.BigDecimal.ZERO)
+                .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
+        return java.util.Map.of(
+                "projectId", projectId,
+                "totalTokens", totalTokens,
+                "totalRequests", totalRequests,
+                "totalCost", totalCost,
+                "period", "CURRENT_MONTH"
+        );
+    }
+
+    /** 查询平台级用量看板（所有项目汇总）。 */
+    public java.util.Map<String, Object> platformDashboard() {
+        var query = Wrappers.<AiUsageEvent>lambdaQuery()
+                .ge(AiUsageEvent::getOccurredAt,
+                        java.time.LocalDateTime.now().withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0));
+        var events = aiUsageEventMapper.selectList(query);
+        long totalTokens = events.stream().mapToLong(e -> e.getTotalTokens() != null ? e.getTotalTokens() : 0).sum();
+        long totalRequests = events.size();
+        java.math.BigDecimal totalCost = events.stream()
+                .map(e -> e.getCostAmount() != null ? e.getCostAmount() : java.math.BigDecimal.ZERO)
+                .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
+        long activeUsers = events.stream()
+                .filter(e -> e.getUserId() != null)
+                .map(AiUsageEvent::getUserId).distinct().count();
+        return java.util.Map.of(
+                "totalTokens", totalTokens,
+                "totalRequests", totalRequests,
+                "totalCost", totalCost,
+                "activeUsers", activeUsers,
+                "period", "CURRENT_MONTH"
+        );
+    }
+
+    /** 更新成员配额。 */
+    public MemberAiQuota updateQuota(Long quotaId, CreateMemberAiQuotaRequest request) {
+        MemberAiQuota quota = memberAiQuotaMapper.selectById(quotaId);
+        if (quota == null) throw new RuntimeException("Quota not found: " + quotaId);
+        if (request.quotaLimit() != null) quota.setQuotaLimit(request.quotaLimit());
+        if (request.resetCycle() != null) quota.setResetCycle(request.resetCycle());
+        memberAiQuotaMapper.updateById(quota);
+        return quota;
+    }
 }

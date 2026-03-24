@@ -3,6 +3,10 @@ package com.aiplatform.agent.gateway.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * 上游 API 密钥引用实体（网关只读视图）。
@@ -10,6 +14,10 @@ import com.baomidou.mybatisplus.annotation.TableName;
  * <p>映射 {@code provider_api_keys} 表，存储平台向上游 AI 供应商发起请求时
  * 所使用的 API 密钥。密钥以加密形式存储，网关在调用时解密使用。</p>
  */
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @TableName("provider_api_keys")
 public class ProviderApiKeyRef {
 
@@ -39,43 +47,4 @@ public class ProviderApiKeyRef {
      */
     private String status;
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Long getProviderId() {
-        return providerId;
-    }
-
-    public void setProviderId(Long providerId) {
-        this.providerId = providerId;
-    }
-
-    public String getLabel() {
-        return label;
-    }
-
-    public void setLabel(String label) {
-        this.label = label;
-    }
-
-    public String getApiKeyEncrypted() {
-        return apiKeyEncrypted;
-    }
-
-    public void setApiKeyEncrypted(String apiKeyEncrypted) {
-        this.apiKeyEncrypted = apiKeyEncrypted;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
 }

@@ -1,20 +1,12 @@
 package com.aiplatform.backend.common.exception;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ResponseStatus;
 
-/**
- * AI 供应商不存在时抛出的异常。
- */
-@ResponseStatus(HttpStatus.NOT_FOUND)
-public class AiProviderNotFoundException extends RuntimeException {
+/** AI 供应商不存在。 */
+public class AiProviderNotFoundException extends BusinessException {
 
-    /**
-     * 根据供应商ID构造异常。
-     *
-     * @param providerId 未找到的供应商ID
-     */
     public AiProviderNotFoundException(Long providerId) {
-        super("AI provider not found: " + providerId);
+        super(HttpStatus.NOT_FOUND.value(), BizErrorCode.AI_PROVIDER_NOT_FOUND,
+                "AI 供应商不存在: " + providerId);
     }
 }

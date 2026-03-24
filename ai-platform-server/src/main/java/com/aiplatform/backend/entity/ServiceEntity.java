@@ -5,12 +5,20 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 
 import java.time.LocalDateTime;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * 项目服务实体，对应数据库 {@code services} 表。
  *
  * <p>记录项目下各微服务/应用的基本信息，包括代码仓库地址、技术栈等。</p>
  */
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @TableName("services")
 public class ServiceEntity {
 
@@ -27,26 +35,4 @@ public class ServiceEntity {
     private LocalDateTime createdAt;  // 创建时间
     private LocalDateTime updatedAt;  // 最后更新时间
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public Long getProjectId() { return projectId; }
-    public void setProjectId(Long projectId) { this.projectId = projectId; }
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
-    public String getGitRepoUrl() { return gitRepoUrl; }
-    public void setGitRepoUrl(String gitRepoUrl) { this.gitRepoUrl = gitRepoUrl; }
-    public String getMainBranch() { return mainBranch; }
-    public void setMainBranch(String mainBranch) { this.mainBranch = mainBranch; }
-    public String getFramework() { return framework; }
-    public void setFramework(String framework) { this.framework = framework; }
-    public String getLanguage() { return language; }
-    public void setLanguage(String language) { this.language = language; }
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 }

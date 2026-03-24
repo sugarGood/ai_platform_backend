@@ -1,10 +1,13 @@
 package com.aiplatform.backend.service;
 
 import com.aiplatform.backend.dto.UpdateProjectAgentRequest;
+import com.aiplatform.backend.common.exception.BusinessException;
+import com.aiplatform.backend.common.exception.BizErrorCode;
 import com.aiplatform.backend.entity.Project;
 import com.aiplatform.backend.entity.ProjectAgent;
 import com.aiplatform.backend.mapper.ProjectAgentMapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 /**
@@ -173,9 +176,10 @@ public class ProjectAgentService {
     // 内部异常
     // ---------------------------------------------------------------
 
-    public static class AgentNotFoundException extends RuntimeException {
+    public static class AgentNotFoundException extends BusinessException {
         public AgentNotFoundException(Long projectId) {
-            super("项目智能体不存在，projectId=" + projectId);
+            super(HttpStatus.NOT_FOUND.value(), BizErrorCode.PROJECT_AGENT_NOT_FOUND,
+                    "项目智能体不存在，projectId=" + projectId);
         }
     }
 }

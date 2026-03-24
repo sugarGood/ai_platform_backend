@@ -6,7 +6,6 @@ import com.aiplatform.agent.gateway.service.CredentialAuthService;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -81,14 +80,4 @@ public class CredentialController {
         return ResponseEntity.ok(Map.of("message", message));
     }
 
-    // ---------------------------------------------------------------
-    // Exception Handlers
-    // ---------------------------------------------------------------
-
-    @ExceptionHandler(CredentialAuthService.InvalidCredentialException.class)
-    public ResponseEntity<Map<String, String>> handleInvalidCredential(
-            CredentialAuthService.InvalidCredentialException ex) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(Map.of("error", ex.getMessage()));
-    }
 }

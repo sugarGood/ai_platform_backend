@@ -62,5 +62,4 @@ com\aiplatform\agent\gateway\dto\ChatCompletionResponse.class
 com\aiplatform\agent\gateway\entity\AiUsageEventRef$AiUsageEventRefBuilder.class
 com\aiplatform\agent\gateway\service\KnowledgeSearchLogService.class
 com\aiplatform\agent\gateway\service\QuotaDeductionService.class
-com\aiplatform\agent\gateway\controller\KnowledgeController.class
 com\aiplatform\agent\gateway\entity\SkillRef.class

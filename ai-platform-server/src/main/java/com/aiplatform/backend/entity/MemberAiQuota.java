@@ -5,6 +5,10 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 
 import java.time.LocalDateTime;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * 成员 AI 配额实体，对应 {@code member_ai_quotas} 表。
@@ -26,6 +30,10 @@ import java.time.LocalDateTime;
  * 网关层双池 Token 扣减以 {@code platform_credentials} 和 {@code projects} 为准；
  * 本表数据由后台统计任务异步汇总，用于报表展示和精细化告警。</p>
  */
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @TableName("member_ai_quotas")
 public class MemberAiQuota {
 
@@ -63,26 +71,4 @@ public class MemberAiQuota {
     /** 最后更新时间 */
     private LocalDateTime updatedAt;
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public Long getUserId() { return userId; }
-    public void setUserId(Long userId) { this.userId = userId; }
-    public Long getProjectId() { return projectId; }
-    public void setProjectId(Long projectId) { this.projectId = projectId; }
-    public String getQuotaType() { return quotaType; }
-    public void setQuotaType(String quotaType) { this.quotaType = quotaType; }
-    public Long getQuotaLimit() { return quotaLimit; }
-    public void setQuotaLimit(Long quotaLimit) { this.quotaLimit = quotaLimit; }
-    public Long getUsedAmount() { return usedAmount; }
-    public void setUsedAmount(Long usedAmount) { this.usedAmount = usedAmount; }
-    public String getResetCycle() { return resetCycle; }
-    public void setResetCycle(String resetCycle) { this.resetCycle = resetCycle; }
-    public LocalDateTime getLastResetAt() { return lastResetAt; }
-    public void setLastResetAt(LocalDateTime lastResetAt) { this.lastResetAt = lastResetAt; }
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 }

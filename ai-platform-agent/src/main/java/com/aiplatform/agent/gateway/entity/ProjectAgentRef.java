@@ -3,7 +3,10 @@ package com.aiplatform.agent.gateway.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * 项目专属智能体引用实体（网关只读视图）。
@@ -12,6 +15,9 @@ import lombok.Data;
  * 包括 System Prompt、能力开关，用于在请求处理链路中优先注入项目智能体上下文。</p>
  */
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @TableName("project_agents")
 public class ProjectAgentRef {
 

@@ -6,6 +6,10 @@ import com.baomidou.mybatisplus.annotation.TableName;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * 知识库实体，对应 knowledge_bases 表。
@@ -13,6 +17,10 @@ import java.time.LocalDateTime;
  * <p>知识库是平台知识管理的核心载体，支持全局共享和项目级私有两种作用域。
  * 每个知识库可包含多个文档，文档经向量化后用于 AI 检索增强（RAG）。</p>
  */
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @TableName("knowledge_bases")
 public class KnowledgeBase {
 
@@ -62,34 +70,4 @@ public class KnowledgeBase {
     /** 最后更新时间 */
     private LocalDateTime updatedAt;
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
-    public String getScope() { return scope; }
-    public void setScope(String scope) { this.scope = scope; }
-    public Long getProjectId() { return projectId; }
-    public void setProjectId(Long projectId) { this.projectId = projectId; }
-    public String getCategory() { return category; }
-    public void setCategory(String category) { this.category = category; }
-    public String getEmbeddingModel() { return embeddingModel; }
-    public void setEmbeddingModel(String embeddingModel) { this.embeddingModel = embeddingModel; }
-    public Integer getDocCount() { return docCount; }
-    public void setDocCount(Integer docCount) { this.docCount = docCount; }
-    public Integer getTotalChunks() { return totalChunks; }
-    public void setTotalChunks(Integer totalChunks) { this.totalChunks = totalChunks; }
-    public BigDecimal getHitRate() { return hitRate; }
-    public void setHitRate(BigDecimal hitRate) { this.hitRate = hitRate; }
-    public String getInjectMode() { return injectMode; }
-    public void setInjectMode(String injectMode) { this.injectMode = injectMode; }
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
-    public Long getCreatedBy() { return createdBy; }
-    public void setCreatedBy(Long createdBy) { this.createdBy = createdBy; }
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 }

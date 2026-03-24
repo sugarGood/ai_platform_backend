@@ -9,15 +9,17 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
 
 /**
- * 项目成员管理控制器，提供项目成员的添加、移除和列表查询接口。
+ * 项目成员管理控制器，提供项目成员的添加、角色更新、移除和列表查询接口。
  *
  * <p>API 基路径：{@code /api/projects/{projectId}/members}</p>
  */
@@ -56,6 +58,22 @@ public class ProjectMemberController {
         return projectMemberService.listByProjectId(projectId).stream()
                 .map(ProjectMemberResponse::from)
                 .toList();
+    }
+
+    /**
+     * 更新项目成员角色。
+     *
+     * @param projectId 项目 ID（路径参数）
+     * @param memberId  成员记录 ID（路径参数）
+     * @param body      请求体，包含 {@code role} 字段（如 ADMIN / MEMBER / VIEWER）
+     * @return 更新后的成员响应 DTO
+     */
+    @PutMapping("/{memberId}")
+    public ProjectMemberResponse updateRole(@PathVariable Long projectId,
+                                            @PathVariable Long memberId,
+                                            @RequestBody Map<String, String> body) {
+        String role = body.get("role");
+        return ProjectMemberResponse.from(projectMemberService.updateRole(projectId, memberId, role));
     }
 
     /**

@@ -27,8 +27,8 @@ import java.time.LocalDateTime;
  */
 @Data
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 @TableName("ai_usage_events")
 public class AiUsageEvent {
 
@@ -191,7 +191,6 @@ public class AiUsageEvent {
      * 记录写入时间
      */
     private LocalDateTime createdAt;
-
 
 }
 

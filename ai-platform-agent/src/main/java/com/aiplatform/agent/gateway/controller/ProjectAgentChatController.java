@@ -5,7 +5,6 @@ import com.aiplatform.agent.gateway.service.ProjectAgentChatService;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.codec.ServerSentEvent;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -13,8 +12,6 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
-
-import java.util.Map;
 
 /**
  * 项目专属智能体对话控制器。
@@ -77,14 +74,4 @@ public class ProjectAgentChatController {
                 .map(data -> ServerSentEvent.<String>builder().data(data).build());
     }
 
-    // ---------------------------------------------------------------
-    // Exception Handlers
-    // ---------------------------------------------------------------
-
-    @ExceptionHandler(ProjectAgentChatService.AgentNotAvailableException.class)
-    public ResponseEntity<Map<String, String>> handleAgentNotAvailable(
-            ProjectAgentChatService.AgentNotAvailableException ex) {
-        return ResponseEntity.status(503)
-                .body(Map.of("error", ex.getMessage()));
-    }
 }

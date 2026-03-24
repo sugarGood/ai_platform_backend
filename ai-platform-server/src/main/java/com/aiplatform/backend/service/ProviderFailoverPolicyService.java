@@ -67,9 +67,20 @@ public class ProviderFailoverPolicyService {
      */
     public ProviderFailoverPolicy getByIdOrThrow(Long policyId) {
         ProviderFailoverPolicy policy = providerFailoverPolicyMapper.selectById(policyId);
-        if (policy == null) {
-            throw new ProviderFailoverPolicyNotFoundException(policyId);
-        }
+        if (policy == null) throw new ProviderFailoverPolicyNotFoundException(policyId);
+        return policy;
+    }
+
+    /** 编辑故障转移策略。 */
+    public ProviderFailoverPolicy update(Long id, CreateProviderFailoverPolicyRequest request) {
+        ProviderFailoverPolicy policy = getByIdOrThrow(id);
+        if (request.name() != null) policy.setName(request.name());
+        if (request.primaryKeyId() != null) policy.setPrimaryKeyId(request.primaryKeyId());
+        if (request.fallbackKeyId() != null) policy.setFallbackKeyId(request.fallbackKeyId());
+        if (request.triggerCondition() != null) policy.setTriggerCondition(request.triggerCondition());
+        if (request.triggerThreshold() != null) policy.setTriggerThreshold(request.triggerThreshold());
+        if (request.autoRecovery() != null) policy.setAutoRecovery(request.autoRecovery());
+        providerFailoverPolicyMapper.updateById(policy);
         return policy;
     }
 }

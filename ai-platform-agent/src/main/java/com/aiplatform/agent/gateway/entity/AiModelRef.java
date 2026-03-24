@@ -5,6 +5,10 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 
 import java.math.BigDecimal;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * AI 模型引用实体（网关只读视图）。
@@ -12,6 +16,10 @@ import java.math.BigDecimal;
  * <p>映射 {@code ai_models} 表，网关模块通过该实体查找请求中指定的模型，
  * 并据此确定对应的上游供应商，完成路由决策。</p>
  */
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @TableName("ai_models")
 public class AiModelRef {
 
@@ -37,18 +45,4 @@ public class AiModelRef {
     /** 模型状态（如 ACTIVE、DEPRECATED） */
     private String status;
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public Long getProviderId() { return providerId; }
-    public void setProviderId(Long providerId) { this.providerId = providerId; }
-    public String getCode() { return code; }
-    public void setCode(String code) { this.code = code; }
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
-    public BigDecimal getInputPricePer1m() { return inputPricePer1m; }
-    public void setInputPricePer1m(BigDecimal inputPricePer1m) { this.inputPricePer1m = inputPricePer1m; }
-    public BigDecimal getOutputPricePer1m() { return outputPricePer1m; }
-    public void setOutputPricePer1m(BigDecimal outputPricePer1m) { this.outputPricePer1m = outputPricePer1m; }
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
 }
