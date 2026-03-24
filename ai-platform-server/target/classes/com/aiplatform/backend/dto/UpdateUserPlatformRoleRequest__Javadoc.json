@@ -1,0 +1,1 @@
+{"doc":" 更新用户平台角色（与 {@code roles.code} 中 {@code role_scope = PLATFORM} 的编码一致）。\n\n @param platformRole 目标平台角色编码，如 MEMBER、PLATFORM_ADMIN、SUPER_ADMIN\n","fields":[],"enumConstants":[],"methods":[],"constructors":[]}

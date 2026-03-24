@@ -1,1 +1,1 @@
-{"doc":" 权限点不存在异常。\n\n <p>当根据 ID 查询权限点但未找到记录时抛出，HTTP 状态码返回 404。</p>\n","fields":[],"enumConstants":[],"methods":[],"constructors":[{"name":"<init>","paramTypes":["java.lang.Long"],"doc":" @param permissionId 未找到的权限点 ID\n"}]}
+{"doc":"权限点不存在。 ","fields":[],"enumConstants":[],"methods":[],"constructors":[]}

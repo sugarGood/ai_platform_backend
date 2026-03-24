@@ -1,0 +1,1 @@
+{"doc":" 平台业务异常基类：携带 HTTP 状态、稳定错误码与可读文案，供全局处理为 {@link com.aiplatform.backend.common.dto.ApiResult}。\n\n <p>前端建议优先根据 {@code errorCode} 做分支（弹窗、跳转、i18n key），{@code message} 作兜底展示。</p>\n","fields":[],"enumConstants":[],"methods":[],"constructors":[]}

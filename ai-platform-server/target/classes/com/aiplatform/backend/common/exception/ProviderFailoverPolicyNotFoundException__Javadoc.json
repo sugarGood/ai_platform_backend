@@ -1,1 +1,1 @@
-{"doc":" 故障转移策略不存在时抛出的异常。\n","fields":[],"enumConstants":[],"methods":[],"constructors":[{"name":"<init>","paramTypes":["java.lang.Long"],"doc":" 根据策略ID构造异常。\n\n @param policyId 未找到的策略ID\n"}]}
+{"doc":"供应商故障切换策略不存在。 ","fields":[],"enumConstants":[],"methods":[],"constructors":[]}

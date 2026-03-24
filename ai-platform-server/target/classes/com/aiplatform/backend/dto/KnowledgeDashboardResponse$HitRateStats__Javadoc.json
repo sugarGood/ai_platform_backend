@@ -1,0 +1,1 @@
+{"doc":" @param percent            命中率（百分比）\n @param meetsTarget        是否达到目标\n @param targetPercent      目标命中率\n @param fromSearchLogs     true 表示由本月检索日志计算；false 表示本月无日志，来自知识库表上的运行指标\n","fields":[],"enumConstants":[],"methods":[],"constructors":[]}

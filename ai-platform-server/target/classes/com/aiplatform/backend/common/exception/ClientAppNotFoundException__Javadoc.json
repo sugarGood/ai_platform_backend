@@ -1,1 +1,1 @@
-{"doc":" 研发客户端不存在异常。\n\n <p>当根据 ID 查询客户端但未找到记录时抛出，HTTP 状态码返回 404。</p>\n","fields":[],"enumConstants":[],"methods":[],"constructors":[{"name":"<init>","paramTypes":["java.lang.Long"],"doc":" @param clientAppId 未找到的客户端 ID\n"}]}
+{"doc":"客户端应用不存在。 ","fields":[],"enumConstants":[],"methods":[],"constructors":[]}

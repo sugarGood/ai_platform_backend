@@ -1,0 +1,1 @@
+{"doc":"项目原子能力订阅控制器。 ","fields":[],"enumConstants":[],"methods":[{"name":"list","paramTypes":["java.lang.Long"],"doc":"查询项目已订阅的原子能力列表（TODO: 接入 project_atomic_capabilities 关联表）。 "},{"name":"subscribe","paramTypes":["java.lang.Long","java.util.Map"],"doc":"项目订阅原子能力。 "},{"name":"unsubscribe","paramTypes":["java.lang.Long","java.lang.Long"],"doc":"项目取消订阅原子能力。 "}],"constructors":[]}

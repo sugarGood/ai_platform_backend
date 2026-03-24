@@ -1,0 +1,1 @@
+{"doc":" MinIO（S3 兼容）连接与桶配置。\n","fields":[{"name":"endpoint","doc":"服务地址，含协议与端口，如 {@code http://192.168.0.35:9000} "}],"enumConstants":[],"methods":[],"constructors":[]}

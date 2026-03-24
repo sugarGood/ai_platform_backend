@@ -1,0 +1,1 @@
+{"doc":" 更新项目的请求参数（所有字段可选，仅更新非 null 字段）。\n\n @param name              项目名称\n @param description       项目描述\n @param icon              项目图标\n @param ownerUserId       项目负责人用户 ID\n @param monthlyTokenQuota 项目月度 Token 池上限\n @param alertThresholdPct 项目池告警阈值百分比（0-100）\n @param overQuotaStrategy 超配额策略\n","fields":[],"enumConstants":[],"methods":[],"constructors":[]}

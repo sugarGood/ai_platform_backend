@@ -1,1 +1,1 @@
-{"doc":" AI 供应商不存在时抛出的异常。\n","fields":[],"enumConstants":[],"methods":[],"constructors":[{"name":"<init>","paramTypes":["java.lang.Long"],"doc":" 根据供应商ID构造异常。\n\n @param providerId 未找到的供应商ID\n"}]}
+{"doc":"AI 供应商不存在。 ","fields":[],"enumConstants":[],"methods":[],"constructors":[]}

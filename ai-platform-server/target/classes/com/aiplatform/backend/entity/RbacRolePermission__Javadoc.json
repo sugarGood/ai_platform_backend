@@ -1,0 +1,1 @@
+{"doc":" 角色-权限关联实体，对应 {@code rbac_role_permissions} 表。\n\n <p>记录某角色（{@code platform_roles}）拥有哪些权限点（{@code permission_definitions}）。</p>\n","fields":[{"name":"roleCode","doc":"角色编码，关联 platform_roles.role_code "},{"name":"permissionCode","doc":"权限编码，关联 permission_definitions.permission_code "}],"enumConstants":[],"methods":[],"constructors":[]}

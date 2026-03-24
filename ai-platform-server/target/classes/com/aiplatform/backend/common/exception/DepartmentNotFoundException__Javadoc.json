@@ -1,1 +1,1 @@
-{"doc":" 部门不存在时抛出的异常。\n","fields":[],"enumConstants":[],"methods":[],"constructors":[{"name":"<init>","paramTypes":["java.lang.Long"],"doc":" 根据部门ID构造异常。\n\n @param departmentId 未找到的部门ID\n"}]}
+{"doc":"部门不存在。 ","fields":[],"enumConstants":[],"methods":[],"constructors":[]}

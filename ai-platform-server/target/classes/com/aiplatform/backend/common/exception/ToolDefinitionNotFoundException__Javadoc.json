@@ -1,1 +1,1 @@
-{"doc":" 工具定义不存在异常。\n\n <p>当根据ID查询工具定义但未找到记录时抛出，HTTP 状态码返回 404。</p>\n","fields":[],"enumConstants":[],"methods":[],"constructors":[{"name":"<init>","paramTypes":["java.lang.Long"],"doc":" 构造工具定义不存在异常。\n\n @param id 未找到的工具定义ID\n"}]}
+{"doc":"工具定义不存在。 ","fields":[],"enumConstants":[],"methods":[],"constructors":[]}

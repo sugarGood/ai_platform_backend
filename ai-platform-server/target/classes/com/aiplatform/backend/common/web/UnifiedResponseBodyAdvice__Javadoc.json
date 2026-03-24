@@ -1,0 +1,1 @@
+{"doc":" 将控制器与全局异常处理器的返回值统一包装为 {@link ApiResult}。\n\n <p>例外：</p>\n <ul>\n   <li>已是 {@link ApiResult} 的不再二次包装</li>\n   <li>标注 {@link ResponseStatus}{@code NO_CONTENT} 或 204：不写入 body（符合 HTTP 语义）</li>\n   <li>返回类型为 {@link String}：避免与 {@code StringHttpMessageConverter} 冲突，保持原样</li>\n </ul>\n","fields":[],"enumConstants":[],"methods":[],"constructors":[]}

@@ -1,1 +1,1 @@
-{"doc":" 项目不存在异常。\n\n <p>当根据 ID 查询项目但数据库中不存在对应记录时抛出，返回 HTTP 404。</p>\n","fields":[],"enumConstants":[],"methods":[],"constructors":[{"name":"<init>","paramTypes":["java.lang.Long"],"doc":" 构造项目不存在异常。\n\n @param projectId 未找到的项目 ID\n"}]}
+{"doc":"项目不存在。 ","fields":[],"enumConstants":[],"methods":[],"constructors":[]}

@@ -1,0 +1,1 @@
+{"doc":" 文档保存到共享存储后，异步请求 Agent 完成分块与向量入库，并回写 {@code kb_documents} 状态。\n","fields":[],"enumConstants":[],"methods":[{"name":"runIngest","paramTypes":["java.lang.Long","java.lang.Long","java.lang.String","java.lang.String"],"doc":" @param minioObjectKey MinIO 对象键（与 {@code kb_documents.file_path} 一致）\n"}],"constructors":[]}

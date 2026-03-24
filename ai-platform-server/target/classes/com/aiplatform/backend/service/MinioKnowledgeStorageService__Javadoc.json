@@ -1,0 +1,1 @@
+{"doc":" 知识库原始文件写入 MinIO。\n\n <p>对象键规则：{@code yyyy/MM/dd/文件名(无扩展名)_毫秒时间戳.扩展名}，便于按日浏览与检索。</p>\n","fields":[],"enumConstants":[],"methods":[{"name":"uploadKnowledgeObject","paramTypes":["org.springframework.web.multipart.MultipartFile","java.lang.String"],"doc":" 上传文件，返回对象键（不含桶名），写入 {@code kb_documents.file_path}。\n"}],"constructors":[]}

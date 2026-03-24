@@ -1,0 +1,1 @@
+{"doc":" 当前请求认证主体（不可变值对象）。\n\n @param userId       用户 ID\n @param email        用户邮箱\n @param platformRole 平台角色编码\n @param permissions  该角色对应的权限点集合\n","fields":[],"enumConstants":[],"methods":[],"constructors":[]}

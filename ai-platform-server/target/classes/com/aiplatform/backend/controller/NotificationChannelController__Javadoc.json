@@ -1,0 +1,1 @@
+{"doc":"通知渠道管理控制器（模块14）。 ","fields":[],"enumConstants":[],"methods":[{"name":"test","paramTypes":["java.lang.Long"],"doc":"测试通知渠道（发送测试消息）。TODO: 接入实际通知服务。 "}],"constructors":[]}

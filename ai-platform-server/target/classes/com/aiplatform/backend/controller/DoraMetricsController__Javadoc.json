@@ -1,0 +1,1 @@
+{"doc":" DORA 指标控制器（模块19）。\n TODO: 接入 dora_metrics 表，此处从 ai_usage_events 实时聚合基础指标。\n","fields":[],"enumConstants":[],"methods":[{"name":"projectDoraMetrics","paramTypes":["java.lang.Long","java.lang.String"],"doc":"查询项目 DORA 指标。 "},{"name":"platformDoraDashboard","paramTypes":[],"doc":"平台 DORA 看板。 "}],"constructors":[]}

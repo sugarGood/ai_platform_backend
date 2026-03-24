@@ -1,0 +1,1 @@
+{"doc":" 知识库检索日志 Mapper。\n\n <p>管理端仅做 COUNT 聚合；写入在 ai-platform-agent 网关侧完成。</p>\n","fields":[],"enumConstants":[],"methods":[],"constructors":[]}

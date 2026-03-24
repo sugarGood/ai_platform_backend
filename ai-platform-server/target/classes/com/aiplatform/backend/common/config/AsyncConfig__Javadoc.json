@@ -1,0 +1,1 @@
+{"doc":" 异步任务配置：知识库向量化等耗时操作在独立线程池执行，避免阻塞 HTTP 线程。\n","fields":[],"enumConstants":[],"methods":[],"constructors":[]}
