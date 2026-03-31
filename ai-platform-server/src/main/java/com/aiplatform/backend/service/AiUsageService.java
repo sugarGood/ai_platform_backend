@@ -3,7 +3,7 @@ package com.aiplatform.backend.service;
 import com.aiplatform.backend.common.dto.PageResponse;
 import com.aiplatform.backend.dto.AiUsageEventResponse;
 import com.aiplatform.backend.dto.CreateMemberAiQuotaRequest;
-import com.aiplatform.backend.dto.MemberAiQuotaResponse;
+import com.aiplatform.backend.dto.MemberProjectQuotaUpsertRequest;
 import com.aiplatform.backend.entity.AiUsageEvent;
 import com.aiplatform.backend.entity.MemberAiQuota;
 import com.aiplatform.backend.mapper.AiUsageEventMapper;
@@ -24,16 +24,21 @@ public class AiUsageService {
 
     private final MemberAiQuotaMapper memberAiQuotaMapper;
     private final AiUsageEventMapper aiUsageEventMapper;
+    private final ProjectMemberService projectMemberService;
 
     /**
      * 构造函数，注入所需的数据访问层依赖。
      *
      * @param memberAiQuotaMapper 成员配额 Mapper
      * @param aiUsageEventMapper  AI 用量事件 Mapper
+     * @param projectMemberService 项目成员（解析 memberId → userId）
      */
-    public AiUsageService(MemberAiQuotaMapper memberAiQuotaMapper, AiUsageEventMapper aiUsageEventMapper) {
+    public AiUsageService(MemberAiQuotaMapper memberAiQuotaMapper,
+                          AiUsageEventMapper aiUsageEventMapper,
+                          ProjectMemberService projectMemberService) {
         this.memberAiQuotaMapper = memberAiQuotaMapper;
         this.aiUsageEventMapper = aiUsageEventMapper;
+        this.projectMemberService = projectMemberService;
     }
 
     // ==================== 配额管理 ====================
@@ -95,9 +100,36 @@ public class AiUsageService {
      * @return 分页后的 AI 用量事件响应
      */
     public PageResponse<AiUsageEventResponse> listUsageEvents(Long userId, Long projectId, int page, int size) {
+        return listUsageEvents(userId, projectId, null, null, null, null, page, size);
+    }
+
+    /**
+     * 分页查询 AI 用量明细，支持来源类型、状态与时间范围过滤。
+     */
+    public PageResponse<AiUsageEventResponse> listUsageEvents(Long userId, Long projectId,
+                                                              String sourceType, String status,
+                                                              java.time.LocalDateTime occurredAfter,
+                                                              java.time.LocalDateTime occurredBefore,
+                                                              int page, int size) {
         var query = Wrappers.<AiUsageEvent>lambdaQuery();
-        if (userId != null) query.eq(AiUsageEvent::getUserId, userId);
-        if (projectId != null) query.eq(AiUsageEvent::getProjectId, projectId);
+        if (userId != null) {
+            query.eq(AiUsageEvent::getUserId, userId);
+        }
+        if (projectId != null) {
+            query.eq(AiUsageEvent::getProjectId, projectId);
+        }
+        if (sourceType != null && !sourceType.isBlank()) {
+            query.eq(AiUsageEvent::getSourceType, sourceType);
+        }
+        if (status != null && !status.isBlank()) {
+            query.eq(AiUsageEvent::getStatus, status);
+        }
+        if (occurredAfter != null) {
+            query.ge(AiUsageEvent::getOccurredAt, occurredAfter);
+        }
+        if (occurredBefore != null) {
+            query.le(AiUsageEvent::getOccurredAt, occurredBefore);
+        }
         query.orderByDesc(AiUsageEvent::getId);
         Page<AiUsageEvent> result = aiUsageEventMapper.selectPage(new Page<>(page, size), query);
         return PageResponse.from(result, AiUsageEventResponse::from);
@@ -175,6 +207,44 @@ public class AiUsageService {
         if (request.quotaLimit() != null) quota.setQuotaLimit(request.quotaLimit());
         if (request.resetCycle() != null) quota.setResetCycle(request.resetCycle());
         memberAiQuotaMapper.updateById(quota);
+        return quota;
+    }
+
+    /**
+     * 按项目成员设置配额：强制使用路径中的 projectId，并从 memberId 解析 userId。
+     *
+     * <p>与库表唯一键 {@code (user_id, project_id, quota_type)} 对齐：已存在则更新上限与周期。</p>
+     */
+    public MemberAiQuota upsertQuotaForProjectMember(Long projectId, Long memberId,
+                                                       MemberProjectQuotaUpsertRequest request) {
+        var member = projectMemberService.getByProjectAndId(projectId, memberId);
+        Long userId = member.getUserId();
+        String quotaType = request.quotaType();
+        Long quotaLimit = request.quotaLimit();
+        String resetCycle = request.resetCycle() != null ? request.resetCycle() : "MONTHLY";
+
+        MemberAiQuota existing = memberAiQuotaMapper.selectOne(
+                Wrappers.<MemberAiQuota>lambdaQuery()
+                        .eq(MemberAiQuota::getUserId, userId)
+                        .eq(MemberAiQuota::getProjectId, projectId)
+                        .eq(MemberAiQuota::getQuotaType, quotaType)
+                        .last("LIMIT 1"));
+        if (existing != null) {
+            existing.setQuotaLimit(quotaLimit);
+            existing.setResetCycle(resetCycle);
+            existing.setStatus("ACTIVE");
+            memberAiQuotaMapper.updateById(existing);
+            return existing;
+        }
+        MemberAiQuota quota = new MemberAiQuota();
+        quota.setUserId(userId);
+        quota.setProjectId(projectId);
+        quota.setQuotaType(quotaType);
+        quota.setQuotaLimit(quotaLimit);
+        quota.setUsedAmount(0L);
+        quota.setResetCycle(resetCycle);
+        quota.setStatus("ACTIVE");
+        memberAiQuotaMapper.insert(quota);
         return quota;
     }
 }

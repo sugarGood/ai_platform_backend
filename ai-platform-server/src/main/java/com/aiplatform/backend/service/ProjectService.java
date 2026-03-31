@@ -76,6 +76,8 @@ public class ProjectService {
                 request.alertThresholdPct() != null ? request.alertThresholdPct() : 80);
         project.setOverQuotaStrategy(
                 request.overQuotaStrategy() != null ? request.overQuotaStrategy() : "BLOCK");
+        project.setQuotaResetCycle("MONTHLY");
+        project.setSingleRequestTokenCap(null);
 
         projectMapper.insert(project);
 
@@ -97,15 +99,18 @@ public class ProjectService {
     /**
      * 分页查询项目列表，按 ID 升序排列。
      *
-     * @param page 页码（从 1 开始）
-     * @param size 每页记录数
+     * @param page         页码（从 1 开始）
+     * @param size         每页记录数
+     * @param keyword      可选；匹配名称、编码、描述、ID（字符串模糊）
+     * @param status       可选；未传或 ALL 时不按状态过滤；ACTIVE/ARCHIVED 时过滤
+     * @param projectType  可选；ALL 或 PRODUCT/PLATFORM/DATA/OTHER
      * @return 分页响应，包含项目 DTO 列表
      */
-    public PageResponse<ProjectResponse> listPaged(int page, int size) {
-        Page<Project> result = projectMapper.selectPage(
-                new Page<>(page, size),
-                Wrappers.<Project>lambdaQuery().orderByAsc(Project::getId)
-        );
+    public PageResponse<ProjectResponse> listPaged(
+            int page, int size, String keyword, String status, String projectType) {
+        var wrapper = Wrappers.<Project>lambdaQuery().orderByAsc(Project::getId);
+        ProjectQueryFilters.applyForList(wrapper, keyword, status, projectType);
+        Page<Project> result = projectMapper.selectPage(new Page<>(page, size), wrapper);
         return PageResponse.from(result, ProjectResponse::from);
     }
 
@@ -135,10 +140,16 @@ public class ProjectService {
         if (request.name() != null)              project.setName(request.name());
         if (request.description() != null)       project.setDescription(request.description());
         if (request.icon() != null)              project.setIcon(request.icon());
+        if (request.projectType() != null)       project.setProjectType(request.projectType());
         if (request.ownerUserId() != null)       project.setOwnerUserId(request.ownerUserId());
         if (request.monthlyTokenQuota() != null) project.setMonthlyTokenQuota(request.monthlyTokenQuota());
         if (request.alertThresholdPct() != null) project.setAlertThresholdPct(request.alertThresholdPct());
         if (request.overQuotaStrategy() != null) project.setOverQuotaStrategy(request.overQuotaStrategy());
+        if (request.quotaResetCycle() != null) project.setQuotaResetCycle(request.quotaResetCycle());
+        if (request.singleRequestTokenCap() != null) {
+            project.setSingleRequestTokenCap(
+                    request.singleRequestTokenCap() == 0 ? null : request.singleRequestTokenCap());
+        }
         projectMapper.updateById(project);
         return project;
     }

@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotNull;
 /**
  * 创建平台凭证的请求参数。
  *
- * <p>新设计：凭证一人一证、跨项目共用，不再绑定单一项目（无 boundProjectId）。
+ * <p>一人一证、跨项目共用；当前工作项目不在创建请求中指定，由凭证绑定接口单独更新。
  * 平台邀请用户时自动创建 PERSONAL 凭证；SERVICE_ACCOUNT 凭证由管理员手动创建。</p>
  *
  * @param userId              所属用户 ID（必填）

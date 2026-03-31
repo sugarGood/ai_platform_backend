@@ -98,6 +98,17 @@ public class Project {
     /** 项目池配额最近一次重置时间 */
     private LocalDateTime lastQuotaResetAt;
 
+    /**
+     * 任务/展示用配额重置周期（与 {@code member_ai_quotas.reset_cycle} 语义对齐）。
+     * {@code DAILY} / {@code WEEKLY} / {@code MONTHLY}，默认 {@code MONTHLY}。
+     */
+    private String quotaResetCycle;
+
+    /**
+     * 单次请求 Token 上限；{@code null} 表示使用平台默认（例如 100K）。
+     */
+    private Long singleRequestTokenCap;
+
     // ---------------------------------------------------------------
     // 项目状态
     // ---------------------------------------------------------------

@@ -1,1 +1,1 @@
-{"doc":" 添加项目成员的请求参数。\n\n @param userId 用户 ID（必填）\n @param role   成员角色：ADMIN / MEMBER / VIEWER（默认 MEMBER）\n","fields":[],"enumConstants":[],"methods":[],"constructors":[]}
+{"doc":" 添加项目成员的请求参数。\n\n @param userId 用户 ID（必填）\n @param role   项目角色简写：ADMIN / DEVELOPER / QA / PM / GUEST；未传时服务端默认 {@code DEVELOPER}\n","fields":[],"enumConstants":[],"methods":[],"constructors":[]}

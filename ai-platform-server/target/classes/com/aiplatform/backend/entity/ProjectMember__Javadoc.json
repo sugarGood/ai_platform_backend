@@ -1,1 +1,1 @@
-{"doc":" 项目成员实体，对应数据库 {@code project_members} 表。\n\n <p>记录用户与项目的关联关系及其在项目中的角色。</p>\n","fields":[],"enumConstants":[],"methods":[],"constructors":[]}
+{"doc":" 项目成员实体，对应数据库 {@code project_members} 表。\n\n <p>记录用户与项目的关联关系及其在项目中的角色。</p>\n","fields":[{"name":"role","doc":"项目角色简写：ADMIN / DEVELOPER / QA / PM / GUEST "}],"enumConstants":[],"methods":[],"constructors":[]}

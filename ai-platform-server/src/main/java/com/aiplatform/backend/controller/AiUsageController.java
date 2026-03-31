@@ -4,8 +4,10 @@ import com.aiplatform.backend.common.dto.PageResponse;
 import com.aiplatform.backend.dto.AiUsageEventResponse;
 import com.aiplatform.backend.dto.CreateMemberAiQuotaRequest;
 import com.aiplatform.backend.dto.MemberAiQuotaResponse;
+import com.aiplatform.backend.dto.MemberProjectQuotaUpsertRequest;
 import com.aiplatform.backend.service.AiUsageService;
 import jakarta.validation.Valid;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -39,9 +42,14 @@ public class AiUsageController {
     public PageResponse<AiUsageEventResponse> list(
             @RequestParam(required = false) Long userId,
             @RequestParam(required = false) Long projectId,
+            @RequestParam(required = false) String sourceType,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime occurredAfter,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime occurredBefore,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "20") int size) {
-        return aiUsageService.listUsageEvents(userId, projectId, page, size);
+        return aiUsageService.listUsageEvents(
+                userId, projectId, sourceType, status, occurredAfter, occurredBefore, page, size);
     }
 
     // ── 我的用量 ─────────────────────────────────────────────────────
@@ -58,7 +66,7 @@ public class AiUsageController {
             @RequestParam Long userId,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "20") int size) {
-        return aiUsageService.listUsageEvents(userId, null, page, size);
+        return aiUsageService.listUsageEvents(userId, null, null, null, null, null, page, size);
     }
 
     // ── 项目用量 ─────────────────────────────────────────────────────
@@ -75,7 +83,7 @@ public class AiUsageController {
             @PathVariable Long projectId,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "20") int size) {
-        return aiUsageService.listUsageEvents(null, projectId, page, size);
+        return aiUsageService.listUsageEvents(null, projectId, null, null, null, null, page, size);
     }
 
     // ── 平台看板（管理员） ────────────────────────────────────────────
@@ -95,13 +103,19 @@ public class AiUsageController {
                 .map(MemberAiQuotaResponse::from).toList();
     }
 
-    /** 设置成员配额。 */
+    /**
+     * 设置成员在项目内的配额（upsert）。
+     *
+     * <p>请求体：{@code quotaType}、{@code quotaLimit}、可选 {@code resetCycle}；
+     * 用户与项目由路径 {@code memberId}、{@code projectId} 解析。</p>
+     */
     @PostMapping("/api/projects/{projectId}/members/{memberId}/quota")
     public MemberAiQuotaResponse setMemberQuota(
             @PathVariable Long projectId,
             @PathVariable Long memberId,
-            @Valid @RequestBody CreateMemberAiQuotaRequest request) {
-        return MemberAiQuotaResponse.from(aiUsageService.createQuota(request));
+            @Valid @RequestBody MemberProjectQuotaUpsertRequest request) {
+        return MemberAiQuotaResponse.from(
+                aiUsageService.upsertQuotaForProjectMember(projectId, memberId, request));
     }
 
     /** 更新成员配额。 */

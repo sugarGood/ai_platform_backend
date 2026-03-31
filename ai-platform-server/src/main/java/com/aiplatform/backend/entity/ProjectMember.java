@@ -26,7 +26,8 @@ public class ProjectMember {
     private Long id;              // 成员记录主键 ID（自增）
     private Long projectId;       // 所属项目 ID
     private Long userId;          // 用户 ID
-    private String role;          // 角色：ADMIN / MEMBER / VIEWER
+    /** 项目角色简写：ADMIN / DEVELOPER / QA / PM / GUEST */
+    private String role;
     private LocalDateTime joinedAt;   // 加入项目时间
     private LocalDateTime createdAt;  // 记录创建时间
     private LocalDateTime updatedAt;  // 记录更新时间

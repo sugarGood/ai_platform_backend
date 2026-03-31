@@ -178,7 +178,13 @@ public class ProjectContextEnrichmentService {
         if (kbConfigs.isEmpty()) return;
 
         List<Long> kbIds = kbConfigs.stream()
-                .map(ProjectKnowledgeConfigRef::getKbId).collect(Collectors.toList());
+                .filter(c -> {
+                    String m = c.getInjectMode();
+                    return m == null || "AUTO_INJECT".equals(m);
+                })
+                .map(ProjectKnowledgeConfigRef::getKbId)
+                .collect(Collectors.toList());
+        if (kbIds.isEmpty()) return;
 
         List<KnowledgeBaseRef> autoInjectKbs = knowledgeBaseMapper.selectList(
                 Wrappers.<KnowledgeBaseRef>lambdaQuery()

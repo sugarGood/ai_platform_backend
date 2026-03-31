@@ -1,5 +1,6 @@
 package com.aiplatform.backend.controller;
 
+import com.aiplatform.backend.common.security.AuthContext;
 import com.aiplatform.backend.dto.CreatePlatformCredentialRequest;
 import com.aiplatform.backend.dto.CreatePlatformCredentialResponse;
 import com.aiplatform.backend.dto.KeyRotationLogResponse;
@@ -12,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -24,7 +26,7 @@ import java.util.Map;
 /**
  * 平台凭证管理控制器。
  *
- * <p>提供凭证的创建、查询、续期、轮换、吊销等完整 REST API，路径前缀为 {@code /api/credentials}。</p>
+ * <p>提供凭证的创建、查询、续期、轮换、吊销、工作项目绑定等 REST API，路径前缀为 {@code /api/credentials}。</p>
  */
 @RestController
 @RequestMapping("/api/credentials")
@@ -97,6 +99,18 @@ public class PlatformCredentialController {
         int gracePeriodHours = (body != null && body.containsKey("gracePeriodHours"))
                 ? ((Number) body.get("gracePeriodHours")).intValue() : 24;
         return platformCredentialService.rotate(id, gracePeriodHours);
+    }
+
+    /**
+     * 切换当前工作项目，写入 {@code bound_project_id}；AI 网关只读该字段（与 {@code X-Project-Id} 优先级见网关文档）。
+     * 请求体含 {@code projectId}，可为 {@code null} 表示解绑。
+     */
+    @PutMapping("/{id}/bound-project")
+    public PlatformCredentialResponse updateBoundProject(@PathVariable Long id,
+                                                         @RequestBody(required = false) Map<String, Long> body) {
+        Long projectId = body != null ? body.get("projectId") : null;
+        return PlatformCredentialResponse.from(
+                platformCredentialService.updateBoundProject(id, AuthContext.getUserId(), projectId));
     }
 
     /** 查询凭证轮换日志。 */

@@ -25,6 +25,8 @@ public final class BizErrorCode {
     public static final String PROJECT_AGENT_NOT_FOUND = "PROJECT_AGENT_NOT_FOUND";
 
     public static final String KNOWLEDGE_BASE_NOT_FOUND = "KNOWLEDGE_BASE_NOT_FOUND";
+    /** 项目下指定的全局知识库绑定配置不存在 */
+    public static final String PROJECT_KNOWLEDGE_CONFIG_NOT_FOUND = "PROJECT_KNOWLEDGE_CONFIG_NOT_FOUND";
     public static final String KB_DOCUMENT_NOT_FOUND = "KB_DOCUMENT_NOT_FOUND";
     public static final String INGEST_IN_PROGRESS = "INGEST_IN_PROGRESS";
     public static final String NO_OBJECT_KEY = "NO_OBJECT_KEY";

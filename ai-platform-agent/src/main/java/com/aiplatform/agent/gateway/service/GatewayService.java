@@ -57,8 +57,8 @@ public class GatewayService {
      * <p>优先级：
      * <ol>
      *   <li>请求头 {@code X-Project-Id} 显式传入（兼容能自定义请求头的调用方）</li>
-     *   <li>凭证绑定的当前工作项目 {@code boundProjectId}（员工在个人页面切换项目后生效，
-     *       Cursor / Claude Code / Codex 等工具无需任何额外配置）</li>
+     *   <li>凭证绑定的当前工作项目 {@code boundProjectId}（由管理端 {@code PUT /api/credentials/{id}/bound-project}
+     *       写入本表字段；Cursor / Claude Code 等无自定义请求头时依赖该字段）</li>
      *   <li>{@code null}，不关联项目，仅做纯模型调用</li>
      * </ol>
      * </p>

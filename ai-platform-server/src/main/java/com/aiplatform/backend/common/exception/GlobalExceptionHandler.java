@@ -1,5 +1,6 @@
 package com.aiplatform.backend.common.exception;
 
+import cn.dev33.satoken.exception.NotLoginException;
 import com.aiplatform.backend.common.dto.ApiResult;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.http.HttpStatus;
@@ -8,6 +9,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -18,6 +21,16 @@ import java.util.stream.Collectors;
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
+    /** Sa-Token：未登录或 Token 无效（与 {@link BizErrorCode#UNAUTHORIZED} 对齐） */
+    @ExceptionHandler(NotLoginException.class)
+    public ResponseEntity<ApiResult<Void>> handleNotLogin(NotLoginException ex) {
+        String msg = ex.getMessage() != null ? ex.getMessage() : "未登录或登录已失效";
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(ApiResult.fail(HttpStatus.UNAUTHORIZED.value(), BizErrorCode.UNAUTHORIZED, msg));
+    }
 
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<ApiResult<Void>> handleBusiness(BusinessException ex) {
@@ -56,9 +69,11 @@ public class GlobalExceptionHandler {
             HttpStatus status = annotation.value();
             String msg = ex.getMessage() != null ? ex.getMessage() : status.getReasonPhrase();
             String code = camelToUpperSnake(ex.getClass().getSimpleName().replace("Exception", ""));
+            log.warn("{} {}: {}", status.value(), code, msg, ex);
             return ResponseEntity.status(status)
                     .body(ApiResult.fail(status.value(), code, msg));
         }
+        log.error("未处理的运行时异常（已转为 500 响应）", ex);
         String msg = ex.getMessage() != null ? ex.getMessage() : HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase();
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ApiResult.fail(500, BizErrorCode.INTERNAL_ERROR, msg));

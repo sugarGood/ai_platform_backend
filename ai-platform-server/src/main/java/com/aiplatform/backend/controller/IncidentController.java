@@ -41,7 +41,9 @@ public class IncidentController {
     @GetMapping("/{id}")
     public Incident getById(@PathVariable Long projectId, @PathVariable Long id) {
         Incident e = incidentMapper.selectById(id);
-        if (e == null) throw new RuntimeException("Incident not found: " + id);
+        if (e == null || !projectId.equals(e.getProjectId())) {
+            throw new RuntimeException("Incident not found: " + id);
+        }
         return e;
     }
 
@@ -50,7 +52,9 @@ public class IncidentController {
                                  @PathVariable Long id,
                                  @RequestBody Map<String, String> body) {
         Incident e = incidentMapper.selectById(id);
-        if (e == null) throw new RuntimeException("Incident not found: " + id);
+        if (e == null || !projectId.equals(e.getProjectId())) {
+            throw new RuntimeException("Incident not found: " + id);
+        }
         e.setStatus(body.getOrDefault("status", e.getStatus()));
         if ("RESOLVED".equals(e.getStatus())) e.setResolvedAt(LocalDateTime.now());
         incidentMapper.updateById(e);
@@ -61,7 +65,9 @@ public class IncidentController {
     @PostMapping("/{id}/ai-diagnose")
     public Incident aiDiagnose(@PathVariable Long projectId, @PathVariable Long id) {
         Incident e = incidentMapper.selectById(id);
-        if (e == null) throw new RuntimeException("Incident not found: " + id);
+        if (e == null || !projectId.equals(e.getProjectId())) {
+            throw new RuntimeException("Incident not found: " + id);
+        }
         e.setAiDiagnosisStatus("PENDING");
         e.setAiDiagnosis("AI诊断引擎待集成，将分析以下错误栈: " +
                 (e.getErrorStack() != null ? e.getErrorStack().substring(0, Math.min(100, e.getErrorStack().length())) : "(无)"));

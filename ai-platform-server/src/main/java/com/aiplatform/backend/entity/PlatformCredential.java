@@ -50,6 +50,12 @@ public class PlatformCredential {
      */
     private Long userId;
 
+    /**
+     * 当前工作项目 ID；网关在无 {@code X-Project-Id} 时使用，用于 RAG/上下文。
+     * 由管理端（登录用户）更新，写入 {@code platform_credentials.bound_project_id}。
+     */
+    private Long boundProjectId;
+
     /** 凭证展示名称，默认为用户姓名 + "的凭证" */
     private String name;
 

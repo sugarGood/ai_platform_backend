@@ -3,6 +3,7 @@ package com.aiplatform.backend.service;
 import com.aiplatform.backend.common.exception.ProjectMemberAlreadyExistsException;
 import com.aiplatform.backend.common.exception.ProjectMemberNotFoundException;
 import com.aiplatform.backend.dto.CreateProjectMemberRequest;
+import com.aiplatform.backend.dto.ProjectMemberResponse;
 import com.aiplatform.backend.entity.ProjectMember;
 import com.aiplatform.backend.mapper.ProjectMapper;
 import com.aiplatform.backend.mapper.ProjectMemberMapper;
@@ -19,15 +20,24 @@ public class ProjectMemberService {
 
     private final ProjectMapper projectMapper;
     private final ProjectMemberMapper projectMemberMapper;
+    private final PlatformCredentialService platformCredentialService;
 
-    public ProjectMemberService(ProjectMapper projectMapper, ProjectMemberMapper projectMemberMapper) {
+    public ProjectMemberService(ProjectMapper projectMapper,
+                                ProjectMemberMapper projectMemberMapper,
+                                PlatformCredentialService platformCredentialService) {
         this.projectMapper = projectMapper;
         this.projectMemberMapper = projectMemberMapper;
+        this.platformCredentialService = platformCredentialService;
+    }
+
+    /** 组装含「凭证状态」的成员响应（列表/详情接口使用）。 */
+    public ProjectMemberResponse toResponse(ProjectMember member) {
+        return ProjectMemberResponse.from(member, platformCredentialService.getByUserId(member.getUserId()));
     }
 
     /**
      * 向指定项目中添加成员。若该用户已是项目成员则抛出异常。
-     * 当未指定角色时默认为 MEMBER。
+     * 当未指定角色时默认为 {@code DEVELOPER}。
      *
      * @param projectId 项目 ID
      * @param request   添加成员的请求参数
@@ -49,7 +59,7 @@ public class ProjectMemberService {
         ProjectMember member = new ProjectMember();
         member.setProjectId(projectId);
         member.setUserId(request.userId());
-        member.setRole(request.role() != null ? request.role() : "MEMBER");
+        member.setRole(request.role() != null ? request.role() : "DEVELOPER");
         projectMemberMapper.insert(member);
         return member;
     }
@@ -88,6 +98,11 @@ public class ProjectMemberService {
                         .eq(ProjectMember::getProjectId, projectId)
                         .orderByAsc(ProjectMember::getId)
         );
+    }
+
+    /** 项目成员列表，含每名用户平台凭证状态字段。 */
+    public List<ProjectMemberResponse> listResponsesByProjectId(Long projectId) {
+        return listByProjectId(projectId).stream().map(this::toResponse).toList();
     }
 
     /**

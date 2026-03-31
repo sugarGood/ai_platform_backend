@@ -1,1 +1,1 @@
-{"doc":" 项目服务实体，对应数据库 {@code services} 表。\n\n <p>记录项目下各微服务/应用的基本信息，包括代码仓库地址、技术栈等。</p>\n","fields":[],"enumConstants":[],"methods":[],"constructors":[]}
+{"doc":"\n 项目服务实体，对应数据库 {@code services} 表。\r\n\r\n <p>记录项目下各微服务/应用的基本信息，包括代码仓库地址、技术栈等。</p>\r\n","fields":[],"enumConstants":[],"methods":[],"constructors":[]}

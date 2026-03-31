@@ -11,7 +11,7 @@
  Target Server Version : 80300 (8.3.0)
  File Encoding         : 65001
 
- Date: 23/03/2026 22:11:20
+ Date: 30/03/2026 10:53:15
 */
 
 SET NAMES utf8mb4;
@@ -226,6 +226,7 @@ CREATE TABLE `alert_events`  (
   `trigger_value` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '触发时的实际值',
   `message` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '告警消息内容',
   `notified_channels` json NULL COMMENT '已通知的渠道',
+  `severity` enum('CRITICAL','HIGH','MEDIUM','LOW') CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT 'MEDIUM' COMMENT '告警级别（可与规则一致；历史数据建议回填）',
   `status` enum('FIRING','ACKNOWLEDGED','RESOLVED') CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT 'FIRING',
   `resolved_at` datetime NULL DEFAULT NULL COMMENT '解决时间',
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -238,8 +239,8 @@ CREATE TABLE `alert_events`  (
 -- ----------------------------
 -- Records of alert_events
 -- ----------------------------
-INSERT INTO `alert_events` VALUES (1, 1, 1, NULL, '842.3', '项目 Omni-CS 昨日推断成本 842.3 USD，超过阈值', '[1]', 'ACKNOWLEDGED', NULL, '2026-03-16 08:12:00');
-INSERT INTO `alert_events` VALUES (2, 2, NULL, NULL, '0.061', 'Anthropic 主 Key 5 分钟错误率 6.1%', '[1]', 'FIRING', NULL, '2026-03-20 09:40:00');
+INSERT INTO `alert_events` VALUES (1, 1, 1, NULL, '842.3', '项目 Omni-CS 昨日推断成本 842.3 USD，超过阈值', '[1]', 'HIGH', 'ACKNOWLEDGED', NULL, '2026-03-16 08:12:00');
+INSERT INTO `alert_events` VALUES (2, 2, NULL, NULL, '0.061', 'Anthropic 主 Key 5 分钟错误率 6.1%', '[1]', 'CRITICAL', 'FIRING', NULL, '2026-03-20 09:40:00');
 
 -- ----------------------------
 -- Table structure for alert_rules
@@ -921,6 +922,7 @@ DROP TABLE IF EXISTS `platform_credentials`;
 CREATE TABLE `platform_credentials`  (
   `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT,
   `user_id` bigint UNSIGNED NOT NULL COMMENT '所属用户 ID（一人一证，与实体 uk 一致）',
+  `bound_project_id` bigint UNSIGNED NULL DEFAULT NULL COMMENT '当前工作项目 ID（RAG/上下文）；NULL 表示未指定，由管理端写入、网关只读',
   `credential_type` enum('PERSONAL','SERVICE_ACCOUNT','TEMP') CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT 'PERSONAL' COMMENT '凭证类型，与 PlatformCredential 实体一致',
   `key_hash` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT 'SHA256(key)，不存明文',
   `key_prefix` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT 'plt_xxx_ 前缀，用于展示',
@@ -941,27 +943,26 @@ CREATE TABLE `platform_credentials`  (
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `uk_key_hash`(`key_hash` ASC) USING BTREE,
   UNIQUE INDEX `uk_platform_credentials_user`(`user_id` ASC) USING BTREE,
+  INDEX `idx_bound_project`(`bound_project_id` ASC) USING BTREE,
   INDEX `idx_status`(`status` ASC) USING BTREE,
   INDEX `idx_expires`(`expires_at` ASC) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 13 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '平台凭证表（成员接入 AI 工具的统一凭证）' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of platform_credentials
--- 一人一证：每名 users.id 对应一条 PERSONAL；明文格式 plt_{id}_{16位hex}_{a+z}，与 PlatformCredentialService 一致
--- 明文示例：user 1 -> plt_1_0000000000000001_b ，Authorization: Bearer <明文>
 -- ----------------------------
-INSERT INTO `platform_credentials` VALUES (1, 1, 'PERSONAL', '255535f97cd48c07288fdf0502c158b3ec00abd3f2a8e444abc6e7b20e70f94d', 'plt_1_000000', '唐浩-个人凭证（种子）', 0, 0, 80, 'BLOCK', NULL, 'ACTIVE', NULL, NULL, NULL, NULL, NULL, '2025-08-01 09:00:00', '2026-03-20 23:45:00');
-INSERT INTO `platform_credentials` VALUES (2, 2, 'PERSONAL', 'bfbab795b6c731b7cde15cdd5aa94a3877b2e6c91fe470c58392a63a77d1a42f', 'plt_2_000000', '刘梅-个人凭证（种子）', 0, 0, 80, 'BLOCK', NULL, 'ACTIVE', NULL, NULL, NULL, NULL, NULL, '2025-08-01 09:00:00', '2026-03-20 23:45:00');
-INSERT INTO `platform_credentials` VALUES (3, 3, 'PERSONAL', 'cca3220ba70ddfb668cbf757635bf3f997a79a42720a046b2aa7ec3022cebba1', 'plt_3_000000', '赵磊-个人凭证（种子）', 0, 0, 80, 'BLOCK', NULL, 'ACTIVE', NULL, NULL, NULL, NULL, NULL, '2025-08-01 09:00:00', '2026-03-20 23:45:00');
-INSERT INTO `platform_credentials` VALUES (4, 4, 'PERSONAL', '00d181e9781407cada1aa42d5511a1a88e5365f005a9b70f9322d9137c1e278c', 'plt_4_000000', '孙倩-个人凭证（种子）', 0, 0, 80, 'BLOCK', NULL, 'ACTIVE', NULL, NULL, NULL, NULL, NULL, '2025-08-01 09:00:00', '2026-03-20 23:45:00');
-INSERT INTO `platform_credentials` VALUES (5, 5, 'PERSONAL', '66ea0c4570370be9cef360436769cd6a7f316b0ed2b03430ac839beedb7e1456', 'plt_5_000000', '周浩-个人凭证（种子）', 0, 0, 80, 'BLOCK', NULL, 'ACTIVE', NULL, NULL, NULL, NULL, NULL, '2025-08-01 09:00:00', '2026-03-20 23:45:00');
-INSERT INTO `platform_credentials` VALUES (6, 6, 'PERSONAL', '7543d023dc052bbb5736bc0bff4f1625eca50b1bab47b9a0e43e059dfccd9a86', 'plt_6_000000', '吴婷-个人凭证（种子）', 0, 0, 80, 'BLOCK', NULL, 'ACTIVE', NULL, NULL, NULL, NULL, NULL, '2025-08-01 09:00:00', '2026-03-20 23:45:00');
-INSERT INTO `platform_credentials` VALUES (7, 7, 'PERSONAL', 'dcdd6c8f2926674de8be8c228a98d1ff2dd74007393adacf04572be532dca54d', 'plt_7_000000', '郑凯-个人凭证（种子）', 0, 0, 80, 'BLOCK', NULL, 'ACTIVE', NULL, NULL, NULL, NULL, NULL, '2025-08-01 09:00:00', '2026-03-20 23:45:00');
-INSERT INTO `platform_credentials` VALUES (8, 8, 'PERSONAL', '121fbfc68995d9efd17904fc4853bed1a566ad316bcb5d75b93d6ed9f70625ea', 'plt_8_000000', '冯楠-个人凭证（种子）', 0, 0, 80, 'BLOCK', NULL, 'ACTIVE', NULL, NULL, NULL, NULL, NULL, '2025-08-01 09:00:00', '2026-03-20 23:45:00');
-INSERT INTO `platform_credentials` VALUES (9, 9, 'PERSONAL', 'eecd6fe7dea9b07716e9a57045198549d15e7c637caf57a76e142345f8b39fb0', 'plt_9_000000', '何妍-个人凭证（种子）', 0, 0, 80, 'BLOCK', NULL, 'ACTIVE', NULL, NULL, NULL, NULL, NULL, '2025-08-01 09:00:00', '2026-03-20 23:45:00');
-INSERT INTO `platform_credentials` VALUES (10, 10, 'PERSONAL', '9ce6070d45874ba521b9aa797e9ccd41c315f30e33ff1f7b362255f9d7c07c61', 'plt_10_00000', '江默-个人凭证（种子）', 0, 0, 80, 'BLOCK', NULL, 'ACTIVE', NULL, NULL, NULL, NULL, NULL, '2025-08-01 09:00:00', '2026-03-20 23:45:00');
-INSERT INTO `platform_credentials` VALUES (11, 11, 'PERSONAL', '382c5ddba360c3621f2d2362120f51070092d5c75d4c495b7c230095a51cbd10', 'plt_11_00000', '谢琳-个人凭证（种子）', 0, 0, 80, 'BLOCK', NULL, 'ACTIVE', NULL, NULL, NULL, NULL, NULL, '2025-08-01 09:00:00', '2026-03-20 23:45:00');
-INSERT INTO `platform_credentials` VALUES (12, 12, 'PERSONAL', 'b5cddabd7bb290ad6b55850c82602abc9a1a3201a43d0db287379544a59a8ba0', 'plt_12_00000', '董泽-个人凭证（种子）', 0, 0, 80, 'BLOCK', NULL, 'ACTIVE', NULL, NULL, NULL, NULL, NULL, '2025-08-01 09:00:00', '2026-03-20 23:45:00');
+INSERT INTO `platform_credentials` VALUES (1, 1, NULL, 'PERSONAL', '255535f97cd48c07288fdf0502c158b3ec00abd3f2a8e444abc6e7b20e70f94d', 'plt_1_000000', '唐浩-个人凭证（种子）', 0, 0, 80, 'BLOCK', NULL, 'ACTIVE', NULL, NULL, NULL, NULL, NULL, '2025-08-01 09:00:00', '2026-03-20 23:45:00');
+INSERT INTO `platform_credentials` VALUES (2, 2, NULL, 'PERSONAL', 'bfbab795b6c731b7cde15cdd5aa94a3877b2e6c91fe470c58392a63a77d1a42f', 'plt_2_000000', '刘梅-个人凭证（种子）', 0, 0, 80, 'BLOCK', NULL, 'ACTIVE', NULL, NULL, NULL, NULL, NULL, '2025-08-01 09:00:00', '2026-03-20 23:45:00');
+INSERT INTO `platform_credentials` VALUES (3, 3, NULL, 'PERSONAL', 'cca3220ba70ddfb668cbf757635bf3f997a79a42720a046b2aa7ec3022cebba1', 'plt_3_000000', '赵磊-个人凭证（种子）', 0, 0, 80, 'BLOCK', NULL, 'ACTIVE', NULL, NULL, NULL, NULL, NULL, '2025-08-01 09:00:00', '2026-03-20 23:45:00');
+INSERT INTO `platform_credentials` VALUES (4, 4, NULL, 'PERSONAL', '00d181e9781407cada1aa42d5511a1a88e5365f005a9b70f9322d9137c1e278c', 'plt_4_000000', '孙倩-个人凭证（种子）', 0, 0, 80, 'BLOCK', NULL, 'ACTIVE', NULL, NULL, NULL, NULL, NULL, '2025-08-01 09:00:00', '2026-03-20 23:45:00');
+INSERT INTO `platform_credentials` VALUES (5, 5, NULL, 'PERSONAL', '66ea0c4570370be9cef360436769cd6a7f316b0ed2b03430ac839beedb7e1456', 'plt_5_000000', '周浩-个人凭证（种子）', 0, 0, 80, 'BLOCK', NULL, 'ACTIVE', NULL, NULL, NULL, NULL, NULL, '2025-08-01 09:00:00', '2026-03-20 23:45:00');
+INSERT INTO `platform_credentials` VALUES (6, 6, NULL, 'PERSONAL', '7543d023dc052bbb5736bc0bff4f1625eca50b1bab47b9a0e43e059dfccd9a86', 'plt_6_000000', '吴婷-个人凭证（种子）', 0, 0, 80, 'BLOCK', NULL, 'ACTIVE', NULL, NULL, NULL, NULL, NULL, '2025-08-01 09:00:00', '2026-03-20 23:45:00');
+INSERT INTO `platform_credentials` VALUES (7, 7, NULL, 'PERSONAL', 'dcdd6c8f2926674de8be8c228a98d1ff2dd74007393adacf04572be532dca54d', 'plt_7_000000', '郑凯-个人凭证（种子）', 0, 0, 80, 'BLOCK', NULL, 'ACTIVE', NULL, NULL, NULL, NULL, NULL, '2025-08-01 09:00:00', '2026-03-20 23:45:00');
+INSERT INTO `platform_credentials` VALUES (8, 8, NULL, 'PERSONAL', '121fbfc68995d9efd17904fc4853bed1a566ad316bcb5d75b93d6ed9f70625ea', 'plt_8_000000', '冯楠-个人凭证（种子）', 0, 0, 80, 'BLOCK', NULL, 'ACTIVE', NULL, NULL, NULL, NULL, NULL, '2025-08-01 09:00:00', '2026-03-20 23:45:00');
+INSERT INTO `platform_credentials` VALUES (9, 9, NULL, 'PERSONAL', 'eecd6fe7dea9b07716e9a57045198549d15e7c637caf57a76e142345f8b39fb0', 'plt_9_000000', '何妍-个人凭证（种子）', 0, 0, 80, 'BLOCK', NULL, 'ACTIVE', NULL, NULL, NULL, NULL, NULL, '2025-08-01 09:00:00', '2026-03-20 23:45:00');
+INSERT INTO `platform_credentials` VALUES (10, 10, NULL, 'PERSONAL', '9ce6070d45874ba521b9aa797e9ccd41c315f30e33ff1f7b362255f9d7c07c61', 'plt_10_00000', '江默-个人凭证（种子）', 0, 0, 80, 'BLOCK', NULL, 'ACTIVE', NULL, NULL, NULL, NULL, NULL, '2025-08-01 09:00:00', '2026-03-20 23:45:00');
+INSERT INTO `platform_credentials` VALUES (11, 11, NULL, 'PERSONAL', '382c5ddba360c3621f2d2362120f51070092d5c75d4c495b7c230095a51cbd10', 'plt_11_00000', '谢琳-个人凭证（种子）', 0, 0, 80, 'BLOCK', NULL, 'ACTIVE', NULL, NULL, NULL, NULL, NULL, '2025-08-01 09:00:00', '2026-03-20 23:45:00');
+INSERT INTO `platform_credentials` VALUES (12, 12, NULL, 'PERSONAL', 'b5cddabd7bb290ad6b55850c82602abc9a1a3201a43d0db287379544a59a8ba0', 'plt_12_00000', '董泽-个人凭证（种子）', 0, 0, 80, 'BLOCK', NULL, 'ACTIVE', NULL, NULL, NULL, NULL, NULL, '2025-08-01 09:00:00', '2026-03-20 23:45:00');
 
 -- ----------------------------
 -- Table structure for platform_roles
@@ -978,7 +979,7 @@ CREATE TABLE `platform_roles`  (
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `uk_role_code`(`role_code` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '平台角色定义表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '平台角色定义表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of platform_roles
@@ -1120,20 +1121,21 @@ CREATE TABLE `project_knowledge_configs`  (
   `project_id` bigint UNSIGNED NOT NULL COMMENT '项目 ID',
   `kb_id` bigint UNSIGNED NOT NULL COMMENT '全局知识库 ID',
   `search_weight` decimal(3, 2) NOT NULL DEFAULT 1.00 COMMENT '检索权重（0.00-1.00）',
+  `inject_mode` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT 'AUTO_INJECT' COMMENT '注入方式：AUTO_INJECT 自动检索写入上下文 / ON_DEMAND 按需（工具等）/ DISABLED 禁用自动注入',
   `status` enum('ACTIVE','DISABLED') CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT 'ACTIVE',
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `uk_project_kb`(`project_id` ASC, `kb_id` ASC) USING BTREE,
   INDEX `idx_kb`(`kb_id` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '项目继承全局知识库配置表' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 10 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '项目继承全局知识库配置表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of project_knowledge_configs
 -- ----------------------------
-INSERT INTO `project_knowledge_configs` VALUES (1, 1, 1, 0.80, 'ACTIVE', '2025-02-11 10:00:00', '2026-03-20 23:45:00');
-INSERT INTO `project_knowledge_configs` VALUES (2, 1, 2, 1.00, 'ACTIVE', '2025-02-11 10:00:00', '2026-03-20 23:45:00');
-INSERT INTO `project_knowledge_configs` VALUES (3, 2, 1, 0.60, 'ACTIVE', '2025-04-02 10:00:00', '2026-03-20 23:45:00');
+INSERT INTO `project_knowledge_configs` VALUES (1, 1, 1, 0.80, 'ON_DEMAND', 'ACTIVE', '2025-02-11 10:00:00', '2026-03-24 17:36:27');
+INSERT INTO `project_knowledge_configs` VALUES (2, 1, 2, 1.00, 'AUTO_INJECT', 'ACTIVE', '2025-02-11 10:00:00', '2026-03-20 23:45:00');
+INSERT INTO `project_knowledge_configs` VALUES (3, 2, 1, 0.60, 'AUTO_INJECT', 'ACTIVE', '2025-04-02 10:00:00', '2026-03-20 23:45:00');
 
 -- ----------------------------
 -- Table structure for project_mcp_integrations
@@ -1169,30 +1171,78 @@ CREATE TABLE `project_members`  (
   `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT,
   `project_id` bigint UNSIGNED NOT NULL COMMENT '项目 ID',
   `user_id` bigint UNSIGNED NOT NULL COMMENT '用户 ID',
-  `role` enum('ADMIN','MEMBER','VIEWER') CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT 'MEMBER' COMMENT '项目角色',
+  `role` enum('ADMIN','DEVELOPER','QA','PM','GUEST') CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT 'DEVELOPER' COMMENT '项目角色简写：Admin/Developer/QA/PM/Guest',
   `joined_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `uk_project_user`(`project_id` ASC, `user_id` ASC) USING BTREE,
   INDEX `idx_user`(`user_id` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 13 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '项目成员与角色表' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 76 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '项目成员与角色表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of project_members
 -- ----------------------------
 INSERT INTO `project_members` VALUES (1, 1, 4, 'ADMIN', '2025-02-10 10:00:00', '2025-02-10 10:00:00', '2026-03-20 23:45:00');
 INSERT INTO `project_members` VALUES (2, 1, 9, 'ADMIN', '2025-02-10 10:00:00', '2025-02-10 10:00:00', '2026-03-20 23:45:00');
-INSERT INTO `project_members` VALUES (3, 1, 11, 'MEMBER', '2025-02-12 09:00:00', '2025-02-12 09:00:00', '2026-03-20 23:45:00');
-INSERT INTO `project_members` VALUES (4, 1, 5, 'MEMBER', '2025-02-15 09:00:00', '2025-02-15 09:00:00', '2026-03-20 23:45:00');
-INSERT INTO `project_members` VALUES (5, 1, 8, 'VIEWER', '2025-02-18 09:00:00', '2025-02-18 09:00:00', '2026-03-20 23:45:00');
+INSERT INTO `project_members` VALUES (3, 1, 11, 'DEVELOPER', '2025-02-12 09:00:00', '2025-02-12 09:00:00', '2026-03-20 23:45:00');
+INSERT INTO `project_members` VALUES (4, 1, 5, 'DEVELOPER', '2025-02-15 09:00:00', '2025-02-15 09:00:00', '2026-03-20 23:45:00');
+INSERT INTO `project_members` VALUES (5, 1, 8, 'QA', '2025-02-18 09:00:00', '2025-02-18 09:00:00', '2026-03-20 23:45:00');
 INSERT INTO `project_members` VALUES (6, 2, 7, 'ADMIN', '2025-04-01 10:00:00', '2025-04-01 10:00:00', '2026-03-20 23:45:00');
-INSERT INTO `project_members` VALUES (7, 2, 2, 'MEMBER', '2025-04-01 10:00:00', '2025-04-01 10:00:00', '2026-03-20 23:45:00');
-INSERT INTO `project_members` VALUES (8, 2, 11, 'MEMBER', '2025-04-05 09:00:00', '2025-04-05 09:00:00', '2026-03-20 23:45:00');
+INSERT INTO `project_members` VALUES (7, 2, 2, 'PM', '2025-04-01 10:00:00', '2025-04-01 10:00:00', '2026-03-20 23:45:00');
+INSERT INTO `project_members` VALUES (8, 2, 11, 'DEVELOPER', '2025-04-05 09:00:00', '2025-04-05 09:00:00', '2026-03-20 23:45:00');
 INSERT INTO `project_members` VALUES (9, 3, 3, 'ADMIN', '2025-05-20 10:00:00', '2025-05-20 10:00:00', '2026-03-20 23:45:00');
-INSERT INTO `project_members` VALUES (10, 3, 5, 'MEMBER', '2025-05-20 10:00:00', '2025-05-20 10:00:00', '2026-03-20 23:45:00');
-INSERT INTO `project_members` VALUES (11, 3, 6, 'MEMBER', '2025-05-21 09:00:00', '2025-05-21 09:00:00', '2026-03-20 23:45:00');
-INSERT INTO `project_members` VALUES (12, 3, 10, 'MEMBER', '2025-05-22 09:00:00', '2025-05-22 09:00:00', '2026-03-20 23:45:00');
+INSERT INTO `project_members` VALUES (10, 3, 5, 'DEVELOPER', '2025-05-20 10:00:00', '2025-05-20 10:00:00', '2026-03-20 23:45:00');
+INSERT INTO `project_members` VALUES (11, 3, 6, 'DEVELOPER', '2025-05-21 09:00:00', '2025-05-21 09:00:00', '2026-03-20 23:45:00');
+INSERT INTO `project_members` VALUES (12, 3, 10, 'DEVELOPER', '2025-05-22 09:00:00', '2025-05-22 09:00:00', '2026-03-20 23:45:00');
+INSERT INTO `project_members` VALUES (13, 5, 1, 'ADMIN', '2025-02-10 10:00:00', '2026-03-24 16:45:10', '2026-03-24 16:45:10');
+INSERT INTO `project_members` VALUES (14, 4, 1, 'ADMIN', '2025-02-10 10:00:00', '2026-03-24 16:45:10', '2026-03-24 16:45:10');
+INSERT INTO `project_members` VALUES (15, 3, 1, 'ADMIN', '2025-02-10 10:00:00', '2026-03-24 16:45:10', '2026-03-24 16:45:10');
+INSERT INTO `project_members` VALUES (16, 2, 1, 'ADMIN', '2025-02-10 10:00:00', '2026-03-24 16:45:10', '2026-03-24 16:45:10');
+INSERT INTO `project_members` VALUES (17, 1, 1, 'ADMIN', '2025-02-10 10:00:00', '2026-03-24 16:45:10', '2026-03-24 16:45:10');
+INSERT INTO `project_members` VALUES (18, 5, 2, 'ADMIN', '2025-02-10 10:00:00', '2026-03-24 16:45:10', '2026-03-24 16:45:10');
+INSERT INTO `project_members` VALUES (19, 4, 2, 'ADMIN', '2025-02-10 10:00:00', '2026-03-24 16:45:10', '2026-03-24 16:45:10');
+INSERT INTO `project_members` VALUES (20, 3, 2, 'ADMIN', '2025-02-10 10:00:00', '2026-03-24 16:45:10', '2026-03-24 16:45:10');
+INSERT INTO `project_members` VALUES (21, 1, 2, 'ADMIN', '2025-02-10 10:00:00', '2026-03-24 16:45:10', '2026-03-24 16:45:10');
+INSERT INTO `project_members` VALUES (22, 5, 3, 'DEVELOPER', '2025-02-10 10:00:00', '2026-03-24 16:45:10', '2026-03-24 16:45:10');
+INSERT INTO `project_members` VALUES (23, 4, 3, 'DEVELOPER', '2025-02-10 10:00:00', '2026-03-24 16:45:10', '2026-03-24 16:45:10');
+INSERT INTO `project_members` VALUES (24, 2, 3, 'DEVELOPER', '2025-02-10 10:00:00', '2026-03-24 16:45:10', '2026-03-24 16:45:10');
+INSERT INTO `project_members` VALUES (25, 1, 3, 'DEVELOPER', '2025-02-10 10:00:00', '2026-03-24 16:45:10', '2026-03-24 16:45:10');
+INSERT INTO `project_members` VALUES (26, 5, 4, 'DEVELOPER', '2025-02-10 10:00:00', '2026-03-24 16:45:10', '2026-03-24 16:45:10');
+INSERT INTO `project_members` VALUES (27, 4, 4, 'DEVELOPER', '2025-02-10 10:00:00', '2026-03-24 16:45:10', '2026-03-24 16:45:10');
+INSERT INTO `project_members` VALUES (28, 3, 4, 'DEVELOPER', '2025-02-10 10:00:00', '2026-03-24 16:45:10', '2026-03-24 16:45:10');
+INSERT INTO `project_members` VALUES (29, 2, 4, 'DEVELOPER', '2025-02-10 10:00:00', '2026-03-24 16:45:10', '2026-03-24 16:45:10');
+INSERT INTO `project_members` VALUES (30, 5, 5, 'DEVELOPER', '2025-02-10 10:00:00', '2026-03-24 16:45:10', '2026-03-24 16:45:10');
+INSERT INTO `project_members` VALUES (31, 4, 5, 'DEVELOPER', '2025-02-10 10:00:00', '2026-03-24 16:45:10', '2026-03-24 16:45:10');
+INSERT INTO `project_members` VALUES (32, 2, 5, 'DEVELOPER', '2025-02-10 10:00:00', '2026-03-24 16:45:10', '2026-03-24 16:45:10');
+INSERT INTO `project_members` VALUES (33, 5, 6, 'DEVELOPER', '2025-02-10 10:00:00', '2026-03-24 16:45:10', '2026-03-24 16:45:10');
+INSERT INTO `project_members` VALUES (34, 4, 6, 'DEVELOPER', '2025-02-10 10:00:00', '2026-03-24 16:45:10', '2026-03-24 16:45:10');
+INSERT INTO `project_members` VALUES (35, 2, 6, 'DEVELOPER', '2025-02-10 10:00:00', '2026-03-24 16:45:10', '2026-03-24 16:45:10');
+INSERT INTO `project_members` VALUES (36, 1, 6, 'DEVELOPER', '2025-02-10 10:00:00', '2026-03-24 16:45:10', '2026-03-24 16:45:10');
+INSERT INTO `project_members` VALUES (37, 5, 7, 'DEVELOPER', '2025-02-10 10:00:00', '2026-03-24 16:45:10', '2026-03-24 16:45:10');
+INSERT INTO `project_members` VALUES (38, 4, 7, 'DEVELOPER', '2025-02-10 10:00:00', '2026-03-24 16:45:10', '2026-03-24 16:45:10');
+INSERT INTO `project_members` VALUES (39, 3, 7, 'DEVELOPER', '2025-02-10 10:00:00', '2026-03-24 16:45:10', '2026-03-24 16:45:10');
+INSERT INTO `project_members` VALUES (40, 1, 7, 'DEVELOPER', '2025-02-10 10:00:00', '2026-03-24 16:45:10', '2026-03-24 16:45:10');
+INSERT INTO `project_members` VALUES (41, 5, 8, 'DEVELOPER', '2025-02-10 10:00:00', '2026-03-24 16:45:10', '2026-03-24 16:45:10');
+INSERT INTO `project_members` VALUES (42, 4, 8, 'DEVELOPER', '2025-02-10 10:00:00', '2026-03-24 16:45:10', '2026-03-24 16:45:10');
+INSERT INTO `project_members` VALUES (43, 3, 8, 'DEVELOPER', '2025-02-10 10:00:00', '2026-03-24 16:45:10', '2026-03-24 16:45:10');
+INSERT INTO `project_members` VALUES (44, 2, 8, 'DEVELOPER', '2025-02-10 10:00:00', '2026-03-24 16:45:10', '2026-03-24 16:45:10');
+INSERT INTO `project_members` VALUES (45, 5, 9, 'DEVELOPER', '2025-02-10 10:00:00', '2026-03-24 16:45:10', '2026-03-24 16:45:10');
+INSERT INTO `project_members` VALUES (46, 4, 9, 'DEVELOPER', '2025-02-10 10:00:00', '2026-03-24 16:45:10', '2026-03-24 16:45:10');
+INSERT INTO `project_members` VALUES (47, 3, 9, 'DEVELOPER', '2025-02-10 10:00:00', '2026-03-24 16:45:10', '2026-03-24 16:45:10');
+INSERT INTO `project_members` VALUES (48, 2, 9, 'DEVELOPER', '2025-02-10 10:00:00', '2026-03-24 16:45:10', '2026-03-24 16:45:10');
+INSERT INTO `project_members` VALUES (49, 5, 10, 'DEVELOPER', '2025-02-10 10:00:00', '2026-03-24 16:45:10', '2026-03-24 16:45:10');
+INSERT INTO `project_members` VALUES (50, 4, 10, 'DEVELOPER', '2025-02-10 10:00:00', '2026-03-24 16:45:10', '2026-03-24 16:45:10');
+INSERT INTO `project_members` VALUES (51, 2, 10, 'DEVELOPER', '2025-02-10 10:00:00', '2026-03-24 16:45:10', '2026-03-24 16:45:10');
+INSERT INTO `project_members` VALUES (52, 1, 10, 'DEVELOPER', '2025-02-10 10:00:00', '2026-03-24 16:45:10', '2026-03-24 16:45:10');
+INSERT INTO `project_members` VALUES (53, 5, 11, 'DEVELOPER', '2025-02-10 10:00:00', '2026-03-24 16:45:10', '2026-03-24 16:45:10');
+INSERT INTO `project_members` VALUES (54, 4, 11, 'DEVELOPER', '2025-02-10 10:00:00', '2026-03-24 16:45:10', '2026-03-24 16:45:10');
+INSERT INTO `project_members` VALUES (55, 3, 11, 'DEVELOPER', '2025-02-10 10:00:00', '2026-03-24 16:45:10', '2026-03-24 16:45:10');
+INSERT INTO `project_members` VALUES (56, 5, 12, 'DEVELOPER', '2025-02-10 10:00:00', '2026-03-24 16:45:10', '2026-03-24 16:45:10');
+INSERT INTO `project_members` VALUES (57, 4, 12, 'DEVELOPER', '2025-02-10 10:00:00', '2026-03-24 16:45:10', '2026-03-24 16:45:10');
+INSERT INTO `project_members` VALUES (58, 3, 12, 'DEVELOPER', '2025-02-10 10:00:00', '2026-03-24 16:45:10', '2026-03-24 16:45:10');
+INSERT INTO `project_members` VALUES (59, 2, 12, 'DEVELOPER', '2025-02-10 10:00:00', '2026-03-24 16:45:10', '2026-03-24 16:45:10');
+INSERT INTO `project_members` VALUES (60, 1, 12, 'DEVELOPER', '2025-02-10 10:00:00', '2026-03-24 16:45:10', '2026-03-24 16:45:10');
 
 -- ----------------------------
 -- Table structure for project_skills
@@ -1322,6 +1372,8 @@ CREATE TABLE `projects`  (
   `alert_threshold_pct` tinyint UNSIGNED NOT NULL DEFAULT 80 COMMENT '项目池用量告警阈值百分比（0-100），默认 80',
   `over_quota_strategy` enum('BLOCK','ALLOW_WITH_ALERT','DOWNGRADE_MODEL') CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT 'BLOCK' COMMENT '项目池超配额策略：BLOCK 拒绝；ALLOW_WITH_ALERT 放行并告警；DOWNGRADE_MODEL 切换低成本模型',
   `last_quota_reset_at` datetime NULL DEFAULT NULL COMMENT '项目池配额最近一次月度重置时间',
+  `quota_reset_cycle` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT 'MONTHLY' COMMENT '任务/展示用配额周期：DAILY|WEEKLY|MONTHLY',
+  `single_request_token_cap` bigint UNSIGNED NULL DEFAULT NULL COMMENT '单次请求 Token 上限，NULL 表示使用平台默认（如 100K）',
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `uk_code`(`code` ASC) USING BTREE,
   INDEX `idx_created_by`(`created_by` ASC) USING BTREE,
@@ -1332,11 +1384,11 @@ CREATE TABLE `projects`  (
 -- ----------------------------
 -- Records of projects
 -- ----------------------------
-INSERT INTO `projects` VALUES (1, '统一客户服务平台', 'proj_omni_cs', '全渠道智能客服：工单、IM、电话摘要与知识库 RAG', '🎧', 'PRODUCT', 2, 4, 'ACTIVE', '2025-02-10 10:00:00', '2026-03-20 23:45:00', 0, 0, 80, 'BLOCK', NULL);
-INSERT INTO `projects` VALUES (2, '供应链控制塔', 'proj_supply_tower', '需求预测、库存优化与异常预警（NL2SQL 报表）', '📦', 'DATA', 2, 7, 'ACTIVE', '2025-04-01 10:00:00', '2026-03-20 23:45:00', 0, 0, 80, 'BLOCK', NULL);
-INSERT INTO `projects` VALUES (3, '研发效能与代码助手', 'proj_dev_excel', '内部 Copilot：代码评审、单测生成、流水线解释', '⚡', 'PLATFORM', 1, 3, 'ACTIVE', '2025-05-20 10:00:00', '2026-03-20 23:45:00', 0, 0, 80, 'BLOCK', NULL);
-INSERT INTO `projects` VALUES (4, '测试项目', 'TEST', '1', NULL, 'PRODUCT', NULL, NULL, 'ACTIVE', '2026-03-22 22:06:01', '2026-03-22 22:06:01', 500000, 0, 80, 'BLOCK', NULL);
-INSERT INTO `projects` VALUES (5, '测试', 'CODE', NULL, NULL, 'PRODUCT', NULL, NULL, 'ACTIVE', '2026-03-22 22:06:36', '2026-03-22 22:06:36', 500000, 0, 80, 'BLOCK', NULL);
+INSERT INTO `projects` VALUES (1, '统一客户服务平台1', 'proj_omni_cs', '全渠道智能客服：工单、IM、电话摘要与知识库 RAG', '🎧', 'PRODUCT', 2, 4, 'ACTIVE', '2025-02-10 10:00:00', '2026-03-20 23:45:00', 1000, 0, 80, 'BLOCK', NULL, 'MONTHLY', NULL);
+INSERT INTO `projects` VALUES (2, '供应链控制塔', 'proj_supply_tower', '需求预测、库存优化与异常预警（NL2SQL 报表）', '📦', 'DATA', 2, 7, 'ACTIVE', '2025-04-01 10:00:00', '2026-03-20 23:45:00', 100, 0, 80, 'BLOCK', NULL, 'MONTHLY', NULL);
+INSERT INTO `projects` VALUES (3, '研发效能与代码助手', 'proj_dev_excel', '内部 Copilot：代码评审、单测生成、流水线解释', '⚡', 'PLATFORM', 1, 3, 'ACTIVE', '2025-05-20 10:00:00', '2026-03-20 23:45:00', 0, 0, 80, 'BLOCK', NULL, 'MONTHLY', NULL);
+INSERT INTO `projects` VALUES (4, '测试项目', 'TEST', '1', NULL, 'PRODUCT', NULL, NULL, 'ACTIVE', '2026-03-22 22:06:01', '2026-03-22 22:06:01', 500000, 0, 80, 'BLOCK', NULL, 'MONTHLY', NULL);
+INSERT INTO `projects` VALUES (5, '测试', 'CODE', NULL, NULL, 'PRODUCT', NULL, NULL, 'ACTIVE', '2026-03-22 22:06:36', '2026-03-22 22:06:36', 500000, 0, 80, 'BLOCK', NULL, 'MONTHLY', NULL);
 
 -- ----------------------------
 -- Table structure for provider_api_keys
@@ -1409,7 +1461,7 @@ CREATE TABLE `rbac_role_permissions`  (
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `uk_role_perm`(`role_code` ASC, `permission_code` ASC) USING BTREE,
   INDEX `idx_role_code`(`role_code` ASC) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '角色权限关联矩阵表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '角色权限关联矩阵表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of rbac_role_permissions
@@ -1883,16 +1935,6 @@ INSERT INTO `users` VALUES (9, 'he.yan@cqcdi.tech', 'heyan', '何妍', 'https://
 INSERT INTO `users` VALUES (10, 'jiang.mo@cqcdi.tech', 'jiangmo', '江默', 'https://cdn.example.com/avatar/jiangmo.png', 5, '运维负责人', '13800001010', 'MEMBER', 7, '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'ACTIVE', '2024-09-15 09:00:00', '2026-03-23 11:00:16');
 INSERT INTO `users` VALUES (11, 'xie.lin@cqcdi.tech', 'xielin', '谢琳', 'https://cdn.example.com/avatar/xielin.png', 3, 'LLM 应用工程师', '13800001011', 'MEMBER', 7, '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'ACTIVE', '2024-10-01 09:00:00', '2026-03-23 11:00:16');
 INSERT INTO `users` VALUES (12, 'dong.ze@cqcdi.tech', 'dongze', '董泽', 'https://cdn.example.com/avatar/dongze.png', 6, '安全工程师', '13800001012', 'MEMBER', 7, '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'ACTIVE', '2024-10-15 09:00:00', '2026-03-23 11:00:16');
-
--- 闭环：在 users 落库之后执行；每位 ACTIVE 用户加入每个 ACTIVE 项目（uk_project_user 已存在则忽略，不覆盖原角色）
-INSERT IGNORE INTO `project_members` (`project_id`, `user_id`, `role`, `joined_at`)
-SELECT `p`.`id`, `u`.`id`,
-       CASE WHEN `u`.`platform_role` IN ('SUPER_ADMIN', 'PLATFORM_ADMIN') THEN 'ADMIN' ELSE 'MEMBER' END,
-       '2025-02-10 10:00:00'
-FROM `projects` `p`
-         CROSS JOIN `users` `u`
-WHERE `p`.`status` = 'ACTIVE'
-  AND `u`.`status` = 'ACTIVE';
 
 -- ----------------------------
 -- Table structure for workflow_definitions

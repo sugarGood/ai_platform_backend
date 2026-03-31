@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 /**
  * 项目知识库继承配置实体，对应 project_knowledge_configs 表。
  *
- * <p>用于管理项目对全局知识库的引用关系，可为每个引用配置独立的检索权重。</p>
+ * <p>用于管理项目对全局知识库的引用关系，可为每个引用配置独立的检索权重与注入方式。</p>
  */
 @Data
 @Builder
@@ -36,7 +36,15 @@ public class ProjectKnowledgeConfig {
     /** 检索权重，取值范围 0~1 */
     private BigDecimal searchWeight;
 
-    /** 状态：ACTIVE / INACTIVE */
+    /**
+     * 注入方式（与知识库级 injectMode 语义一致）：
+     * {@code AUTO_INJECT} 对话前自动检索并写入上下文；
+     * {@code ON_DEMAND} 不自动注入，由工具/工作流按需检索；
+     * {@code DISABLED} 本项目中不参与自动注入。
+     */
+    private String injectMode;
+
+    /** 状态：ACTIVE / DISABLED（与表枚举一致） */
     private String status;
 
     /** 创建时间 */

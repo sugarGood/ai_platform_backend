@@ -7,11 +7,11 @@ import java.time.LocalDateTime;
 /**
  * 平台凭证响应 DTO（不包含密钥哈希值）。
  *
- * <p>字段与 {@link PlatformCredential} entity 对齐。
- * 新设计：凭证一人一证、跨项目共用，无 boundProjectId 字段。</p>
+ * <p>字段与 {@link PlatformCredential} entity 对齐；一人一证，可选绑定当前工作项目。</p>
  *
  * @param id                   凭证 ID
  * @param userId               所属用户 ID
+ * @param boundProjectId       当前工作项目 ID，可为 null
  * @param credentialType       凭证类型（PERSONAL / SERVICE_ACCOUNT / TEMP）
  * @param keyPrefix            密钥前缀（脱敏展示）
  * @param name                 凭证名称
@@ -27,6 +27,7 @@ import java.time.LocalDateTime;
 public record PlatformCredentialResponse(
         Long id,
         Long userId,
+        Long boundProjectId,
         String credentialType,
         String keyPrefix,
         String name,
@@ -43,6 +44,7 @@ public record PlatformCredentialResponse(
         return new PlatformCredentialResponse(
                 credential.getId(),
                 credential.getUserId(),
+                credential.getBoundProjectId(),
                 credential.getCredentialType(),
                 credential.getKeyPrefix(),
                 credential.getName(),

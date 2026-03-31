@@ -11,10 +11,10 @@ import org.springframework.stereotype.Component;
 /**
  * 权限校验切面。
  *
- * <p>拦截标注了 {@link RequireRole} 或 {@link RequirePermission} 注解的方法，
+ * <p>拦截标注了 {@link RequireRole} 或 {@link RequirePermission} 的方法（或类），
  * 从 {@link AuthContext} 读取当前用户信息并进行鉴权。</p>
  *
- * <p>执行顺序：{@code AuthInterceptor}（认证）→ {@code PermissionAspect}（鉴权）</p>
+ * <p>执行顺序：Sa-Token 登录校验 → {@link AuthContextLoadInterceptor} → {@code PermissionAspect}。</p>
  *
  * <p>注解可用于方法或类：
  * <ul>

@@ -1,5 +1,8 @@
 package com.aiplatform.backend.service;
 
+import com.aiplatform.backend.common.exception.BusinessException;
+import com.aiplatform.backend.common.exception.BizErrorCode;
+import com.aiplatform.backend.common.exception.ForbiddenException;
 import com.aiplatform.backend.common.exception.PlatformCredentialNotFoundException;
 import com.aiplatform.backend.common.exception.UnauthorizedException;
 import com.aiplatform.backend.dto.CreatePlatformCredentialRequest;
@@ -8,8 +11,10 @@ import com.aiplatform.backend.dto.KeyRotationLogResponse;
 import com.aiplatform.backend.dto.PlatformCredentialResponse;
 import com.aiplatform.backend.entity.KeyRotationLog;
 import com.aiplatform.backend.entity.PlatformCredential;
+import com.aiplatform.backend.entity.ProjectMember;
 import com.aiplatform.backend.mapper.KeyRotationLogMapper;
 import com.aiplatform.backend.mapper.PlatformCredentialMapper;
+import com.aiplatform.backend.mapper.ProjectMemberMapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import org.springframework.stereotype.Service;
 
@@ -36,11 +41,14 @@ public class PlatformCredentialService {
 
     private final PlatformCredentialMapper platformCredentialMapper;
     private final KeyRotationLogMapper keyRotationLogMapper;
+    private final ProjectMemberMapper projectMemberMapper;
 
     public PlatformCredentialService(PlatformCredentialMapper platformCredentialMapper,
-                                     KeyRotationLogMapper keyRotationLogMapper) {
+                                     KeyRotationLogMapper keyRotationLogMapper,
+                                     ProjectMemberMapper projectMemberMapper) {
         this.platformCredentialMapper = platformCredentialMapper;
         this.keyRotationLogMapper = keyRotationLogMapper;
+        this.projectMemberMapper = projectMemberMapper;
     }
 
     /**
@@ -256,6 +264,32 @@ public class PlatformCredentialService {
     }
 
     /**
+     * 设置或清空凭证绑定的当前工作项目（{@code bound_project_id}）；仅凭证所属用户可操作。
+     * {@code projectId == null} 表示解绑；非空时须为该用户在 {@code project_members} 中的项目。
+     */
+    public PlatformCredential updateBoundProject(Long credentialId, Long currentUserId, Long projectId) {
+        PlatformCredential credential = getByIdOrThrow(credentialId);
+        if (!credential.getUserId().equals(currentUserId)) {
+            throw new ForbiddenException("只能修改自己的凭证");
+        }
+        if (projectId != null) {
+            long memberRows = projectMemberMapper.selectCount(
+                    Wrappers.<ProjectMember>lambdaQuery()
+                            .eq(ProjectMember::getProjectId, projectId)
+                            .eq(ProjectMember::getUserId, currentUserId));
+            if (memberRows == 0) {
+                throw new ForbiddenException("只能绑定已加入的项目");
+            }
+        }
+        platformCredentialMapper.update(
+                null,
+                Wrappers.<PlatformCredential>lambdaUpdate()
+                        .set(PlatformCredential::getBoundProjectId, projectId)
+                        .eq(PlatformCredential::getId, credentialId));
+        return getByIdOrThrow(credentialId);
+    }
+
+    /**
      * 更新用户名下个人凭证（优先 {@code PERSONAL}）的月度配额、策略与展示名称。
      * <p>仅写入非 {@code null} 的数值/策略；名称仅在非空串时更新。若无任何凭证则不做操作。</p>
      *
@@ -297,6 +331,41 @@ public class PlatformCredentialService {
         }
         platformCredentialMapper.updateById(c);
         return c;
+    }
+
+    /**
+     * 启用/停用用户名下个人凭证的 AI 调用（ACTIVE ↔ DISABLED）。
+     * 已吊销或过期凭证不能通过此方法重新启用。
+     */
+    public PlatformCredential setAiAccessEnabled(Long userId, boolean enabled) {
+        PlatformCredential c = getByUserId(userId);
+        if (c == null) {
+            throw new BusinessException(400, BizErrorCode.VALIDATION_FAILED,
+                    "该用户尚未创建平台凭证，无法切换 AI 权限");
+        }
+        if (enabled) {
+            if ("REVOKED".equals(c.getStatus())) {
+                throw new BusinessException(400, BizErrorCode.VALIDATION_FAILED, "凭证已吊销，无法启用");
+            }
+            if ("EXPIRED".equals(c.getStatus())) {
+                throw new BusinessException(400, BizErrorCode.VALIDATION_FAILED, "凭证已过期，请先续期");
+            }
+            c.setStatus("ACTIVE");
+        } else if (!"REVOKED".equals(c.getStatus())) {
+            c.setStatus("DISABLED");
+        }
+        platformCredentialMapper.updateById(c);
+        return c;
+    }
+
+    /** 将用户个人池「当月已用量」清零（批量清算场景；不影响项目池）。 */
+    public void resetUsedTokensThisMonthForUser(Long userId) {
+        PlatformCredential c = getByUserId(userId);
+        if (c == null) {
+            return;
+        }
+        c.setUsedTokensThisMonth(0L);
+        platformCredentialMapper.updateById(c);
     }
 
     // ------------------------------------------------------------------

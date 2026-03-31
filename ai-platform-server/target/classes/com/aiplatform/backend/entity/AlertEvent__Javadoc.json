@@ -1,1 +1,1 @@
-{"doc":"告警事件实体，对应 alert_events 表。 ","fields":[],"enumConstants":[],"methods":[],"constructors":[]}
+{"doc":"告警事件实体，对应 alert_events 表。 ","fields":[{"name":"severity","doc":"来自关联 {@code alert_rules.severity}，非 alert_events 表字段。 "}],"enumConstants":[],"methods":[],"constructors":[]}

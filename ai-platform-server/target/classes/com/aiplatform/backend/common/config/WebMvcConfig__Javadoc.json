@@ -1,1 +1,1 @@
-{"doc":" Web MVC 配置，注册全局拦截器。\n\n <p>{@link AuthInterceptor} 对所有 {@code /api/**} 路径生效，\n Swagger UI 和 OpenAPI 文档路径通过白名单豁免。</p>\n","fields":[],"enumConstants":[],"methods":[],"constructors":[]}
+{"doc":" Web MVC：Sa-Token 登录校验 + {@link AuthContextLoadInterceptor} 填充 {@code AuthContext}。\n\n <p>测试环境可将 {@code app.security.enabled=false}，跳过上述拦截器（便于 MockMvc 无 Token）。</p>\n","fields":[],"enumConstants":[],"methods":[],"constructors":[]}

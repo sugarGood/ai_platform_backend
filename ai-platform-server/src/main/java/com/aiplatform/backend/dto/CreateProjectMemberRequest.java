@@ -7,12 +7,14 @@ import jakarta.validation.constraints.Pattern;
  * 添加项目成员的请求参数。
  *
  * @param userId 用户 ID（必填）
- * @param role   成员角色：ADMIN / MEMBER / VIEWER（默认 MEMBER）
+ * @param role   项目角色简写：ADMIN / DEVELOPER / QA / PM / GUEST；未传时服务端默认 {@code DEVELOPER}
  */
 public record CreateProjectMemberRequest(
         @NotNull
         Long userId,
-        @Pattern(regexp = "ADMIN|MEMBER|VIEWER", message = "Invalid role")
+        @Pattern(
+                regexp = "ADMIN|DEVELOPER|QA|PM|GUEST",
+                message = "Invalid role")
         String role
 ) {
 }

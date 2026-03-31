@@ -6,7 +6,7 @@ import java.util.Set;
 /**
  * 当前请求的认证上下文，通过 {@link ThreadLocal} 在请求生命周期内传递用户信息。
  *
- * <p>由 {@code AuthInterceptor} 在请求进入时写入，请求结束时清理（防止内存泄漏）。</p>
+ * <p>由 {@link AuthContextLoadInterceptor} 在 Sa-Token 校验通过后写入，请求结束时清理（防止线程池复用泄漏）。</p>
  *
  * <p>使用示例：
  * <pre>{@code

@@ -49,7 +49,10 @@ class ProjectMemberControllerTest {
             .andExpect(status().isCreated())
             .andExpect(jsonPath("$.projectId").value(projectId))
             .andExpect(jsonPath("$.userId").value(1))
-            .andExpect(jsonPath("$.role").value("ADMIN"));
+            .andExpect(jsonPath("$.role").value("ADMIN"))
+            .andExpect(jsonPath("$.credentialStatus").exists())
+            .andExpect(jsonPath("$.credentialExpiresInDays").exists())
+            .andExpect(jsonPath("$.credentialExpiresAt").exists());
     }
 
     @Test
@@ -61,7 +64,7 @@ class ProjectMemberControllerTest {
                 .content("""
                         {
                           "userId": 2,
-                          "role": "MEMBER"
+                          "role": "DEVELOPER"
                         }
                         """))
             .andExpect(status().isCreated());
@@ -70,7 +73,8 @@ class ProjectMemberControllerTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.length()").value(1))
             .andExpect(jsonPath("$[0].userId").value(2))
-            .andExpect(jsonPath("$[0].role").value("MEMBER"));
+            .andExpect(jsonPath("$[0].role").value("DEVELOPER"))
+            .andExpect(jsonPath("$[0].credentialStatus").exists());
     }
 
     @Test
@@ -105,7 +109,7 @@ class ProjectMemberControllerTest {
                 .content("""
                         {
                           "userId": 3,
-                          "role": "MEMBER"
+                          "role": "DEVELOPER"
                         }
                         """))
             .andExpect(status().isConflict());

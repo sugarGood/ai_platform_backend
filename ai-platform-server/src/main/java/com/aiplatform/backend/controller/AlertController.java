@@ -86,18 +86,15 @@ public class AlertController {
 
     // ── 告警事件 ─────────────────────────────────────────────────────
 
-    /** 查询告警事件列表（分页，支持 status/severity 过滤）。 */
+    /** 查询告警事件列表（分页，支持 status/severity/projectId 过滤）。 */
     @GetMapping("/api/alert-events")
     public PageResponse<AlertEvent> listEvents(
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String severity,
+            @RequestParam(required = false) Long projectId,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "20") int size) {
-        var q = Wrappers.<AlertEvent>lambdaQuery();
-        if (status != null) q.eq(AlertEvent::getStatus, status);
-        if (severity != null) q.eq(AlertEvent::getSeverity, severity);
-        q.orderByDesc(AlertEvent::getId);
-        var result = alertEventMapper.selectPage(new Page<>(page, size), q);
+        var result = alertEventMapper.selectPageWithRule(new Page<>(page, size), status, severity, projectId);
         return PageResponse.from(result, e -> e);
     }
 

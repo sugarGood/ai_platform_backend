@@ -1,32 +1,49 @@
 package com.aiplatform.backend.common.config;
 
-import com.aiplatform.backend.common.security.AuthInterceptor;
+import cn.dev33.satoken.interceptor.SaInterceptor;
+import cn.dev33.satoken.stp.StpUtil;
+import com.aiplatform.backend.common.security.AuthContextLoadInterceptor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
- * Web MVC 配置，注册全局拦截器。
+ * Web MVC：Sa-Token 登录校验 + {@link AuthContextLoadInterceptor} 填充 {@code AuthContext}。
  *
- * <p>{@link AuthInterceptor} 对所有 {@code /api/**} 路径生效，
- * Swagger UI 和 OpenAPI 文档路径通过白名单豁免。</p>
+ * <p>测试环境可将 {@code app.security.enabled=false}，跳过上述拦截器（便于 MockMvc 无 Token）。</p>
  */
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
 
-    private final AuthInterceptor authInterceptor;
+    private static final String[] AUTH_WHITE_LIST = {
+            "/api/auth/login",
+            "/api/auth/refresh",
+            "/api/auth/logout"
+    };
 
-    public WebMvcConfig(AuthInterceptor authInterceptor) {
-        this.authInterceptor = authInterceptor;
+    @Value("${app.security.enabled:true}")
+    private boolean securityEnabled;
+
+    private final AuthContextLoadInterceptor authContextLoadInterceptor;
+
+    public WebMvcConfig(AuthContextLoadInterceptor authContextLoadInterceptor) {
+        this.authContextLoadInterceptor = authContextLoadInterceptor;
     }
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(authInterceptor)
+        if (!securityEnabled) {
+            return;
+        }
+        registry.addInterceptor(new SaInterceptor(handle -> StpUtil.checkLogin()))
                 .addPathPatterns("/api/**")
-                .excludePathPatterns(
-                        "/api/auth/login",
-                        "/api/auth/refresh"
-                );
+                .excludePathPatterns(AUTH_WHITE_LIST)
+                .order(0);
+
+        registry.addInterceptor(authContextLoadInterceptor)
+                .addPathPatterns("/api/**")
+                .excludePathPatterns(AUTH_WHITE_LIST)
+                .order(1);
     }
 }

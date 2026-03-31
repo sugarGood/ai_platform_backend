@@ -84,7 +84,9 @@ public class ProjectSystemPromptController {
                                               @PathVariable Long id,
                                               @RequestBody Map<String, Integer> body) {
         ProjectSystemPrompt existing = mapper.selectById(id);
-        if (existing == null) throw new RuntimeException("SystemPrompt not found: " + id);
+        if (existing == null || !existing.getProjectId().equals(projectId)) {
+            throw new RuntimeException("SystemPrompt not found: " + id);
+        }
         existing.setPriority(body.getOrDefault("priority", existing.getPriority()));
         mapper.updateById(existing);
         return existing;

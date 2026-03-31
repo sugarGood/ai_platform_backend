@@ -5,6 +5,11 @@ import com.aiplatform.backend.common.exception.BusinessException;
 import com.aiplatform.backend.common.exception.KnowledgeBaseNotFoundException;
 import com.aiplatform.backend.dto.CreateKbDocumentRequest;
 import com.aiplatform.backend.dto.CreateKnowledgeBaseRequest;
+import com.aiplatform.backend.dto.KnowledgeBaseResponse;
+import com.aiplatform.backend.dto.ProjectKnowledgeSourceFilter;
+import com.aiplatform.backend.dto.ProjectKnowledgeSourceItem;
+import com.aiplatform.backend.dto.ProjectKnowledgeSourcesResponse;
+import com.aiplatform.backend.dto.UpdateProjectKnowledgeConfigRequest;
 import com.aiplatform.backend.entity.KbDocument;
 import com.aiplatform.backend.entity.KnowledgeBase;
 import com.aiplatform.backend.entity.ProjectKnowledgeConfig;
@@ -22,10 +27,13 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * 知识库业务服务。
@@ -35,6 +43,12 @@ import java.util.Map;
 @Service
 public class KnowledgeBaseService {
 
+    /** 项目继承全局库时的注入方式，与 {@link KnowledgeBase#getInjectMode()} 取值一致。 */
+    private static final Set<String> PROJECT_KB_INJECT_MODES = Set.of("AUTO_INJECT", "ON_DEMAND", "DISABLED");
+
+    /** 与表 {@code project_knowledge_configs.status} 枚举一致（非 Java 实体注释中的 INACTIVE）。 */
+    private static final Set<String> PROJECT_KB_STATUSES = Set.of("ACTIVE", "DISABLED");
+
     private final KnowledgeBaseMapper knowledgeBaseMapper;
     private final KbDocumentMapper kbDocumentMapper;
     private final ProjectKnowledgeConfigMapper projectKnowledgeConfigMapper;
@@ -42,6 +56,7 @@ public class KnowledgeBaseService {
     private final MinioKnowledgeStorageService minioKnowledgeStorageService;
     private final WebClient agentWebClient;
     private final boolean knowledgeIngestEnabled;
+    private final ProjectService projectService;
 
     /**
      * 构造函数，注入所需的数据访问层依赖。
@@ -60,7 +75,8 @@ public class KnowledgeBaseService {
                                 KnowledgeIngestAsyncService knowledgeIngestAsyncService,
                                 MinioKnowledgeStorageService minioKnowledgeStorageService,
                                 @Qualifier("agentWebClient") WebClient agentWebClient,
-                                @Value("${knowledge.ingest.enabled:true}") boolean knowledgeIngestEnabled) {
+                                @Value("${knowledge.ingest.enabled:true}") boolean knowledgeIngestEnabled,
+                                ProjectService projectService) {
         this.knowledgeBaseMapper = knowledgeBaseMapper;
         this.kbDocumentMapper = kbDocumentMapper;
         this.projectKnowledgeConfigMapper = projectKnowledgeConfigMapper;
@@ -68,6 +84,7 @@ public class KnowledgeBaseService {
         this.minioKnowledgeStorageService = minioKnowledgeStorageService;
         this.agentWebClient = agentWebClient;
         this.knowledgeIngestEnabled = knowledgeIngestEnabled;
+        this.projectService = projectService;
     }
 
     /**
@@ -307,20 +324,77 @@ public class KnowledgeBaseService {
     // ==================== 项目知识库配置 ====================
 
     /**
+     * 汇总项目下知识库：专属（PROJECT + projectId）与继承的全局库（project_knowledge_configs → GLOBAL）。
+     *
+     * @param filter {@link ProjectKnowledgeSourceFilter#ALL} 返回两类；
+     *               {@link ProjectKnowledgeSourceFilter#DEDICATED} 仅独有；
+     *               {@link ProjectKnowledgeSourceFilter#GLOBAL_INHERITED} 仅继承的全局库
+     */
+    public ProjectKnowledgeSourcesResponse listKnowledgeSourcesForProject(
+            Long projectId, ProjectKnowledgeSourceFilter filter) {
+        projectService.getByIdOrThrow(projectId);
+        if (filter == null) {
+            filter = ProjectKnowledgeSourceFilter.ALL;
+        }
+
+        List<ProjectKnowledgeSourceItem> items = new ArrayList<>();
+
+        if (filter == ProjectKnowledgeSourceFilter.ALL || filter == ProjectKnowledgeSourceFilter.DEDICATED) {
+            List<KnowledgeBase> dedicated = knowledgeBaseMapper.selectList(
+                    Wrappers.<KnowledgeBase>lambdaQuery()
+                            .eq(KnowledgeBase::getScope, "PROJECT")
+                            .eq(KnowledgeBase::getProjectId, projectId)
+                            .orderByAsc(KnowledgeBase::getId));
+            for (KnowledgeBase kb : dedicated) {
+                items.add(ProjectKnowledgeSourceItem.dedicated(KnowledgeBaseResponse.from(kb)));
+            }
+        }
+
+        if (filter == ProjectKnowledgeSourceFilter.ALL || filter == ProjectKnowledgeSourceFilter.GLOBAL_INHERITED) {
+            List<ProjectKnowledgeConfig> configs = projectKnowledgeConfigMapper.selectList(
+                    Wrappers.<ProjectKnowledgeConfig>lambdaQuery()
+                            .eq(ProjectKnowledgeConfig::getProjectId, projectId)
+                            .orderByAsc(ProjectKnowledgeConfig::getId));
+            for (ProjectKnowledgeConfig c : configs) {
+                KnowledgeBase kb = knowledgeBaseMapper.selectById(c.getKbId());
+                if (kb == null || !"GLOBAL".equals(kb.getScope())) {
+                    continue;
+                }
+                String resolvedInject = c.getInjectMode() != null ? c.getInjectMode() : "AUTO_INJECT";
+                items.add(ProjectKnowledgeSourceItem.globalInherited(
+                        c.getId(),
+                        c.getSearchWeight(),
+                        c.getStatus(),
+                        resolvedInject,
+                        KnowledgeBaseResponse.from(kb)));
+            }
+        }
+
+        return new ProjectKnowledgeSourcesResponse(items);
+    }
+
+    /**
      * 为项目启用全局知识库。
      *
-     * <p>创建项目与全局知识库的关联配置，可指定检索权重。</p>
+     * <p>创建项目与全局知识库的关联配置，可指定检索权重与注入方式。</p>
      *
      * @param projectId    项目ID
      * @param kbId         全局知识库ID
      * @param searchWeight 检索权重（0~1），默认为 1
+     * @param injectMode   注入方式：AUTO_INJECT / ON_DEMAND / DISABLED，默认 AUTO_INJECT
      * @return 新创建的项目知识库配置
      */
-    public ProjectKnowledgeConfig enableForProject(Long projectId, Long kbId, BigDecimal searchWeight) {
+    public ProjectKnowledgeConfig enableForProject(Long projectId, Long kbId, BigDecimal searchWeight, String injectMode) {
+        String mode = injectMode != null && !injectMode.isBlank() ? injectMode.trim() : "AUTO_INJECT";
+        if (!PROJECT_KB_INJECT_MODES.contains(mode)) {
+            throw new BusinessException(400, BizErrorCode.VALIDATION_FAILED,
+                    "injectMode 必须为 AUTO_INJECT、ON_DEMAND 或 DISABLED");
+        }
         ProjectKnowledgeConfig config = new ProjectKnowledgeConfig();
         config.setProjectId(projectId);
         config.setKbId(kbId);
         config.setSearchWeight(searchWeight != null ? searchWeight : BigDecimal.ONE);
+        config.setInjectMode(mode);
         config.setStatus("ACTIVE");
         projectKnowledgeConfigMapper.insert(config);
         return config;
@@ -332,6 +406,55 @@ public class KnowledgeBaseService {
     public List<ProjectKnowledgeConfig> listProjectConfigs(Long projectId) {
         return projectKnowledgeConfigMapper.selectList(Wrappers.<ProjectKnowledgeConfig>lambdaQuery()
                 .eq(ProjectKnowledgeConfig::getProjectId, projectId).orderByAsc(ProjectKnowledgeConfig::getId));
+    }
+
+    /**
+     * 更新项目下某条全局知识库绑定配置（检索权重、注入方式、启用状态）。
+     *
+     * <p>仅更新请求体中非 null 且非空白字符串的字段；至少须提供一个有效更新项。</p>
+     */
+    public ProjectKnowledgeConfig updateProjectKnowledgeConfig(
+            Long projectId, Long configId, UpdateProjectKnowledgeConfigRequest request) {
+        boolean hasUpdate = request.searchWeight() != null
+                || (request.injectMode() != null && !request.injectMode().isBlank())
+                || (request.status() != null && !request.status().isBlank());
+        if (!hasUpdate) {
+            throw new BusinessException(400, BizErrorCode.VALIDATION_FAILED,
+                    "至少需要提供一个待更新字段：searchWeight、injectMode、status");
+        }
+        ProjectKnowledgeConfig row = projectKnowledgeConfigMapper.selectOne(
+                Wrappers.<ProjectKnowledgeConfig>lambdaQuery()
+                        .eq(ProjectKnowledgeConfig::getProjectId, projectId)
+                        .eq(ProjectKnowledgeConfig::getId, configId));
+        if (row == null) {
+            throw new BusinessException(404, BizErrorCode.PROJECT_KNOWLEDGE_CONFIG_NOT_FOUND,
+                    "项目知识库配置不存在或不属于该项目");
+        }
+        if (request.searchWeight() != null) {
+            if (request.searchWeight().compareTo(BigDecimal.ZERO) < 0
+                    || request.searchWeight().compareTo(BigDecimal.ONE) > 0) {
+                throw new BusinessException(400, BizErrorCode.VALIDATION_FAILED, "searchWeight 必须在 0~1 之间");
+            }
+            row.setSearchWeight(request.searchWeight());
+        }
+        if (request.injectMode() != null && !request.injectMode().isBlank()) {
+            String mode = request.injectMode().trim();
+            if (!PROJECT_KB_INJECT_MODES.contains(mode)) {
+                throw new BusinessException(400, BizErrorCode.VALIDATION_FAILED,
+                        "injectMode 必须为 AUTO_INJECT、ON_DEMAND 或 DISABLED");
+            }
+            row.setInjectMode(mode);
+        }
+        if (request.status() != null && !request.status().isBlank()) {
+            String st = request.status().trim();
+            if (!PROJECT_KB_STATUSES.contains(st)) {
+                throw new BusinessException(400, BizErrorCode.VALIDATION_FAILED, "status 必须为 ACTIVE 或 DISABLED");
+            }
+            row.setStatus(st);
+        }
+        row.setUpdatedAt(LocalDateTime.now());
+        projectKnowledgeConfigMapper.updateById(row);
+        return row;
     }
 
     /** 编辑知识库（仅更新非null字段）。 */

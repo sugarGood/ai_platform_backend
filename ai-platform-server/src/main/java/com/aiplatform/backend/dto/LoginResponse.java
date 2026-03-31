@@ -3,8 +3,8 @@ package com.aiplatform.backend.dto;
 /**
  * 登录成功响应。
  *
- * @param accessToken  Access Token（Bearer，有效期由配置决定，默认 24h）
- * @param refreshToken Refresh Token（用于续期，默认 7d）
+ * @param accessToken  Access Token（Sa-Token，Bearer，有效期见 {@code sa-token.timeout}）
+ * @param refreshToken 当前与 accessToken 相同，调用 {@code /api/auth/refresh} 可轮换会话
  * @param tokenType    固定值 {@code Bearer}
  * @param expiresIn    Access Token 有效秒数
  * @param user         当前登录用户信息

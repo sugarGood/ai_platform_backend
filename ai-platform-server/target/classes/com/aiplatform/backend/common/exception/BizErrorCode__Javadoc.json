@@ -1,1 +1,1 @@
-{"doc":" 稳定业务错误码（大写下划线），与 HTTP 状态相互独立，供前端与监控识别。\n\n <p>新增异常时请在此登记常量，避免魔法字符串。</p>\n","fields":[{"name":"CONFLICT","doc":"邮箱、用户名等唯一约束冲突 "}],"enumConstants":[],"methods":[],"constructors":[]}
+{"doc":" 稳定业务错误码（大写下划线），与 HTTP 状态相互独立，供前端与监控识别。\n\n <p>新增异常时请在此登记常量，避免魔法字符串。</p>\n","fields":[{"name":"CONFLICT","doc":"邮箱、用户名等唯一约束冲突 "},{"name":"PROJECT_KNOWLEDGE_CONFIG_NOT_FOUND","doc":"项目下指定的全局知识库绑定配置不存在 "}],"enumConstants":[],"methods":[],"constructors":[]}

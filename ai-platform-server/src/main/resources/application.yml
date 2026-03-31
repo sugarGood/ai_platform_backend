@@ -10,12 +10,27 @@ spring:
     # jdbc 所有参数配置参考 https://lionli.blog.csdn.net/article/details/122018562
     # rewriteBatchedStatements=true 批处理优化 大幅提升批量插入更新删除性能(对数据库有性能损耗 使用批量操作应考虑性能问题)
     #          url: jdbc:mysql://219.152.53.32:3306/data_governance?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8&autoReconnect=true&rewriteBatchedStatements=true
-    url: jdbc:mysql://192.168.0.11:3306/ai_platform?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8&autoReconnect=true&rewriteBatchedStatements=true
+    url: jdbc:mysql://localhost:3306/ai_platform?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8&autoReconnect=true&rewriteBatchedStatements=true
     username: root
-    password: cqcdi@135!
+    password: 123456
   sql:
     init:
       mode: never
+  # Sa-Token 会话存储（与业务其它 Redis 库错开，默认用 db 3，可用 REDIS_DATABASE 覆盖）
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      database: ${REDIS_DATABASE:1}
+      password: "${REDIS_PASSWORD:123456}"
+      timeout: ${REDIS_TIMEOUT:100s}
+      ssl:
+        enabled: ${REDIS_SSL:false}
+      lettuce:
+        pool:
+          max-active: 32
+          max-idle: 8
+          min-idle: 2
 
 mybatis-plus:
   configuration:
@@ -32,26 +47,44 @@ ai:
   agent:
     base-url: ${AI_AGENT_BASE_URL:http://127.0.0.1:8081}
 
+
 # 知识库原始文件 MinIO（与 Agent 使用相同桶与鉴权，便于入库时按 objectKey 拉取）
 # 示例：endpoint 对应 ip:port，如 192.168.0.35:9000 → http://192.168.0.35:9000
 minio:
-  endpoint: ${MINIO_ENDPOINT:http://192.168.0.35:9000}
-  access-key: ${MINIO_ACCESS_KEY:minioadmin}
-  secret-key: "cqcdi@135!"
+  endpoint: ${MINIO_ENDPOINT:http://localhost:9000}
+  access-key: ${MINIO_ACCESS_KEY:admin}
+  secret-key: "12345678"
   bucket-name: ${MINIO_BUCKET:ai-platform}
 
 knowledge:
   ingest:
     enabled: ${KNOWLEDGE_INGEST_ENABLED:true}
 
-# JWT 配置
-jwt:
-  # HS256 签名密钥，生产环境请替换为 32 字符以上的随机字符串并通过环境变量注入
-  secret: ${JWT_SECRET:ai-platform-default-secret-key-change-in-prod}
-  # Access Token 有效期（秒），默认 86400 = 24h
-  access-token-ttl-seconds: ${JWT_ACCESS_TTL:86400}
-  # Refresh Token 有效期（秒），默认 604800 = 7d
-  refresh-token-ttl-seconds: ${JWT_REFRESH_TTL:604800}
+# 是否启用登录鉴权（拦截器：Sa-Token 校验 + AuthContext）。测试 profile 可关闭以便 MockMvc 无 Token 调用
+app:
+  security:
+    enabled: ${APP_SECURITY_ENABLED:true}
+
+# Sa-Token：与前端约定 Authorization: Bearer <token>
+sa-token:
+  token-name: Authorization
+  is-read-header: true
+  is-read-cookie: false
+  token-prefix: Bearer
+  timeout: ${JWT_ACCESS_TTL:86400}
+  active-timeout: -1
+  is-concurrent: true
+  # 与 Redis 一并使用时建议 true，避免同一账号多 Token 互相覆盖
+  is-share: true
+  # 全局 Filter 放行（与 WebMvc 拦截器白名单对齐；未登录调用 logout 不报错）
+  exclude-path-patterns:
+    - /api/auth/login
+    - /api/auth/refresh
+    - /api/auth/logout
+    - /v3/api-docs/**
+    - /swagger-ui/**
+    - /swagger-ui.html
+    - /actuator/**
 
 # SpringDoc OpenAPI 配置
 springdoc:

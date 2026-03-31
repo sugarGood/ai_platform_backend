@@ -1,10 +1,16 @@
 package com.aiplatform.backend.controller;
 
-import com.aiplatform.backend.entity.AtomicCapability;
-import com.aiplatform.backend.mapper.AtomicCapabilityMapper;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.aiplatform.backend.dto.ProjectAtomicSubscriptionResponse;
+import com.aiplatform.backend.service.ProjectAtomicCapabilityService;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.Map;
@@ -14,36 +20,42 @@ import java.util.Map;
 @RequestMapping("/api/projects/{projectId}/atomic-capabilities")
 public class ProjectAtomicCapabilityController {
 
-    private final AtomicCapabilityMapper mapper;
+    private final ProjectAtomicCapabilityService projectAtomicCapabilityService;
 
-    public ProjectAtomicCapabilityController(AtomicCapabilityMapper mapper) {
-        this.mapper = mapper;
+    public ProjectAtomicCapabilityController(ProjectAtomicCapabilityService projectAtomicCapabilityService) {
+        this.projectAtomicCapabilityService = projectAtomicCapabilityService;
     }
 
-    /** 查询项目已订阅的原子能力列表（TODO: 接入 project_atomic_capabilities 关联表）。 */
+    /** 查询项目已订阅的原子能力列表（含能力摘要）。 */
     @GetMapping
-    public Map<String, Object> list(@PathVariable Long projectId) {
-        return Map.of("projectId", projectId, "items", List.of(),
-                "message", "project_atomic_capabilities 关联表待实现");
+    public List<ProjectAtomicSubscriptionResponse> list(@PathVariable Long projectId) {
+        return projectAtomicCapabilityService.listByProjectId(projectId);
     }
 
-    /** 项目订阅原子能力。 */
+    /**
+     * 项目订阅原子能力。
+     *
+     * <p>请求体：{@code { "capabilityId": &lt;long&gt; }}。已存在且为 DISABLED 时改为 ACTIVE。</p>
+     */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Map<String, Object> subscribe(@PathVariable Long projectId,
-                                         @RequestBody Map<String, Long> body) {
+    public ProjectAtomicSubscriptionResponse subscribe(@PathVariable Long projectId,
+                                                       @RequestBody Map<String, Long> body) {
         Long capabilityId = body.get("capabilityId");
-        AtomicCapability cap = mapper.selectById(capabilityId);
-        if (cap == null) throw new RuntimeException("AtomicCapability not found: " + capabilityId);
-        cap.setSubscriptionCount((cap.getSubscriptionCount() == null ? 0 : cap.getSubscriptionCount()) + 1);
-        mapper.updateById(cap);
-        return Map.of("projectId", projectId, "capabilityId", capabilityId, "status", "SUBSCRIBED");
+        if (capabilityId == null) {
+            throw new IllegalArgumentException("capabilityId is required");
+        }
+        return projectAtomicCapabilityService.subscribe(projectId, capabilityId);
     }
 
-    /** 项目取消订阅原子能力。 */
+    /**
+     * 取消订阅。
+     *
+     * @param id {@code project_atomic_capabilities.id}
+     */
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void unsubscribe(@PathVariable Long projectId, @PathVariable Long id) {
-        // TODO: 从 project_atomic_capabilities 删除关联
+        projectAtomicCapabilityService.unsubscribe(projectId, id);
     }
 }

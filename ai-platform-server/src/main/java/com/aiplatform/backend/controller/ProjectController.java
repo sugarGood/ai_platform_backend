@@ -2,9 +2,11 @@ package com.aiplatform.backend.controller;
 
 import com.aiplatform.backend.common.dto.PageResponse;
 import com.aiplatform.backend.dto.CreateProjectRequest;
+import com.aiplatform.backend.dto.ProjectCardResponse;
 import com.aiplatform.backend.dto.ProjectOverviewResponse;
 import com.aiplatform.backend.dto.ProjectResponse;
 import com.aiplatform.backend.dto.UpdateProjectRequest;
+import com.aiplatform.backend.service.ProjectDashboardService;
 import com.aiplatform.backend.service.ProjectService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -28,9 +30,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class ProjectController {
 
     private final ProjectService projectService;
+    private final ProjectDashboardService projectDashboardService;
 
-    public ProjectController(ProjectService projectService) {
+    public ProjectController(ProjectService projectService,
+                             ProjectDashboardService projectDashboardService) {
         this.projectService = projectService;
+        this.projectDashboardService = projectDashboardService;
     }
 
     /** 创建新项目。 */
@@ -40,12 +45,32 @@ public class ProjectController {
         return ProjectResponse.from(projectService.create(request));
     }
 
-    /** 分页查询项目列表。 */
+    /** 分页查询项目列表（支持关键词、状态、类型筛选）。 */
     @GetMapping
     public PageResponse<ProjectResponse> list(
             @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "20") int size) {
-        return projectService.listPaged(page, size);
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String projectType) {
+        return projectService.listPaged(page, size, keyword, status, projectType);
+    }
+
+    /**
+     * 项目工作台卡片页聚合数据（单接口渲染项目网格：成员头像、代码服务、AI 能力、Token 等）。
+     *
+     * <p>须声明在 {@code /{id}} 之前，避免路径 {@code dashboard} 被误解析为 id。</p>
+     */
+    @GetMapping("/dashboard")
+    public PageResponse<ProjectCardResponse> dashboard(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "false") boolean includeArchived,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String projectType) {
+        return projectDashboardService.listDashboard(
+                page, size, includeArchived, keyword, status, projectType);
     }
 
     /** 根据 ID 查询单个项目详情。 */
@@ -62,7 +87,7 @@ public class ProjectController {
      * @return 更新后的项目响应
      */
     @PutMapping("/{id}")
-    public ProjectResponse update(@PathVariable Long id, @RequestBody UpdateProjectRequest request) {
+    public ProjectResponse update(@PathVariable Long id, @Valid @RequestBody UpdateProjectRequest request) {
         return ProjectResponse.from(projectService.update(id, request));
     }
 

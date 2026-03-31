@@ -44,7 +44,7 @@ public class ProjectMemberController {
     @ResponseStatus(HttpStatus.CREATED)
     public ProjectMemberResponse create(@PathVariable Long projectId,
                                         @Valid @RequestBody CreateProjectMemberRequest request) {
-        return ProjectMemberResponse.from(projectMemberService.create(projectId, request));
+        return projectMemberService.toResponse(projectMemberService.create(projectId, request));
     }
 
     /**
@@ -55,9 +55,7 @@ public class ProjectMemberController {
      */
     @GetMapping
     public List<ProjectMemberResponse> list(@PathVariable Long projectId) {
-        return projectMemberService.listByProjectId(projectId).stream()
-                .map(ProjectMemberResponse::from)
-                .toList();
+        return projectMemberService.listResponsesByProjectId(projectId);
     }
 
     /**
@@ -65,7 +63,7 @@ public class ProjectMemberController {
      *
      * @param projectId 项目 ID（路径参数）
      * @param memberId  成员记录 ID（路径参数）
-     * @param body      请求体，包含 {@code role} 字段（如 ADMIN / MEMBER / VIEWER）
+     * @param body      请求体，包含 {@code role} 字段（项目角色枚举，与 {@code CreateProjectMemberRequest} 一致）
      * @return 更新后的成员响应 DTO
      */
     @PutMapping("/{memberId}")
@@ -73,7 +71,7 @@ public class ProjectMemberController {
                                             @PathVariable Long memberId,
                                             @RequestBody Map<String, String> body) {
         String role = body.get("role");
-        return ProjectMemberResponse.from(projectMemberService.updateRole(projectId, memberId, role));
+        return projectMemberService.toResponse(projectMemberService.updateRole(projectId, memberId, role));
     }
 
     /**

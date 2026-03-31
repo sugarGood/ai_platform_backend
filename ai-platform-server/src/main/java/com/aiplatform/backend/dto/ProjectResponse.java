@@ -18,10 +18,12 @@ import java.time.LocalDateTime;
  * @param monthlyTokenQuota    项目月度 Token 池上限（0=不限制）
  * @param usedTokensThisMonth  项目当月已消耗 Token 数
  * @param alertThresholdPct    告警阈值百分比
- * @param overQuotaStrategy    超配额策略
- * @param status               项目状态
- * @param createdAt            创建时间
- * @param updatedAt            最后更新时间
+ * @param overQuotaStrategy       超配额策略
+ * @param quotaResetCycle         任务/配额展示周期
+ * @param singleRequestTokenCap   单次请求 Token 上限（null=库中未设，由接口层给默认值）
+ * @param status                  项目状态
+ * @param createdAt               创建时间
+ * @param updatedAt               最后更新时间
  */
 public record ProjectResponse(
         Long id,
@@ -36,6 +38,8 @@ public record ProjectResponse(
         Long usedTokensThisMonth,
         Integer alertThresholdPct,
         String overQuotaStrategy,
+        String quotaResetCycle,
+        Long singleRequestTokenCap,
         String status,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
@@ -54,6 +58,8 @@ public record ProjectResponse(
                 project.getUsedTokensThisMonth(),
                 project.getAlertThresholdPct(),
                 project.getOverQuotaStrategy(),
+                project.getQuotaResetCycle(),
+                project.getSingleRequestTokenCap(),
                 project.getStatus(),
                 project.getCreatedAt(),
                 project.getUpdatedAt()

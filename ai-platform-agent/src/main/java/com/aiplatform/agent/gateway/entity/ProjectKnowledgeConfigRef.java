@@ -14,7 +14,7 @@ import java.math.BigDecimal;
  * 项目知识库配置引用实体（网关只读视图）。
  *
  * <p>映射 {@code project_knowledge_configs} 表，网关通过该实体查询项目关联了哪些知识库
- * 及其检索权重配置。</p>
+ * 及其检索权重、注入方式配置。</p>
  */
 @Data
 @Builder
@@ -28,5 +28,7 @@ public class ProjectKnowledgeConfigRef {
     private Long projectId;
     private Long kbId;
     private BigDecimal searchWeight;
+    /** AUTO_INJECT / ON_DEMAND / DISABLED */
+    private String injectMode;
     private String status;
 }
