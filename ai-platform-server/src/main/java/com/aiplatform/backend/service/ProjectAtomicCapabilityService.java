@@ -1,5 +1,6 @@
 package com.aiplatform.backend.service;
 
+import com.aiplatform.backend.common.exception.BusinessException;
 import com.aiplatform.backend.dto.ProjectAtomicSubscriptionResponse;
 import com.aiplatform.backend.entity.AtomicCapability;
 import com.aiplatform.backend.entity.ProjectAtomicCapability;
@@ -41,12 +42,12 @@ public class ProjectAtomicCapabilityService {
         }).toList();
     }
 
-    @Transactional
+    @Transactional(rollbackFor = Throwable.class)
     public ProjectAtomicSubscriptionResponse subscribe(Long projectId, Long capabilityId) {
         projectService.getByIdOrThrow(projectId);
         AtomicCapability cap = atomicCapabilityMapper.selectById(capabilityId);
         if (cap == null) {
-            throw new RuntimeException("AtomicCapability not found: " + capabilityId);
+            throw new BusinessException(404, "ATOMIC_CAPABILITY_NOT_FOUND", "原子能力不存在");
         }
 
         ProjectAtomicCapability existing = projectAtomicCapabilityMapper.selectOne(
@@ -74,12 +75,12 @@ public class ProjectAtomicCapabilityService {
         return ProjectAtomicSubscriptionResponse.from(row, cap);
     }
 
-    @Transactional
+    @Transactional(rollbackFor = Throwable.class)
     public void unsubscribe(Long projectId, Long subscriptionId) {
         projectService.getByIdOrThrow(projectId);
         ProjectAtomicCapability row = projectAtomicCapabilityMapper.selectById(subscriptionId);
         if (row == null || !projectId.equals(row.getProjectId())) {
-            throw new RuntimeException("Project atomic subscription not found: " + subscriptionId);
+            throw new BusinessException(404, "PROJECT_ATOMIC_SUBSCRIPTION_NOT_FOUND", "项目原子能力订阅不存在");
         }
         if ("ACTIVE".equals(row.getStatus())) {
             adjustSubscriptionCount(row.getAtomicCapabilityId(), -1);

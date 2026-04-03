@@ -2,6 +2,8 @@ package com.aiplatform.backend.controller;
 
 import com.aiplatform.backend.dto.CreateProjectMemberRequest;
 import com.aiplatform.backend.dto.ProjectMemberResponse;
+import com.aiplatform.backend.dto.UpdateProjectMemberRoleRequest;
+import com.aiplatform.backend.service.ProjectMemberRbacService;
 import com.aiplatform.backend.service.ProjectMemberService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -16,7 +18,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * 项目成员管理控制器，提供项目成员的添加、角色更新、移除和列表查询接口。
@@ -28,9 +29,12 @@ import java.util.Map;
 public class ProjectMemberController {
 
     private final ProjectMemberService projectMemberService;
+    private final ProjectMemberRbacService projectMemberRbacService;
 
-    public ProjectMemberController(ProjectMemberService projectMemberService) {
+    public ProjectMemberController(ProjectMemberService projectMemberService,
+                                   ProjectMemberRbacService projectMemberRbacService) {
         this.projectMemberService = projectMemberService;
+        this.projectMemberRbacService = projectMemberRbacService;
     }
 
     /**
@@ -63,15 +67,20 @@ public class ProjectMemberController {
      *
      * @param projectId 项目 ID（路径参数）
      * @param memberId  成员记录 ID（路径参数）
-     * @param body      请求体，包含 {@code role} 字段（项目角色枚举，与 {@code CreateProjectMemberRequest} 一致）
+     * @param request   请求体，包含 role 与 resetAbilitiesToRoleDefault 字段
      * @return 更新后的成员响应 DTO
      */
     @PutMapping("/{memberId}")
     public ProjectMemberResponse updateRole(@PathVariable Long projectId,
                                             @PathVariable Long memberId,
-                                            @RequestBody Map<String, String> body) {
-        String role = body.get("role");
-        return projectMemberService.toResponse(projectMemberService.updateRole(projectId, memberId, role));
+                                            @Valid @RequestBody UpdateProjectMemberRoleRequest request) {
+        ProjectMemberResponse response = projectMemberService.toResponse(
+                projectMemberService.updateRole(projectId, memberId, request.role()));
+        if (Boolean.TRUE.equals(request.resetAbilitiesToRoleDefault())) {
+            projectMemberRbacService.clearPermissionOverrides(projectId, memberId);
+            projectMemberRbacService.clearResourceGrants(projectId, memberId);
+        }
+        return response;
     }
 
     /**

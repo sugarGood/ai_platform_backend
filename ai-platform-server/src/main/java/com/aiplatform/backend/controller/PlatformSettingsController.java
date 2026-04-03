@@ -1,12 +1,18 @@
 package com.aiplatform.backend.controller;
 
-import org.springframework.web.bind.annotation.*;
+import com.aiplatform.backend.dto.PlatformSettingResponse;
+import com.aiplatform.backend.dto.PlatformSettingValueRequest;
+import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * 平台设置控制器（模块21）。
- */
 @RestController
 @RequestMapping("/api/admin/settings")
 public class PlatformSettingsController {
@@ -20,22 +26,24 @@ public class PlatformSettingsController {
     ));
 
     @GetMapping
-    public Map<String, String> getAll() { return settings; }
+    public Map<String, String> getAll() {
+        return settings;
+    }
 
     @GetMapping("/{key}")
-    public Map<String, String> getOne(@PathVariable String key) {
+    public PlatformSettingResponse getOne(@PathVariable String key) {
         String value = settings.get(key);
-        if (value == null) throw new RuntimeException("Setting not found: " + key);
-        return Map.of("key", key, "value", value);
+        if (value == null) {
+            throw new RuntimeException("Setting not found: " + key);
+        }
+        return new PlatformSettingResponse(key, value);
     }
 
     @PutMapping("/{key}")
-    public Map<String, String> updateOne(@PathVariable String key,
-                                         @RequestBody Map<String, String> body) {
-        String value = body.get("value");
-        if (value == null) throw new RuntimeException("Missing 'value' field");
-        settings.put(key, value);
-        return Map.of("key", key, "value", value);
+    public PlatformSettingResponse updateOne(@PathVariable String key,
+                                             @Valid @RequestBody PlatformSettingValueRequest request) {
+        settings.put(key, request.value());
+        return new PlatformSettingResponse(key, request.value());
     }
 
     @PutMapping

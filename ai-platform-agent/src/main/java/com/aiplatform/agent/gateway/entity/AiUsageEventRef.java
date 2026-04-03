@@ -39,6 +39,7 @@ public class AiUsageEventRef {
     private Long outputTokens;
     private Long totalTokens;
     private BigDecimal costAmount;
+    private String quotaCheckResult;
     private String status;
     private String errorMessage;
     private Integer latencyMs;

@@ -162,6 +162,47 @@ public class SkillService {
         return skill;
     }
 
+    /**
+     * 测试技能。
+     *
+     * <p>当前先返回统一占位结果，后续对接真实技能执行引擎。</p>
+     */
+    public java.util.Map<String, Object> test(Long id, java.util.Map<String, Object> input) {
+        getByIdOrThrow(id);
+        return java.util.Map.of(
+                "skillId", id,
+                "status", "pending",
+                "message", "技能测试引擎待集成",
+                "input", input != null ? input : java.util.Map.of()
+        );
+    }
+
+    /**
+     * 克隆全局技能到项目。
+     */
+    public Skill cloneToProject(Long id, Long projectId) {
+        Skill source = getByIdOrThrow(id);
+        Skill clone = new Skill();
+        clone.setSkillKey(source.getSkillKey() + "-p" + projectId + "-" + System.currentTimeMillis());
+        clone.setName(source.getName());
+        clone.setDescription(source.getDescription());
+        clone.setScope("PROJECT");
+        clone.setProjectId(projectId);
+        clone.setCategory(source.getCategory());
+        clone.setSystemPrompt(source.getSystemPrompt());
+        clone.setKnowledgeRefs(source.getKnowledgeRefs());
+        clone.setBoundTools(source.getBoundTools());
+        clone.setParameters(source.getParameters());
+        clone.setSlashCommand(source.getSlashCommand());
+        clone.setVersion(source.getVersion());
+        clone.setStatus("DRAFT");
+        clone.setUsageCount(0L);
+        clone.setSatisfactionUp(0);
+        clone.setSatisfactionDown(0);
+        skillMapper.insert(clone);
+        return clone;
+    }
+
     /** 废弃技能（PUBLISHED → DEPRECATED）。 */
     public Skill deprecate(Long id) {
         Skill skill = getByIdOrThrow(id);
@@ -182,9 +223,11 @@ public class SkillService {
     }
 
     /** 项目禁用（解绑）技能。 */
-    public void disableForProject(Long projectId, Long projectSkillId) {
+    public void disableForProject(Long projectId, Long projectSkillIdOrSkillId) {
         projectSkillMapper.delete(Wrappers.<ProjectSkill>lambdaQuery()
                 .eq(ProjectSkill::getProjectId, projectId)
-                .eq(ProjectSkill::getId, projectSkillId));
+                .and(w -> w.eq(ProjectSkill::getId, projectSkillIdOrSkillId)
+                        .or()
+                        .eq(ProjectSkill::getSkillId, projectSkillIdOrSkillId)));
     }
 }

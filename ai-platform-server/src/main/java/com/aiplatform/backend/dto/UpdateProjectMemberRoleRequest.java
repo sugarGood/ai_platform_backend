@@ -13,6 +13,7 @@ public record UpdateProjectMemberRoleRequest(
         @Pattern(
                 regexp = "ADMIN|DEVELOPER|QA|PM|GUEST",
                 message = "Invalid role")
-        String role
+        String role,
+        Boolean resetAbilitiesToRoleDefault
 ) {
 }

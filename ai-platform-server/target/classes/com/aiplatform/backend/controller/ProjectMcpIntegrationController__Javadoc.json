@@ -1,1 +1,1 @@
-{"doc":"项目MCP集成管理控制器。 ","fields":[],"enumConstants":[],"methods":[],"constructors":[]}
+{"doc":" 项目 MCP 集成管理控制器。\n","fields":[],"enumConstants":[],"methods":[{"name":"list","paramTypes":["java.lang.Long"],"doc":" 查询项目集成列表。\n"},{"name":"create","paramTypes":["java.lang.Long","java.lang.Long","com.aiplatform.backend.dto.EnableProjectMcpIntegrationRequest"],"doc":" 启用 MCP 集成到项目。\n"},{"name":"delete","paramTypes":["java.lang.Long","java.lang.Long"],"doc":" 移除项目集成。\n"}],"constructors":[]}

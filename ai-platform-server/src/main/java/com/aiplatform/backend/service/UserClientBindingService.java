@@ -5,7 +5,9 @@ import com.aiplatform.backend.entity.UserClientBinding;
 import com.aiplatform.backend.mapper.UserClientBindingMapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -38,6 +40,23 @@ public class UserClientBindingService {
                         .eq(UserClientBinding::getUserId, userId)
                         .orderByAsc(UserClientBinding::getId)
         );
+    }
+
+    /**
+     * 更新客户端绑定最近活跃时间。
+     *
+     * <p>若传入客户端 ID，则仅更新该客户端绑定；否则更新该用户全部 ACTIVE 绑定。</p>
+     */
+    @Transactional(rollbackFor = Throwable.class)
+    public void touchLastActiveAt(Long userId, Long clientAppId) {
+        var update = Wrappers.<UserClientBinding>lambdaUpdate()
+                .set(UserClientBinding::getLastActiveAt, LocalDateTime.now())
+                .eq(UserClientBinding::getUserId, userId)
+                .eq(UserClientBinding::getBindingStatus, "ACTIVE");
+        if (clientAppId != null) {
+            update.eq(UserClientBinding::getClientAppId, clientAppId);
+        }
+        userClientBindingMapper.update(null, update);
     }
 
     /** 删除绑定。 */

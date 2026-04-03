@@ -10,8 +10,7 @@ import org.springframework.stereotype.Service;
 /**
  * 配额校验服务。
  *
- * <p>在网关调用上游之前，校验个人月度配额和项目月度配额（双池模型）。
- * 任一池超限则根据 overQuotaStrategy 决定是拒绝、告警还是降级。</p>
+ * <p>在网关调用上游之前，执行双池 check 阶段：成员池 + 项目池。</p>
  */
 @Service
 public class QuotaCheckService {
@@ -25,71 +24,94 @@ public class QuotaCheckService {
     }
 
     /**
-     * 校验个人配额和项目配额。
-     *
-     * @param credential 当前调用方凭证（含配额信息）
-     * @param projectId  项目 ID，可为 null
-     * @throws QuotaExceededException 配额不足且策略为 BLOCK 时抛出
+     * 双池配额 check 阶段。
      */
-    public void check(PlatformCredentialRef credential, Long projectId) {
-        checkPersonalQuota(credential);
-        if (projectId != null) {
-            checkProjectQuota(projectId);
+    public QuotaCheckResult check(PlatformCredentialRef credential, Long projectId) {
+        QuotaCheckResult memberResult = checkMemberPool(credential);
+        QuotaCheckResult projectResult = projectId == null ? QuotaCheckResult.ok() : checkProjectPool(projectId);
+
+        if (projectResult.code() == QuotaCheckCode.PROJECT_POOL_ALERT) {
+            return projectResult;
         }
+        if (memberResult.code() == QuotaCheckCode.MEMBER_POOL_ALERT) {
+            return memberResult;
+        }
+        return QuotaCheckResult.ok();
     }
 
-    private void checkPersonalQuota(PlatformCredentialRef credential) {
+    private QuotaCheckResult checkMemberPool(PlatformCredentialRef credential) {
         Long quota = credential.getMonthlyTokenQuota();
         if (quota == null || quota <= 0) {
-            return; // 0 或 null 表示不限制
+            return QuotaCheckResult.ok();
         }
-        Long used = credential.getUsedTokensThisMonth();
-        if (used == null) {
-            used = 0L;
+
+        long used = credential.getUsedTokensThisMonth() == null ? 0L : credential.getUsedTokensThisMonth();
+        if (used < quota) {
+            return QuotaCheckResult.ok();
         }
-        if (used >= quota) {
-            String strategy = credential.getOverQuotaStrategy();
-            if ("ALLOW_WITH_ALERT".equals(strategy)) {
-                log.warn("个人配额已超限（已用 {}/{}），策略为 ALLOW_WITH_ALERT，放行并告警。userId={}",
-                        used, quota, credential.getUserId());
-                return;
-            }
-            throw new QuotaExceededException(
-                    "Personal monthly token quota exceeded (used: " + used + ", quota: " + quota + ")");
+
+        if ("ALLOW_WITH_ALERT".equals(credential.getOverQuotaStrategy())) {
+            log.warn("成员池配额已超限（已用 {}/{}），策略 ALLOW_WITH_ALERT 放行。userId={}",
+                    used, quota, credential.getUserId());
+            return new QuotaCheckResult(QuotaCheckCode.MEMBER_POOL_ALERT, "成员池配额已超限，按告警策略放行");
+        }
+
+        throw new QuotaExceededException(QuotaCheckCode.MEMBER_POOL_INSUFFICIENT, "成员池不足");
+    }
+
+    private QuotaCheckResult checkProjectPool(Long projectId) {
+        ProjectRef project = projectMapper.selectById(projectId);
+        if (project == null) {
+            throw new QuotaExceededException(QuotaCheckCode.PROJECT_POOL_INSUFFICIENT, "项目不存在或不可用");
+        }
+
+        Long quota = project.getMonthlyTokenQuota();
+        if (quota == null || quota <= 0) {
+            return QuotaCheckResult.ok();
+        }
+
+        long used = project.getUsedTokensThisMonth() == null ? 0L : project.getUsedTokensThisMonth();
+        if (used < quota) {
+            return QuotaCheckResult.ok();
+        }
+
+        if ("ALLOW_WITH_ALERT".equals(project.getOverQuotaStrategy())) {
+            log.warn("项目池配额已超限（已用 {}/{}），策略 ALLOW_WITH_ALERT 放行。projectId={}",
+                    used, quota, projectId);
+            return new QuotaCheckResult(QuotaCheckCode.PROJECT_POOL_ALERT, "项目池配额已超限，按告警策略放行");
+        }
+
+        throw new QuotaExceededException(QuotaCheckCode.PROJECT_POOL_INSUFFICIENT, "项目池不足");
+    }
+
+    public record QuotaCheckResult(QuotaCheckCode code, String message) {
+        public static QuotaCheckResult ok() {
+            return new QuotaCheckResult(QuotaCheckCode.OK, "OK");
         }
     }
 
-    private void checkProjectQuota(Long projectId) {
-        ProjectRef project = projectMapper.selectById(projectId);
-        if (project == null) {
-            return; // 项目不存在则跳过检查
-        }
-        Long quota = project.getMonthlyTokenQuota();
-        if (quota == null || quota <= 0) {
-            return;
-        }
-        Long used = project.getUsedTokensThisMonth();
-        if (used == null) {
-            used = 0L;
-        }
-        if (used >= quota) {
-            String strategy = project.getOverQuotaStrategy();
-            if ("ALLOW_WITH_ALERT".equals(strategy)) {
-                log.warn("项目配额已超限（已用 {}/{}），策略为 ALLOW_WITH_ALERT，放行并告警。projectId={}",
-                        used, quota, projectId);
-                return;
-            }
-            throw new QuotaExceededException(
-                    "Project monthly token quota exceeded (used: " + used + ", quota: " + quota + ", project: " + project.getName() + ")");
-        }
+    public enum QuotaCheckCode {
+        OK,
+        MEMBER_POOL_ALERT,
+        PROJECT_POOL_ALERT,
+        MEMBER_POOL_INSUFFICIENT,
+        PROJECT_POOL_INSUFFICIENT
     }
 
     /**
      * 配额超限异常。
      */
     public static class QuotaExceededException extends RuntimeException {
-        public QuotaExceededException(String message) {
+
+        private final QuotaCheckCode code;
+
+        public QuotaExceededException(QuotaCheckCode code, String message) {
             super(message);
+            this.code = code;
+        }
+
+        public QuotaCheckCode getCode() {
+            return code;
         }
     }
 }

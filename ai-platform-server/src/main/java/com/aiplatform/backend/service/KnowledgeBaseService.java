@@ -6,10 +6,13 @@ import com.aiplatform.backend.common.exception.KnowledgeBaseNotFoundException;
 import com.aiplatform.backend.dto.CreateKbDocumentRequest;
 import com.aiplatform.backend.dto.CreateKnowledgeBaseRequest;
 import com.aiplatform.backend.dto.KnowledgeBaseResponse;
+import com.aiplatform.backend.dto.KnowledgeBaseSearchRequest;
+import com.aiplatform.backend.dto.EnableProjectKnowledgeConfigRequest;
 import com.aiplatform.backend.dto.ProjectKnowledgeSourceFilter;
 import com.aiplatform.backend.dto.ProjectKnowledgeSourceItem;
 import com.aiplatform.backend.dto.ProjectKnowledgeSourcesResponse;
 import com.aiplatform.backend.dto.UpdateProjectKnowledgeConfigRequest;
+import com.aiplatform.backend.dto.UpdateKnowledgeBaseRagConfigRequest;
 import com.aiplatform.backend.entity.KbDocument;
 import com.aiplatform.backend.entity.KnowledgeBase;
 import com.aiplatform.backend.entity.ProjectKnowledgeConfig;
@@ -286,14 +289,14 @@ public class KnowledgeBaseService {
     /**
      * 检索测试：转发至 Agent，使用与对话 RAG 相同的 Embedding + Qdrant 链路。
      */
-    public Map<String, Object> searchKnowledgeBase(Long kbId, String query, int resultCount, Double scoreThreshold) {
+    public Map<String, Object> searchKnowledgeBase(Long kbId, KnowledgeBaseSearchRequest request) {
         getByIdOrThrow(kbId);
         Map<String, Object> req = new LinkedHashMap<>();
         req.put("kbId", kbId);
-        req.put("query", query);
-        req.put("resultCount", resultCount);
-        if (scoreThreshold != null) {
-            req.put("scoreThreshold", scoreThreshold);
+        req.put("query", request.query().trim());
+        req.put("resultCount", request.resultCount() != null ? request.resultCount() : 5);
+        if (request.scoreThreshold() != null) {
+            req.put("scoreThreshold", request.scoreThreshold());
         }
         try {
             Map<String, Object> resp = agentWebClient.post()
@@ -384,16 +387,18 @@ public class KnowledgeBaseService {
      * @param injectMode   注入方式：AUTO_INJECT / ON_DEMAND / DISABLED，默认 AUTO_INJECT
      * @return 新创建的项目知识库配置
      */
-    public ProjectKnowledgeConfig enableForProject(Long projectId, Long kbId, BigDecimal searchWeight, String injectMode) {
-        String mode = injectMode != null && !injectMode.isBlank() ? injectMode.trim() : "AUTO_INJECT";
+    public ProjectKnowledgeConfig enableForProject(Long projectId, EnableProjectKnowledgeConfigRequest request) {
+        String mode = request.injectMode() != null && !request.injectMode().isBlank()
+                ? request.injectMode().trim()
+                : "AUTO_INJECT";
         if (!PROJECT_KB_INJECT_MODES.contains(mode)) {
             throw new BusinessException(400, BizErrorCode.VALIDATION_FAILED,
                     "injectMode 必须为 AUTO_INJECT、ON_DEMAND 或 DISABLED");
         }
         ProjectKnowledgeConfig config = new ProjectKnowledgeConfig();
         config.setProjectId(projectId);
-        config.setKbId(kbId);
-        config.setSearchWeight(searchWeight != null ? searchWeight : BigDecimal.ONE);
+        config.setKbId(request.kbId());
+        config.setSearchWeight(request.searchWeight() != null ? request.searchWeight() : BigDecimal.ONE);
         config.setInjectMode(mode);
         config.setStatus("ACTIVE");
         projectKnowledgeConfigMapper.insert(config);
@@ -499,10 +504,14 @@ public class KnowledgeBaseService {
     }
 
     /** 更新RAG配置（embeddingModel、injectMode等）。 */
-    public KnowledgeBase updateRagConfig(Long id, java.util.Map<String, String> config) {
+    public KnowledgeBase updateRagConfig(Long id, UpdateKnowledgeBaseRagConfigRequest config) {
         KnowledgeBase kb = getByIdOrThrow(id);
-        if (config.containsKey("embeddingModel")) kb.setEmbeddingModel(config.get("embeddingModel"));
-        if (config.containsKey("injectMode")) kb.setInjectMode(config.get("injectMode"));
+        if (config.embeddingModel() != null) {
+            kb.setEmbeddingModel(config.embeddingModel());
+        }
+        if (config.injectMode() != null) {
+            kb.setInjectMode(config.injectMode());
+        }
         knowledgeBaseMapper.updateById(kb);
         return kb;
     }

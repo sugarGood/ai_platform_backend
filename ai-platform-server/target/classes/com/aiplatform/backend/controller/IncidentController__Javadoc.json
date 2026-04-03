@@ -1,1 +1,0 @@
-{"doc":"事故管理控制器（模块14扩展）。 ","fields":[],"enumConstants":[],"methods":[{"name":"aiDiagnose","paramTypes":["java.lang.Long","java.lang.Long"],"doc":"AI 诊断事故（将 errorStack 发送给 AI 分析）。TODO: 接入 AI 网关。 "}],"constructors":[]}

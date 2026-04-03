@@ -37,6 +37,7 @@ public final class BizErrorCode {
     public static final String PROVIDER_API_KEY_NOT_FOUND = "PROVIDER_API_KEY_NOT_FOUND";
     public static final String PROVIDER_FAILOVER_POLICY_NOT_FOUND = "PROVIDER_FAILOVER_POLICY_NOT_FOUND";
     public static final String TOOL_DEFINITION_NOT_FOUND = "TOOL_DEFINITION_NOT_FOUND";
+    public static final String MCP_SERVER_NOT_FOUND = "MCP_SERVER_NOT_FOUND";
     public static final String ROLE_NOT_FOUND = "ROLE_NOT_FOUND";
     public static final String PERMISSION_NOT_FOUND = "PERMISSION_NOT_FOUND";
     public static final String PLATFORM_CREDENTIAL_NOT_FOUND = "PLATFORM_CREDENTIAL_NOT_FOUND";

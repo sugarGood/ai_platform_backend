@@ -15,6 +15,7 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -39,20 +40,20 @@ class ProjectMemberControllerTest {
         Long projectId = createProject("mall-member-create");
 
         mockMvc.perform(post("/api/projects/{projectId}/members", projectId)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("""
-                        {
-                          "userId": 1,
-                          "role": "ADMIN"
-                        }
-                        """))
-            .andExpect(status().isCreated())
-            .andExpect(jsonPath("$.projectId").value(projectId))
-            .andExpect(jsonPath("$.userId").value(1))
-            .andExpect(jsonPath("$.role").value("ADMIN"))
-            .andExpect(jsonPath("$.credentialStatus").exists())
-            .andExpect(jsonPath("$.credentialExpiresInDays").exists())
-            .andExpect(jsonPath("$.credentialExpiresAt").exists());
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "userId": 1,
+                                  "role": "ADMIN"
+                                }
+                                """))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.data.projectId").value(projectId))
+                .andExpect(jsonPath("$.data.userId").value(1))
+                .andExpect(jsonPath("$.data.role").value("ADMIN"))
+                .andExpect(jsonPath("$.data.credentialStatus").value("NONE"))
+                .andExpect(jsonPath("$.data.credentialExpiresInDays").doesNotExist())
+                .andExpect(jsonPath("$.data.credentialExpiresAt").doesNotExist());
     }
 
     @Test
@@ -60,34 +61,34 @@ class ProjectMemberControllerTest {
         Long projectId = createProject("mall-member-list");
 
         mockMvc.perform(post("/api/projects/{projectId}/members", projectId)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("""
-                        {
-                          "userId": 2,
-                          "role": "DEVELOPER"
-                        }
-                        """))
-            .andExpect(status().isCreated());
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "userId": 2,
+                                  "role": "DEVELOPER"
+                                }
+                                """))
+                .andExpect(status().isCreated());
 
         mockMvc.perform(get("/api/projects/{projectId}/members", projectId))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.length()").value(1))
-            .andExpect(jsonPath("$[0].userId").value(2))
-            .andExpect(jsonPath("$[0].role").value("DEVELOPER"))
-            .andExpect(jsonPath("$[0].credentialStatus").exists());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.length()").value(1))
+                .andExpect(jsonPath("$.data[0].userId").value(2))
+                .andExpect(jsonPath("$.data[0].role").value("DEVELOPER"))
+                .andExpect(jsonPath("$.data[0].credentialStatus").exists());
     }
 
     @Test
     void shouldReturnNotFoundWhenProjectMissing() throws Exception {
         mockMvc.perform(post("/api/projects/999/members")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("""
-                        {
-                          "userId": 1,
-                          "role": "ADMIN"
-                        }
-                        """))
-            .andExpect(status().isNotFound());
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "userId": 1,
+                                  "role": "ADMIN"
+                                }
+                                """))
+                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -95,40 +96,88 @@ class ProjectMemberControllerTest {
         Long projectId = createProject("mall-member-duplicate");
 
         mockMvc.perform(post("/api/projects/{projectId}/members", projectId)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("""
-                        {
-                          "userId": 3,
-                          "role": "ADMIN"
-                        }
-                        """))
-            .andExpect(status().isCreated());
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "userId": 3,
+                                  "role": "ADMIN"
+                                }
+                                """))
+                .andExpect(status().isCreated());
 
         mockMvc.perform(post("/api/projects/{projectId}/members", projectId)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("""
-                        {
-                          "userId": 3,
-                          "role": "DEVELOPER"
-                        }
-                        """))
-            .andExpect(status().isConflict());
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "userId": 3,
+                                  "role": "DEVELOPER"
+                                }
+                                """))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void shouldUpdateMemberRole() throws Exception {
+        Long projectId = createProject("mall-member-update-role");
+        Long memberId = createMember(projectId, 9, "DEVELOPER");
+
+        mockMvc.perform(put("/api/projects/{projectId}/members/{memberId}", projectId, memberId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "role": "ADMIN"
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.id").value(memberId))
+                .andExpect(jsonPath("$.data.role").value("ADMIN"));
+    }
+
+    @Test
+    void shouldRejectInvalidRoleWhenUpdatingMember() throws Exception {
+        Long projectId = createProject("mall-member-invalid-role");
+        Long memberId = createMember(projectId, 10, "DEVELOPER");
+
+        mockMvc.perform(put("/api/projects/{projectId}/members/{memberId}", projectId, memberId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "role": "INVALID_ROLE"
+                                }
+                                """))
+                .andExpect(status().isBadRequest());
     }
 
     private Long createProject(String code) throws Exception {
         MvcResult result = mockMvc.perform(post("/api/projects")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("""
-                        {
-                          "name": "Mall System",
-                          "code": "%s",
-                          "projectType": "PRODUCT"
-                        }
-                        """.formatted(code)))
-            .andExpect(status().isCreated())
-            .andReturn();
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "name": "Mall System",
+                                  "code": "%s",
+                                  "projectType": "PRODUCT"
+                                }
+                                """.formatted(code)))
+                .andExpect(status().isCreated())
+                .andReturn();
 
         JsonNode response = objectMapper.readTree(result.getResponse().getContentAsString());
-        return response.get("id").asLong();
+        return response.path("data").path("id").asLong();
+    }
+
+    private Long createMember(Long projectId, long userId, String role) throws Exception {
+        MvcResult result = mockMvc.perform(post("/api/projects/{projectId}/members", projectId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "userId": %s,
+                                  "role": "%s"
+                                }
+                                """.formatted(userId, role)))
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        JsonNode response = objectMapper.readTree(result.getResponse().getContentAsString());
+        return response.path("data").path("id").asLong();
     }
 }

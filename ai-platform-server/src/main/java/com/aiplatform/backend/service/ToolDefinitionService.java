@@ -1,5 +1,7 @@
 package com.aiplatform.backend.service;
 
+import com.aiplatform.backend.common.exception.BizErrorCode;
+import com.aiplatform.backend.common.exception.BusinessException;
 import com.aiplatform.backend.common.exception.ToolDefinitionNotFoundException;
 import com.aiplatform.backend.dto.CreateToolDefinitionRequest;
 import com.aiplatform.backend.entity.ProjectTool;
@@ -127,16 +129,33 @@ public class ToolDefinitionService {
 
     /** 禁用工具（status → INACTIVE）。 */
     public ToolDefinition disable(Long id) {
+        return updateStatus(id, "INACTIVE");
+    }
+
+    /**
+     * 更新工具状态。
+     */
+    public ToolDefinition updateStatus(Long id, String status) {
+        if (status == null || status.isBlank()) {
+            throw new BusinessException(400, BizErrorCode.VALIDATION_FAILED, "status 不能为空");
+        }
+        String normalized = status.trim();
+        if (!"ACTIVE".equals(normalized) && !"INACTIVE".equals(normalized)) {
+            throw new BusinessException(400, BizErrorCode.VALIDATION_FAILED,
+                    "status 必须为 ACTIVE 或 INACTIVE");
+        }
         ToolDefinition tool = getByIdOrThrow(id);
-        tool.setStatus("INACTIVE");
+        tool.setStatus(normalized);
         toolDefinitionMapper.updateById(tool);
         return tool;
     }
 
     /** 项目禁用（解绑）工具。 */
-    public void disableForProject(Long projectId, Long projectToolId) {
+    public void disableForProject(Long projectId, Long projectToolIdOrToolId) {
         projectToolMapper.delete(Wrappers.<ProjectTool>lambdaQuery()
                 .eq(ProjectTool::getProjectId, projectId)
-                .eq(ProjectTool::getId, projectToolId));
+                .and(w -> w.eq(ProjectTool::getId, projectToolIdOrToolId)
+                        .or()
+                        .eq(ProjectTool::getToolId, projectToolIdOrToolId)));
     }
 }

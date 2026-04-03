@@ -45,9 +45,9 @@ class ProjectServiceControllerTest {
                         }
                         """))
             .andExpect(status().isCreated())
-            .andExpect(jsonPath("$.projectId").value(projectId))
-            .andExpect(jsonPath("$.name").value("mall-backend"))
-            .andExpect(jsonPath("$.mainBranch").value("main"));
+            .andExpect(jsonPath("$.data.projectId").value(projectId))
+            .andExpect(jsonPath("$.data.name").value("mall-backend"))
+            .andExpect(jsonPath("$.data.mainBranch").value("main"));
     }
 
     @Test
@@ -67,9 +67,9 @@ class ProjectServiceControllerTest {
 
         mockMvc.perform(get("/api/projects/{projectId}/services", projectId))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.length()").value(1))
-            .andExpect(jsonPath("$[0].projectId").value(projectId))
-            .andExpect(jsonPath("$[0].name").value("mall-frontend"));
+            .andExpect(jsonPath("$.data.length()").value(1))
+            .andExpect(jsonPath("$.data[0].projectId").value(projectId))
+            .andExpect(jsonPath("$.data[0].name").value("mall-frontend"));
     }
 
     @Test
@@ -98,6 +98,6 @@ class ProjectServiceControllerTest {
             .andReturn();
 
         JsonNode response = objectMapper.readTree(result.getResponse().getContentAsString());
-        return response.get("id").asLong();
+        return response.path("data").path("id").asLong();
     }
 }

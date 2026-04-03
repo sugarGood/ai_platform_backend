@@ -1,0 +1,10 @@
+com\aiplatform\backend\member\ProjectMemberControllerTest.class
+com\aiplatform\backend\service\ProjectServiceControllerTest.class
+com\aiplatform\backend\me\MeControllerTest.class
+com\aiplatform\backend\service\PlatformCredentialServiceTest.class
+com\aiplatform\backend\service\PermissionAssemblyServiceTest.class
+com\aiplatform\backend\project\ProjectControllerTest.class
+com\aiplatform\backend\AiPlatformBackendApplicationTests.class
+com\aiplatform\backend\service\ProjectTokenDashboardServiceTest.class
+com\aiplatform\backend\service\ProjectAgentServiceTest.class
+com\aiplatform\backend\dto\ProjectMemberCredentialViewTest.class

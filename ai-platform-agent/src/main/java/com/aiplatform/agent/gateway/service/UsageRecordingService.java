@@ -1,5 +1,6 @@
 package com.aiplatform.agent.gateway.service;
 
+import com.aiplatform.agent.gateway.dto.UsageRecordCommand;
 import com.aiplatform.agent.gateway.entity.AiUsageEventRef;
 import com.aiplatform.agent.gateway.mapper.AiUsageEventRefMapper;
 import org.springframework.stereotype.Service;
@@ -33,42 +34,29 @@ public class UsageRecordingService {
 
     /**
      * 记录一次 AI 调用的用量事件。
-     *
-     * @param credentialId     调用方凭证 ID
-     * @param userId           调用方用户 ID
-     * @param projectId        关联项目 ID，可为 null
-     * @param providerId       上游供应商 ID
-     * @param providerApiKeyId 使用的上游 API 密钥 ID
-     * @param modelId          调用的模型 ID
-     * @param modelCode        模型标识编码
-     * @param requestMode      请求模式（CHAT=同步 / STREAM=流式）
-     * @param latencyMs        请求延迟（毫秒）
-     * @param inputTokens      输入 Token 数
-     * @param outputTokens     输出 Token 数
-     * @param totalTokens      总 Token 数
-     * @param inputPricePer1m  每百万输入 Token 单价，可为 null
-     * @param outputPricePer1m 每百万输出 Token 单价，可为 null
      */
-    public void record(Long credentialId, Long userId, Long projectId, Long providerId,
-                       Long providerApiKeyId, Long modelId, String modelCode,
-                       String requestMode,
-                       long latencyMs, long inputTokens, long outputTokens,
-                       long totalTokens, BigDecimal inputPricePer1m, BigDecimal outputPricePer1m) {
+    public void record(UsageRecordCommand command) {
         AiUsageEventRef event = AiUsageEventRef.builder()
-                .credentialId(credentialId)
-                .userId(userId)
-                .projectId(projectId)
-                .providerId(providerId)
-                .providerApiKeyId(providerApiKeyId)
-                .modelId(modelId)
+                .credentialId(command.credentialId())
+                .userId(command.userId())
+                .projectId(command.projectId())
+                .providerId(command.providerId())
+                .providerApiKeyId(command.providerApiKeyId())
+                .modelId(command.modelId())
                 .sourceType("PLATFORM_GATEWAY")
-                .requestMode(requestMode)
-                .inputTokens(inputTokens)
-                .outputTokens(outputTokens)
-                .totalTokens(totalTokens)
-                .costAmount(calculateCost(inputTokens, outputTokens, inputPricePer1m, outputPricePer1m))
+                .requestMode(command.requestMode())
+                .requestId(command.requestId())
+                .inputTokens(command.inputTokens())
+                .outputTokens(command.outputTokens())
+                .totalTokens(command.totalTokens())
+                .costAmount(calculateCost(
+                        command.inputTokens(),
+                        command.outputTokens(),
+                        command.inputPricePer1m(),
+                        command.outputPricePer1m()))
+                .quotaCheckResult(command.quotaCheckResult())
                 .status("SUCCESS")
-                .latencyMs((int) latencyMs)
+                .latencyMs((int) command.latencyMs())
                 .occurredAt(LocalDateTime.now())
                 .build();
         usageEventMapper.insert(event);

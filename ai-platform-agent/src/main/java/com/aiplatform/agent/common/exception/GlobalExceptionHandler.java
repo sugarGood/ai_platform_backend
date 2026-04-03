@@ -2,7 +2,7 @@ package com.aiplatform.agent.common.exception;
 
 import com.aiplatform.agent.gateway.service.CredentialAuthService;
 import com.aiplatform.agent.gateway.service.GatewayRoutingService;
-import com.aiplatform.agent.gateway.service.ProjectAgentChatService;
+import com.aiplatform.agent.gateway.service.ProjectAccessValidationService;
 import com.aiplatform.agent.gateway.service.QuotaCheckService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +45,7 @@ public class GlobalExceptionHandler {
      * 凭证无效（401 Unauthorized）。
      */
     @ExceptionHandler(CredentialAuthService.InvalidCredentialException.class)
-    public ResponseEntity<Map<String, String>> handleInvalidCredential(
+    public ResponseEntity<Map<String, Object>> handleInvalidCredential(
             CredentialAuthService.InvalidCredentialException ex) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(error(ex.getMessage()));
@@ -55,17 +55,17 @@ public class GlobalExceptionHandler {
      * 配额超限（429 Too Many Requests）。
      */
     @ExceptionHandler(QuotaCheckService.QuotaExceededException.class)
-    public ResponseEntity<Map<String, String>> handleQuotaExceeded(
+    public ResponseEntity<Map<String, Object>> handleQuotaExceeded(
             QuotaCheckService.QuotaExceededException ex) {
         return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
-                .body(error(ex.getMessage()));
+                .body(error(ex.getMessage(), ex.getCode().name()));
     }
 
     /**
      * 模型未找到（404 Not Found）。
      */
     @ExceptionHandler(GatewayRoutingService.ModelNotFoundException.class)
-    public ResponseEntity<Map<String, String>> handleModelNotFound(
+    public ResponseEntity<Map<String, Object>> handleModelNotFound(
             GatewayRoutingService.ModelNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(error(ex.getMessage()));
@@ -75,7 +75,7 @@ public class GlobalExceptionHandler {
      * 上游供应商不可用（503 Service Unavailable）。
      */
     @ExceptionHandler(GatewayRoutingService.ProviderNotAvailableException.class)
-    public ResponseEntity<Map<String, String>> handleProviderNotAvailable(
+    public ResponseEntity<Map<String, Object>> handleProviderNotAvailable(
             GatewayRoutingService.ProviderNotAvailableException ex) {
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
                 .body(error(ex.getMessage()));
@@ -85,20 +85,20 @@ public class GlobalExceptionHandler {
      * 网关供应商未配置（502 Bad Gateway）。
      */
     @ExceptionHandler(GatewayProviderNotConfiguredException.class)
-    public ResponseEntity<Map<String, String>> handleProviderNotConfigured(
+    public ResponseEntity<Map<String, Object>> handleProviderNotConfigured(
             GatewayProviderNotConfiguredException ex) {
         return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
                 .body(error(ex.getMessage()));
     }
 
     /**
-     * 项目智能体不可用（503 Service Unavailable）。
+     * 项目访问权限不足（403 Forbidden）。
      */
-    @ExceptionHandler(ProjectAgentChatService.AgentNotAvailableException.class)
-    public ResponseEntity<Map<String, String>> handleAgentNotAvailable(
-            ProjectAgentChatService.AgentNotAvailableException ex) {
-        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
-                .body(error(ex.getMessage()));
+    @ExceptionHandler(ProjectAccessValidationService.ProjectAccessDeniedException.class)
+    public ResponseEntity<Map<String, Object>> handleProjectAccessDenied(
+            ProjectAccessValidationService.ProjectAccessDeniedException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(error(ex.getMessage(), "PROJECT_ACCESS_DENIED"));
     }
 
     // ---------------------------------------------------------------
@@ -109,7 +109,7 @@ public class GlobalExceptionHandler {
      * 缺少必填请求头（400 Bad Request）。
      */
     @ExceptionHandler(MissingRequestHeaderException.class)
-    public ResponseEntity<Map<String, String>> handleMissingHeader(
+    public ResponseEntity<Map<String, Object>> handleMissingHeader(
             MissingRequestHeaderException ex) {
         return ResponseEntity.badRequest()
                 .body(error("缺少必填请求头: " + ex.getHeaderName()));
@@ -119,7 +119,7 @@ public class GlobalExceptionHandler {
      * 缺少必填请求参数（400 Bad Request）。
      */
     @ExceptionHandler(MissingServletRequestParameterException.class)
-    public ResponseEntity<Map<String, String>> handleMissingParam(
+    public ResponseEntity<Map<String, Object>> handleMissingParam(
             MissingServletRequestParameterException ex) {
         return ResponseEntity.badRequest()
                 .body(error("缺少必填参数: " + ex.getParameterName()));
@@ -129,7 +129,7 @@ public class GlobalExceptionHandler {
      * 请求参数类型不匹配（400 Bad Request）。
      */
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    public ResponseEntity<Map<String, String>> handleTypeMismatch(
+    public ResponseEntity<Map<String, Object>> handleTypeMismatch(
             MethodArgumentTypeMismatchException ex) {
         return ResponseEntity.badRequest()
                 .body(error("参数类型错误: " + ex.getName()));
@@ -139,7 +139,7 @@ public class GlobalExceptionHandler {
      * 请求体不可读或 JSON 解析失败（400 Bad Request）。
      */
     @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<Map<String, String>> handleNotReadable(
+    public ResponseEntity<Map<String, Object>> handleNotReadable(
             HttpMessageNotReadableException ex) {
         return ResponseEntity.badRequest()
                 .body(error("请求体格式错误，请检查 JSON 格式"));
@@ -153,7 +153,7 @@ public class GlobalExceptionHandler {
      * 文件读取或 IO 操作失败（400 Bad Request）。
      */
     @ExceptionHandler(IOException.class)
-    public ResponseEntity<Map<String, String>> handleIOException(IOException ex) {
+    public ResponseEntity<Map<String, Object>> handleIOException(IOException ex) {
         log.warn("IO 操作失败: {}", ex.getMessage(), ex);
         return ResponseEntity.badRequest()
                 .body(error("文件读取失败: " + ex.getMessage()));
@@ -167,7 +167,7 @@ public class GlobalExceptionHandler {
      * 未预期的运行时异常兜底（500 Internal Server Error）。
      */
     @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<Map<String, String>> handleRuntimeException(RuntimeException ex) {
+    public ResponseEntity<Map<String, Object>> handleRuntimeException(RuntimeException ex) {
         log.error("未预期的运行时异常: {}", ex.getMessage(), ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(error("服务器内部错误，请联系管理员"));
@@ -177,7 +177,7 @@ public class GlobalExceptionHandler {
      * 最终兜底：捕获所有未处理异常（500 Internal Server Error）。
      */
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, String>> handleException(Exception ex) {
+    public ResponseEntity<Map<String, Object>> handleException(Exception ex) {
         log.error("未处理异常: {}", ex.getMessage(), ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(error("服务器内部错误"));
@@ -187,7 +187,11 @@ public class GlobalExceptionHandler {
     // 工具方法
     // ---------------------------------------------------------------
 
-    private static Map<String, String> error(String message) {
+    private static Map<String, Object> error(String message) {
         return Map.of("error", message);
+    }
+
+    private static Map<String, Object> error(String message, String reasonCode) {
+        return Map.of("error", message, "reasonCode", reasonCode);
     }
 }

@@ -1,0 +1,27 @@
+[[skills.config]]
+path = "C:/Users/76741/Desktop/ai_platform_backend/.codex/skills/java-backend-dev-spec/SKILL.md"
+enabled = true
+
+[[skills.config]]
+path = "C:/Users/76741/Desktop/ai_platform_backend/.codex/skills/simple-design-principles/SKILL.md"
+enabled = true
+
+[[skills.config]]
+path = "C:/Users/76741/Desktop/ai_platform_backend/.codex/skills/java-layering-rules/SKILL.md"
+enabled = true
+
+[[skills.config]]
+path = "C:/Users/76741/Desktop/ai_platform_backend/.codex/skills/java-model-converter-rules/SKILL.md"
+enabled = true
+
+[[skills.config]]
+path = "C:/Users/76741/Desktop/ai_platform_backend/.codex/skills/java-dao-sql-rules/SKILL.md"
+enabled = true
+
+[[skills.config]]
+path = "C:/Users/76741/Desktop/ai_platform_backend/.codex/skills/db-schema-rules/SKILL.md"
+enabled = true
+
+[[skills.config]]
+path = "C:/Users/76741/Desktop/ai_platform_backend/.codex/skills/git-branch-commit-rules/SKILL.md"
+enabled = true

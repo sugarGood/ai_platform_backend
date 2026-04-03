@@ -7,6 +7,7 @@ import com.aiplatform.backend.dto.ProjectMemberCredentialView;
 import com.aiplatform.backend.dto.ProjectMemberQuotaRowResponse;
 import com.aiplatform.backend.dto.ProjectTokenDashboardConfigResponse;
 import com.aiplatform.backend.dto.ProjectTokenDashboardSummaryResponse;
+import com.aiplatform.backend.dto.ProjectUsageActivityQuery;
 import com.aiplatform.backend.dto.ProjectUsageActivityRowResponse;
 import com.aiplatform.backend.dto.TokenDashboardBatchSettleRequest;
 import com.aiplatform.backend.entity.AiUsageEvent;
@@ -42,6 +43,10 @@ import java.util.stream.Collectors;
 public class ProjectTokenDashboardService {
 
     public static final long DEFAULT_SINGLE_REQUEST_TOKEN_CAP = 100_000L;
+    private static final String STATUS_ACTIVE = "ACTIVE";
+    private static final String QUOTA_TYPE_TOKEN = "TOKEN_QUOTA";
+    private static final String DEFAULT_RESET_CYCLE = "MONTHLY";
+    private static final String DEFAULT_PROJECT_ROLE = "DEVELOPER";
 
     private static final Map<String, Long> DEFAULT_TOKEN_QUOTA_BY_ROLE = Map.of(
             "ADMIN", 300_000L,
@@ -230,28 +235,23 @@ public class ProjectTokenDashboardService {
 
     public PageResponse<ProjectUsageActivityRowResponse> activityLog(
             Long projectId,
-            String sourceType,
-            String status,
-            LocalDateTime occurredAfter,
-            LocalDateTime occurredBefore,
-            int page,
-            int size) {
+            ProjectUsageActivityQuery query) {
         projectService.getByIdOrThrow(projectId);
         var q = Wrappers.<AiUsageEvent>lambdaQuery().eq(AiUsageEvent::getProjectId, projectId);
-        if (sourceType != null && !sourceType.isBlank()) {
-            q.eq(AiUsageEvent::getSourceType, sourceType);
+        if (query.sourceType() != null && !query.sourceType().isBlank()) {
+            q.eq(AiUsageEvent::getSourceType, query.sourceType());
         }
-        if (status != null && !status.isBlank()) {
-            q.eq(AiUsageEvent::getStatus, status);
+        if (query.status() != null && !query.status().isBlank()) {
+            q.eq(AiUsageEvent::getStatus, query.status());
         }
-        if (occurredAfter != null) {
-            q.ge(AiUsageEvent::getOccurredAt, occurredAfter);
+        if (query.occurredAfter() != null) {
+            q.ge(AiUsageEvent::getOccurredAt, query.occurredAfter());
         }
-        if (occurredBefore != null) {
-            q.le(AiUsageEvent::getOccurredAt, occurredBefore);
+        if (query.occurredBefore() != null) {
+            q.le(AiUsageEvent::getOccurredAt, query.occurredBefore());
         }
         q.orderByDesc(AiUsageEvent::getId);
-        Page<AiUsageEvent> pg = aiUsageEventMapper.selectPage(new Page<>(page, size), q);
+        Page<AiUsageEvent> pg = aiUsageEventMapper.selectPage(new Page<>(query.page(), query.size()), q);
         Set<Long> userIds = pg.getRecords().stream()
                 .map(AiUsageEvent::getUserId)
                 .filter(Objects::nonNull)
@@ -263,7 +263,7 @@ public class ProjectTokenDashboardService {
     @Transactional
     public int syncMemberQuotas(Long projectId) {
         var project = projectService.getByIdOrThrow(projectId);
-        String cycle = project.getQuotaResetCycle() != null ? project.getQuotaResetCycle() : "MONTHLY";
+        String cycle = defaultIfBlank(project.getQuotaResetCycle(), DEFAULT_RESET_CYCLE);
         List<ProjectMember> members = projectMemberMapper.selectList(
                 Wrappers.<ProjectMember>lambdaQuery()
                         .eq(ProjectMember::getProjectId, projectId));
@@ -274,21 +274,20 @@ public class ProjectTokenDashboardService {
                     Wrappers.<MemberAiQuota>lambdaQuery()
                             .eq(MemberAiQuota::getUserId, m.getUserId())
                             .eq(MemberAiQuota::getProjectId, projectId)
-                            .eq(MemberAiQuota::getQuotaType, "TOKEN_QUOTA")
+                            .eq(MemberAiQuota::getQuotaType, QUOTA_TYPE_TOKEN)
                             .last("LIMIT 1"));
             if (existing != null) {
                 continue;
             }
-            long limit = DEFAULT_TOKEN_QUOTA_BY_ROLE.getOrDefault(
-                    m.getRole() != null ? m.getRole() : "DEVELOPER", 200_000L);
+            long limit = resolveDefaultQuotaLimit(m.getRole());
             MemberAiQuota q = new MemberAiQuota();
             q.setUserId(m.getUserId());
             q.setProjectId(projectId);
-            q.setQuotaType("TOKEN_QUOTA");
+            q.setQuotaType(QUOTA_TYPE_TOKEN);
             q.setQuotaLimit(limit);
             q.setUsedAmount(0L);
             q.setResetCycle(cycle);
-            q.setStatus("ACTIVE");
+            q.setStatus(STATUS_ACTIVE);
             memberAiQuotaMapper.insert(q);
             created++;
         }
@@ -302,7 +301,7 @@ public class ProjectTokenDashboardService {
             List<MemberAiQuota> list = memberAiQuotaMapper.selectList(
                     Wrappers.<MemberAiQuota>lambdaQuery()
                             .eq(MemberAiQuota::getProjectId, projectId)
-                            .eq(MemberAiQuota::getQuotaType, "TOKEN_QUOTA"));
+                            .eq(MemberAiQuota::getQuotaType, QUOTA_TYPE_TOKEN));
             for (MemberAiQuota q : list) {
                 q.setUsedAmount(0L);
                 memberAiQuotaMapper.updateById(q);
@@ -359,7 +358,7 @@ public class ProjectTokenDashboardService {
     }
 
     private static boolean personalPoolNearAlert(PlatformCredential c) {
-        if (c == null || !"ACTIVE".equals(c.getStatus())) {
+        if (c == null || !STATUS_ACTIVE.equals(c.getStatus())) {
             return false;
         }
         Long quota = c.getMonthlyTokenQuota();
@@ -410,5 +409,19 @@ public class ProjectTokenDashboardService {
             map.putIfAbsent(m.getUserId(), m.getRole() != null ? m.getRole() : "");
         }
         return map;
+    }
+
+    private long resolveDefaultQuotaLimit(String role) {
+        return DEFAULT_TOKEN_QUOTA_BY_ROLE.getOrDefault(
+                defaultIfBlank(role, DEFAULT_PROJECT_ROLE),
+                DEFAULT_TOKEN_QUOTA_BY_ROLE.get(DEFAULT_PROJECT_ROLE));
+    }
+
+    private String defaultIfBlank(String value, String defaultValue) {
+        if (value == null) {
+            return defaultValue;
+        }
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? defaultValue : trimmed;
     }
 }

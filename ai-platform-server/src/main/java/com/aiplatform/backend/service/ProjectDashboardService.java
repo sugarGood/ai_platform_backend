@@ -3,6 +3,7 @@ package com.aiplatform.backend.service;
 import com.aiplatform.backend.common.dto.PageResponse;
 import com.aiplatform.backend.dto.ProjectCardAiMetrics;
 import com.aiplatform.backend.dto.ProjectCardResponse;
+import com.aiplatform.backend.dto.ProjectDashboardQuery;
 import com.aiplatform.backend.dto.ProjectCardTokenUsage;
 import com.aiplatform.backend.entity.KnowledgeBase;
 import com.aiplatform.backend.entity.Project;
@@ -85,16 +86,15 @@ public class ProjectDashboardService {
      * @param status            可选；ALL/ACTIVE/ARCHIVED（及「全部状态」等同 ALL）
      * @param projectType       可选；ALL 或 PRODUCT/PLATFORM/DATA/OTHER
      */
-    public PageResponse<ProjectCardResponse> listDashboard(
-            int page,
-            int size,
-            boolean includeArchived,
-            String keyword,
-            String status,
-            String projectType) {
+    public PageResponse<ProjectCardResponse> listDashboard(ProjectDashboardQuery query) {
         var wrapper = Wrappers.<Project>lambdaQuery().orderByAsc(Project::getId);
-        ProjectQueryFilters.applyForDashboard(wrapper, keyword, status, projectType, includeArchived);
-        Page<Project> result = projectMapper.selectPage(new Page<>(page, size), wrapper);
+        ProjectQueryFilters.applyForDashboard(
+                wrapper,
+                query.keyword(),
+                query.status(),
+                query.projectType(),
+                query.includeArchived());
+        Page<Project> result = projectMapper.selectPage(new Page<>(query.page(), query.size()), wrapper);
         List<Project> projects = result.getRecords();
         if (projects.isEmpty()) {
             return new PageResponse<>(List.of(), result.getTotal(), (int) result.getCurrent(), (int) result.getSize());

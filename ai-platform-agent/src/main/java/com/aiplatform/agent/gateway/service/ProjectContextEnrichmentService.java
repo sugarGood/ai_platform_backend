@@ -19,26 +19,19 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
- * 项目上下文增强服务。
- *
- * <p>增强行为受项目专属智能体（{@code project_agents}）的能力开关控制：</p>
- * <ul>
- *   <li>{@code enableSkills=false}：跳过技能 System Prompt 注入</li>
- *   <li>{@code enableRag=false}：跳过 RAG 知识库检索注入</li>
- *   <li>智能体不存在或已禁用：保持默认增强行为（全部启用）</li>
- * </ul>
- *
- * <p>增强内容追加在消息列表已有 system 消息之后（不覆盖），
- * 确保项目智能体 System Prompt（由 {@link ProjectAgentChatService} 注入）始终优先。</p>
+ * 项目上下文增强服务，按项目智能体开关注入技能 Prompt 和 RAG 片段。
  */
 @Service
 public class ProjectContextEnrichmentService {
 
     private static final Logger log = LoggerFactory.getLogger(ProjectContextEnrichmentService.class);
+    private static final String STATUS_ACTIVE = "ACTIVE";
+    private static final String STATUS_PUBLISHED = "PUBLISHED";
+    private static final String INJECT_MODE_AUTO = "AUTO_INJECT";
 
     private final ProjectSkillRefMapper projectSkillMapper;
     private final SkillRefMapper skillMapper;
@@ -49,15 +42,14 @@ public class ProjectContextEnrichmentService {
     private final QdrantSearchService qdrantSearchService;
     private final KnowledgeSearchLogService searchLogService;
 
-    public ProjectContextEnrichmentService(
-            ProjectSkillRefMapper projectSkillMapper,
-            SkillRefMapper skillMapper,
-            ProjectKnowledgeConfigRefMapper projectKnowledgeConfigMapper,
-            KnowledgeBaseRefMapper knowledgeBaseMapper,
-            ProjectAgentRefMapper projectAgentRefMapper,
-            EmbeddingService embeddingService,
-            QdrantSearchService qdrantSearchService,
-            KnowledgeSearchLogService searchLogService) {
+    public ProjectContextEnrichmentService(ProjectSkillRefMapper projectSkillMapper,
+                                           SkillRefMapper skillMapper,
+                                           ProjectKnowledgeConfigRefMapper projectKnowledgeConfigMapper,
+                                           KnowledgeBaseRefMapper knowledgeBaseMapper,
+                                           ProjectAgentRefMapper projectAgentRefMapper,
+                                           EmbeddingService embeddingService,
+                                           QdrantSearchService qdrantSearchService,
+                                           KnowledgeSearchLogService searchLogService) {
         this.projectSkillMapper = projectSkillMapper;
         this.skillMapper = skillMapper;
         this.projectKnowledgeConfigMapper = projectKnowledgeConfigMapper;
@@ -70,63 +62,60 @@ public class ProjectContextEnrichmentService {
 
     /**
      * 对请求进行项目上下文增强。
-     *
-     * <p>若 projectId 为 null 则直接返回原始请求。否则按智能体开关决定
-     * 是否追加技能 Prompt 和 RAG 知识片段。</p>
      */
     public ChatCompletionRequest enrich(Long projectId, Long userId, ChatCompletionRequest request) {
         if (projectId == null) {
             return request;
         }
 
-        // 加载项目智能体配置，读取能力开关
         ProjectAgentRef agentConfig = loadAgentConfig(projectId);
-        boolean skillsEnabled = agentConfig == null || !Boolean.FALSE.equals(agentConfig.getEnableSkills());
-        boolean ragEnabled    = agentConfig == null || !Boolean.FALSE.equals(agentConfig.getEnableRag());
-
-        String appendedContext = buildAppendedContext(projectId, userId, request, skillsEnabled, ragEnabled);
+        String appendedContext = buildAppendedContext(projectId, userId, request, agentConfig);
         if (appendedContext.isEmpty()) {
             return request;
         }
 
-        // 将追加内容合并到已有 system 消息末尾（保留智能体 prompt 在前）
-        List<ChatCompletionMessage> enrichedMessages = new ArrayList<>(
-                request.messages() != null ? request.messages() : List.of());
-
-        int systemIdx = -1;
-        for (int i = 0; i < enrichedMessages.size(); i++) {
-            if ("system".equals(enrichedMessages.get(i).role())) {
-                systemIdx = i;
-                break;
-            }
-        }
-
-        if (systemIdx >= 0) {
-            ChatCompletionMessage existing = enrichedMessages.get(systemIdx);
-            enrichedMessages.set(systemIdx,
-                    new ChatCompletionMessage("system", existing.content() + "\n\n" + appendedContext));
-        } else {
-            enrichedMessages.add(0, new ChatCompletionMessage("system", appendedContext));
-        }
-
         return new ChatCompletionRequest(
-                request.model(), enrichedMessages, request.temperature(), request.maxTokens());
+                request.model(),
+                mergeSystemMessages(request.messages(), appendedContext),
+                request.temperature(),
+                request.maxTokens());
     }
 
-    private String buildAppendedContext(Long projectId, Long userId, ChatCompletionRequest request,
-                                        boolean skillsEnabled, boolean ragEnabled) {
-        StringBuilder sb = new StringBuilder();
+    private String buildAppendedContext(Long projectId,
+                                        Long userId,
+                                        ChatCompletionRequest request,
+                                        ProjectAgentRef agentConfig) {
+        boolean skillsEnabled = agentConfig == null || !Boolean.FALSE.equals(agentConfig.getEnableSkills());
+        boolean ragEnabled = agentConfig == null || !Boolean.FALSE.equals(agentConfig.getEnableRag());
+
+        StringBuilder context = new StringBuilder();
         if (skillsEnabled) {
-            appendSkillPrompts(projectId, sb);
+            appendSkillPrompts(projectId, context);
         } else {
             log.debug("enableSkills=false，跳过技能注入，projectId={}", projectId);
         }
         if (ragEnabled) {
-            appendRagChunks(projectId, userId, request, sb);
+            appendRagChunks(projectId, userId, request, context);
         } else {
             log.debug("enableRag=false，跳过 RAG 检索，projectId={}", projectId);
         }
-        return sb.toString();
+        return context.toString();
+    }
+
+    private List<ChatCompletionMessage> mergeSystemMessages(List<ChatCompletionMessage> originalMessages,
+                                                            String appendedContext) {
+        List<ChatCompletionMessage> messages = new ArrayList<>(originalMessages != null ? originalMessages : List.of());
+        for (int i = 0; i < messages.size(); i++) {
+            ChatCompletionMessage message = messages.get(i);
+            if ("system".equals(message.role())) {
+                messages.set(i, new ChatCompletionMessage(
+                        "system",
+                        message.content() + "\n\n" + appendedContext));
+                return messages;
+            }
+        }
+        messages.add(0, new ChatCompletionMessage("system", appendedContext));
+        return messages;
     }
 
     private ProjectAgentRef loadAgentConfig(Long projectId) {
@@ -134,7 +123,7 @@ public class ProjectContextEnrichmentService {
             return projectAgentRefMapper.selectOne(
                     Wrappers.<ProjectAgentRef>lambdaQuery()
                             .eq(ProjectAgentRef::getProjectId, projectId)
-                            .eq(ProjectAgentRef::getStatus, "ACTIVE")
+                            .eq(ProjectAgentRef::getStatus, STATUS_ACTIVE)
             );
         } catch (Exception e) {
             log.warn("加载项目智能体配置失败，将使用默认增强行为，projectId={}: {}", projectId, e.getMessage());
@@ -142,57 +131,40 @@ public class ProjectContextEnrichmentService {
         }
     }
 
-    private void appendSkillPrompts(Long projectId, StringBuilder sb) {
+    private void appendSkillPrompts(Long projectId, StringBuilder context) {
         List<ProjectSkillRef> projectSkills = projectSkillMapper.selectList(
                 Wrappers.<ProjectSkillRef>lambdaQuery()
                         .eq(ProjectSkillRef::getProjectId, projectId)
-                        .eq(ProjectSkillRef::getStatus, "ACTIVE")
+                        .eq(ProjectSkillRef::getStatus, STATUS_ACTIVE)
         );
-        if (projectSkills.isEmpty()) return;
+        if (projectSkills.isEmpty()) {
+            return;
+        }
 
-        List<Long> skillIds = projectSkills.stream()
-                .map(ProjectSkillRef::getSkillId).collect(Collectors.toList());
-
+        List<Long> skillIds = projectSkills.stream().map(ProjectSkillRef::getSkillId).toList();
         List<SkillRef> skills = skillMapper.selectList(
                 Wrappers.<SkillRef>lambdaQuery()
                         .in(SkillRef::getId, skillIds)
-                        .eq(SkillRef::getStatus, "PUBLISHED")
+                        .eq(SkillRef::getStatus, STATUS_PUBLISHED)
         );
 
         for (SkillRef skill : skills) {
-            if (skill.getSystemPrompt() != null && !skill.getSystemPrompt().isBlank()) {
-                if (!sb.isEmpty()) sb.append("\n\n");
-                sb.append("## ").append(skill.getName()).append("\n");
-                sb.append(skill.getSystemPrompt());
+            if (skill.getSystemPrompt() == null || skill.getSystemPrompt().isBlank()) {
+                continue;
             }
+            if (!context.isEmpty()) {
+                context.append("\n\n");
+            }
+            context.append("## ").append(skill.getName()).append("\n");
+            context.append(skill.getSystemPrompt());
         }
     }
 
-    private void appendRagChunks(Long projectId, Long userId,
-                                  ChatCompletionRequest request, StringBuilder sb) {
-        List<ProjectKnowledgeConfigRef> kbConfigs = projectKnowledgeConfigMapper.selectList(
-                Wrappers.<ProjectKnowledgeConfigRef>lambdaQuery()
-                        .eq(ProjectKnowledgeConfigRef::getProjectId, projectId)
-                        .eq(ProjectKnowledgeConfigRef::getStatus, "ACTIVE")
-        );
-        if (kbConfigs.isEmpty()) return;
-
-        List<Long> kbIds = kbConfigs.stream()
-                .filter(c -> {
-                    String m = c.getInjectMode();
-                    return m == null || "AUTO_INJECT".equals(m);
-                })
-                .map(ProjectKnowledgeConfigRef::getKbId)
-                .collect(Collectors.toList());
-        if (kbIds.isEmpty()) return;
-
-        List<KnowledgeBaseRef> autoInjectKbs = knowledgeBaseMapper.selectList(
-                Wrappers.<KnowledgeBaseRef>lambdaQuery()
-                        .in(KnowledgeBaseRef::getId, kbIds)
-                        .eq(KnowledgeBaseRef::getInjectMode, "AUTO_INJECT")
-                        .eq(KnowledgeBaseRef::getStatus, "ACTIVE")
-        );
-        if (autoInjectKbs.isEmpty()) return;
+    private void appendRagChunks(Long projectId, Long userId, ChatCompletionRequest request, StringBuilder context) {
+        List<KnowledgeBaseRef> autoInjectKnowledgeBases = loadAutoInjectKnowledgeBases(projectId);
+        if (autoInjectKnowledgeBases.isEmpty()) {
+            return;
+        }
 
         String queryText = extractLastUserMessage(request);
         if (queryText == null || queryText.isBlank()) {
@@ -208,40 +180,88 @@ public class ProjectContextEnrichmentService {
             return;
         }
 
-        List<ChunkResult> allChunks = new ArrayList<>();
-        for (KnowledgeBaseRef kb : autoInjectKbs) {
-            long searchStart = System.currentTimeMillis();
-            List<ChunkResult> chunks = qdrantSearchService.search(kb.getId(), queryVector);
-            long latencyMs = System.currentTimeMillis() - searchStart;
-            searchLogService.logAsync(kb.getId(), projectId, userId, queryText, chunks, latencyMs);
-            allChunks.addAll(chunks);
-            log.debug("RAG 检索，kb_id={}，命中 {} 个 chunk，耗时 {}ms",
-                    kb.getId(), chunks.size(), latencyMs);
+        List<ChunkResult> allChunks = searchKnowledgeBases(autoInjectKnowledgeBases, projectId, userId, queryText, queryVector);
+        if (allChunks.isEmpty()) {
+            return;
         }
 
-        if (allChunks.isEmpty()) return;
-
-        allChunks.sort((a, b) -> Double.compare(b.score(), a.score()));
-
-        if (!sb.isEmpty()) sb.append("\n\n");
-        sb.append("## 参考知识\n");
-        sb.append("以下是与当前问题相关的知识库内容，请优先参考：\n\n");
+        allChunks.sort(Comparator.comparingDouble(ChunkResult::score).reversed());
+        if (!context.isEmpty()) {
+            context.append("\n\n");
+        }
+        context.append("## 参考知识\n");
+        context.append("以下是与当前问题相关的知识库内容，请优先参考：\n\n");
         for (ChunkResult chunk : allChunks) {
-            if (chunk.chunkText() == null || chunk.chunkText().isBlank()) continue;
-            sb.append("【");
-            if (chunk.docTitle() != null) sb.append(chunk.docTitle());
-            sb.append("】\n");
-            sb.append(chunk.chunkText()).append("\n\n");
+            if (chunk.chunkText() == null || chunk.chunkText().isBlank()) {
+                continue;
+            }
+            context.append("《");
+            if (chunk.docTitle() != null) {
+                context.append(chunk.docTitle());
+            }
+            context.append("》\n");
+            context.append(chunk.chunkText()).append("\n\n");
         }
     }
 
+    private List<KnowledgeBaseRef> loadAutoInjectKnowledgeBases(Long projectId) {
+        List<ProjectKnowledgeConfigRef> knowledgeConfigs = projectKnowledgeConfigMapper.selectList(
+                Wrappers.<ProjectKnowledgeConfigRef>lambdaQuery()
+                        .eq(ProjectKnowledgeConfigRef::getProjectId, projectId)
+                        .eq(ProjectKnowledgeConfigRef::getStatus, STATUS_ACTIVE)
+        );
+        if (knowledgeConfigs.isEmpty()) {
+            return List.of();
+        }
+
+        List<Long> kbIds = knowledgeConfigs.stream()
+                .filter(this::shouldAutoInject)
+                .map(ProjectKnowledgeConfigRef::getKbId)
+                .toList();
+        if (kbIds.isEmpty()) {
+            return List.of();
+        }
+
+        return knowledgeBaseMapper.selectList(
+                Wrappers.<KnowledgeBaseRef>lambdaQuery()
+                        .in(KnowledgeBaseRef::getId, kbIds)
+                        .eq(KnowledgeBaseRef::getInjectMode, INJECT_MODE_AUTO)
+                        .eq(KnowledgeBaseRef::getStatus, STATUS_ACTIVE)
+        );
+    }
+
+    private boolean shouldAutoInject(ProjectKnowledgeConfigRef knowledgeConfig) {
+        String injectMode = knowledgeConfig.getInjectMode();
+        return injectMode == null || INJECT_MODE_AUTO.equals(injectMode);
+    }
+
+    private List<ChunkResult> searchKnowledgeBases(List<KnowledgeBaseRef> knowledgeBases,
+                                                   Long projectId,
+                                                   Long userId,
+                                                   String queryText,
+                                                   float[] queryVector) {
+        List<ChunkResult> allChunks = new ArrayList<>();
+        for (KnowledgeBaseRef knowledgeBase : knowledgeBases) {
+            long searchStart = System.currentTimeMillis();
+            List<ChunkResult> chunks = qdrantSearchService.search(knowledgeBase.getId(), queryVector);
+            long latencyMs = System.currentTimeMillis() - searchStart;
+            searchLogService.logAsync(knowledgeBase.getId(), projectId, userId, queryText, chunks, latencyMs);
+            allChunks.addAll(chunks);
+            log.debug("RAG 检索，kbId={}，命中 {} 个 chunk，耗时 {}ms",
+                    knowledgeBase.getId(), chunks.size(), latencyMs);
+        }
+        return allChunks;
+    }
+
     private String extractLastUserMessage(ChatCompletionRequest request) {
-        if (request.messages() == null || request.messages().isEmpty()) return null;
+        if (request.messages() == null || request.messages().isEmpty()) {
+            return null;
+        }
         List<ChatCompletionMessage> messages = request.messages();
         for (int i = messages.size() - 1; i >= 0; i--) {
-            ChatCompletionMessage msg = messages.get(i);
-            if ("user".equals(msg.role()) && msg.content() != null) {
-                return msg.content();
+            ChatCompletionMessage message = messages.get(i);
+            if ("user".equals(message.role()) && message.content() != null) {
+                return message.content();
             }
         }
         return null;

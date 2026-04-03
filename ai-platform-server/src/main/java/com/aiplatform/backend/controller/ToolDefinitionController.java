@@ -66,6 +66,16 @@ public class ToolDefinitionController {
     }
 
     /**
+     * 启停工具（兼容原型路径）。
+     */
+    @PutMapping("/{id}/status")
+    public ToolDefinitionResponse updateStatus(@PathVariable Long id,
+                                               @RequestBody Map<String, String> request) {
+        String status = request == null ? null : request.get("status");
+        return ToolDefinitionResponse.from(toolDefinitionService.updateStatus(id, status));
+    }
+
+    /**
      * 测试工具（发送测试请求验证可用性）。
      * TODO: 接入实际工具调用引擎。
      */

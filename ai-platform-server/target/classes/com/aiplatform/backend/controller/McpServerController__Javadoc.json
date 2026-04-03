@@ -1,1 +1,1 @@
-{"doc":"MCP 集成管理控制器（模块9）。 ","fields":[],"enumConstants":[],"methods":[],"constructors":[]}
+{"doc":"MCP 集成管理控制器（模块9）。 ","fields":[],"enumConstants":[],"methods":[{"name":"discover","paramTypes":["java.lang.Long"],"doc":" 兼容发现能力路径。\n"},{"name":"authorize","paramTypes":["java.lang.Long","com.aiplatform.backend.dto.SaveMcpAuthorizationRequest"],"doc":" 保存 MCP 授权状态。\n"}],"constructors":[]}

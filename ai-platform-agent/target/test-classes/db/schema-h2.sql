@@ -4,6 +4,7 @@
 CREATE TABLE IF NOT EXISTS platform_credentials (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     user_id BIGINT NOT NULL,
+    bound_project_id BIGINT,
     credential_type VARCHAR(32) NOT NULL DEFAULT 'PERSONAL',
     key_hash VARCHAR(64) NOT NULL,
     key_prefix VARCHAR(32) NOT NULL,
@@ -88,11 +89,13 @@ CREATE TABLE IF NOT EXISTS ai_usage_events (
     output_tokens BIGINT NOT NULL DEFAULT 0,
     total_tokens BIGINT NOT NULL DEFAULT 0,
     cost_amount DECIMAL(16,6) NOT NULL DEFAULT 0,
+    quota_check_result VARCHAR(64),
     status VARCHAR(16) NOT NULL DEFAULT 'SUCCESS',
     error_message VARCHAR(500),
     latency_ms INT,
     occurred_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT uk_usage_request_id UNIQUE (request_id)
 );
 
 -- Project context enrichment tables (read-only refs for gateway)
@@ -198,4 +201,15 @@ CREATE TABLE IF NOT EXISTS project_agents (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT uk_project_agent_project UNIQUE (project_id)
+);
+
+CREATE TABLE IF NOT EXISTS project_members (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    project_id BIGINT NOT NULL,
+    user_id BIGINT NOT NULL,
+    role VARCHAR(32),
+    joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT uk_project_member UNIQUE (project_id, user_id)
 );

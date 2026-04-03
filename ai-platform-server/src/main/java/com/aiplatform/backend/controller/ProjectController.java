@@ -3,6 +3,8 @@ package com.aiplatform.backend.controller;
 import com.aiplatform.backend.common.dto.PageResponse;
 import com.aiplatform.backend.dto.CreateProjectRequest;
 import com.aiplatform.backend.dto.ProjectCardResponse;
+import com.aiplatform.backend.dto.ProjectDashboardQuery;
+import com.aiplatform.backend.dto.ProjectListQuery;
 import com.aiplatform.backend.dto.ProjectOverviewResponse;
 import com.aiplatform.backend.dto.ProjectResponse;
 import com.aiplatform.backend.dto.UpdateProjectRequest;
@@ -53,7 +55,7 @@ public class ProjectController {
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String projectType) {
-        return projectService.listPaged(page, size, keyword, status, projectType);
+        return projectService.listPaged(new ProjectListQuery(page, size, keyword, status, projectType));
     }
 
     /**
@@ -70,7 +72,7 @@ public class ProjectController {
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String projectType) {
         return projectDashboardService.listDashboard(
-                page, size, includeArchived, keyword, status, projectType);
+                new ProjectDashboardQuery(page, size, includeArchived, keyword, status, projectType));
     }
 
     /** 根据 ID 查询单个项目详情。 */
